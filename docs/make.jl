@@ -22,3 +22,4 @@ deploydocs(;
     repo = "github.com/walra356/CamiFITS.jl.git",
     devbranch = "main"
 )
+
