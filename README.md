@@ -1,6 +1,6 @@
 # CamiFITS
 
-A [Julia](http://julialang.org) package for reading and writing files in the FITS format. |:                                    
+A [Julia](http://julialang.org) package for reading and writing files in the FITS format.                               
 
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
