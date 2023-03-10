@@ -1,5 +1,6 @@
 module CamiFITS
 
+import CamiMath
 import Printf
 import Dates           # used in fits_private_sector
 
