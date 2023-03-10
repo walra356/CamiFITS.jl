@@ -1,5 +1,8 @@
 module CamiFITS
 
+import Printf
+import Dates           # used in fits_private_sector
+
 export FITS_HDU
 export FITS_header
 export FITS_data
