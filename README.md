@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # CamiFITS
 
 A [Julia](http://julialang.org) package for reading and writing files in the FITS format. |:                                    :| [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -16,4 +18,3 @@ By the command `f = fits_read(filnam)` we asign a collection of `FITS_HDU` objec
 |[![Stable](https://img.shields.io/badge/docs-v1-blue.svg)](https://walra356.github.io/CamiFITS.jl/stable)[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://walra356.github.io/CamiFITS.jl/dev)|[![CI](https://github.com/walra356/CamiFITS.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/walra356/CamiFITS.jl/actions/workflows/CI.yml)|[![codecov](https://codecov.io/gh/walra356/CamiFITS.jl/branch/main/graph/badge.svg?token=7LW41FGMK5)](https://codecov.io/gh/walra356/CamiFITS.jl)|[![TagBot](https://github.com/walra356/CamiFITS.jl/actions/workflows/TagBot.yml/badge.svg)](https://github.com/walra356/CamiFITS.jl/actions/workflows/TagBot.yml)|[![CompatHelper](https://github.com/walra356/CamiFITS.jl/actions/workflows/CompatHelper.yml/badge.svg)](https://github.com/walra356/CamiFITS.jl/actions/workflows/CompatHelper.yml)
 
 
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
