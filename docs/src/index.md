@@ -8,6 +8,13 @@ CamiFITS offers the basic FITS functionality for scientific users not requiring 
 
 ```@contents
 ```
+# Installation
+
+The package is installed using the Julia package manager
+
+```
+Julia> using Pkg; Pkg.add("CamiFITS")
+```
 
 # Introduction
 
