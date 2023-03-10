@@ -13,7 +13,7 @@ By the command `f = fits_read(filnam)` we asign a collection of `FITS_HDU` objec
 
 | **Documentation**                                                                                       |                 
 |:-------------------------------------------------------------------------------------------------------:|
-|[![Stable](https://img.shields.io/badge/docs-v1-blue.svg)](https://walra356.github.io/CamiFITS.jl/stable)|[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://walra356.github.io/CamiFITS.jl/dev)
+|[![Stable](https://img.shields.io/badge/docs-v1-blue.svg)](https://walra356.github.io/CamiFITS.jl/stable)[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://walra356.github.io/CamiFITS.jl/dev)
 
 | **Build status**                | **Code coverage**                     | **Tag status**                        | **Compatibility**                 | **Licence**                                 
 :--------------------------------:|:-------------------------------------:|:-------------------------------------:|:---------------------------------:|:-----------------------------------:|
