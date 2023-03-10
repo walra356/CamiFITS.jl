@@ -86,7 +86,6 @@ stepedges(x::Vector{T} where T<:Real)
 edges(px, Δx=1.0, x0=0.0)
 ```
 
-
 ## Index
 
 ```@index
