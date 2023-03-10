@@ -1,8 +1,16 @@
 # CamiFITS.jl
 
-FITS stands for 'Flexible Image Transport System'. This is an open standard origionally developed for the astronomy community to store telescope images together with tables of spectral information. Over the years it has developed into a scientific standard - http://fits.gsfc.nasa.gov/iaufwg.
+FITS stands for 'Flexible Image Transport System'. This is an open standard origionally developed for the astronomy community to store telescope images together with tables of spectral information. Over the years it has developed into a scientific standard - http://fits.gsfc.nasa.gov/iaufwg. CamiFITS offers the basic FITS functionality for scientific users not requiring celestal coordinates. 
 
-CamiFITS implements the basic FITS functionality for users not requiring celestal coordinates. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
+## Installation
+
+```@contents
+julia> using Pkg; Pkg.add("CamiFITS")
+```
+
+
+
+The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
 A FITS file consists of a sequence of one or more header-data-units (HDUs), each containing a data block preceeded by header records of metainformation.
 
