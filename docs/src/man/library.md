@@ -52,3 +52,14 @@ FORTRAN_format
 cast_FORTRAN_format(str::String)
 cast_FORTRAN_datatype(str::String)
 ```
+
+## Plotting
+
+```@docs
+step125(x::Real)
+select125(x)
+steps(x::Vector{T} where T<:Real)
+stepcenters(x::Vector{T} where T<:Real)
+stepedges(x::Vector{T} where T<:Real)
+edges(px, Δx=1.0, x0=0.0)
+```
