@@ -54,6 +54,8 @@ COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
 END
 
 Any[]
+
+julia> rm(filnam); f = nothing
 ```
 
 ### FITS - Types
