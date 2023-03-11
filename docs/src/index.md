@@ -16,7 +16,8 @@ The package is installed using the Julia package manager
 julia> using Pkg; Pkg.add("CamiFITS")
 ```
 
-# Introduction
+# Documentation
+## Introduction
 
 A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
 
@@ -29,8 +30,9 @@ FITS_data
 FITS_table
 FITS_name
 ```
+## Using FITS files
 
-By the command `f = fits_read(filnam)` we asign a collection of []`FITS_HDU`](@ref) objects from the file `filnam` to the variable `f`.
+By the command `f = fits_read("filnam.fits")` we asign a collection of [`FITS_HDU`](@ref) objects from the file `"filnam.fits"` to the variable `f`.
 
 ---
 
