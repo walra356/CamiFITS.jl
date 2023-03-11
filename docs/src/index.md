@@ -24,12 +24,13 @@ A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`
 We distinguish between `IMAGE` and `TABLE` HDU data types. The first HDU in a .fits file is called the `PRIMARY` HDU.
 
 By the command f = [`fits_read`](@ref)("filnam.fits") we asign a collection of [`FITS_HDU`](@ref) objects from the file `"filnam.fits"` to the variable `f`. 
-The elements of this HDU collection are `f[1], f[2], ...`, with `f[1]` representing the `PRIMARY` HDU. The structure of HDU `f[i]` is printed in formated form by the command [`FITS_info`](@ref)(`f[i]`)
-The minimal FITS file consists of a single, empty HUD.
+
+The elements of the HDU collection `f` are `f[1], f[2], ...`, with `f[1]` representing the `PRIMARY` HDU. The structure of HDU `f[i]` can be printed in formated form using the command [`FITS_info`](@ref)(`f[i]`)
+
+The minimal FITS file consists of a single HDU, which is empty. FITS files are created using the command [`fits_create`](@ref)(filnam; protect=false).
 
 #### Example:
-Ceating the minimal FITS file
-
+Creating and inspecting the minimal FITS file:
 ```
 julia> filnam = "minimal.fits";
 
