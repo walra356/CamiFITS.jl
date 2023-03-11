@@ -18,17 +18,7 @@ julia> using Pkg; Pkg.add("CamiFITS")
 
 # Introduction
 
-A FITS file consists of a sequence of one or more header-data-units (HDUs), each containing a data block preceeded by header records of metainformation.
-
-```
-test
-```
-
-By the command `f = fits_read(filnam)` we asign a collection of `FITS_HDU` objects from the file `filnam` to the variable `f`.
-
----
-
-## FITS
+A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a data block preceeded by header records of metainformation.
 
 ### FITS - Types
 
@@ -39,6 +29,11 @@ FITS_data
 FITS_table
 FITS_name
 ```
+
+By the command `f = fits_read(filnam)` we asign a collection of []`FITS_HDU`](@ref) objects from the file `filnam` to the variable `f`.
+
+---
+
 
 ### FITS - HDU Methods
 
