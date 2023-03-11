@@ -30,7 +30,7 @@ The elements of the HDU collection `f` are `f[1], f[2], ...`, with `f[1]` repres
 The minimal FITS file consists of a single HDU, which is empty. FITS files are created using the command [`fits_create`](@ref)(filnam; protect=false).
 
 #### Example:
-Creating and inspecting the minimal FITS file:
+Creating the minimal FITS file. Note that the `PRIMARY` HDU contains an empty array of `Any` type.
 ```
 julia> filnam = "minimal.fits";
 
