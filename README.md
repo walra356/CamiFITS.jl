@@ -2,7 +2,7 @@
 
 A [Julia](http://julialang.org) package for reading and writing files in the FITS scientific data format.  
 
-FITS stands for 'Flexible Image Transport System'. This is an open standard origionally developed for the astronomy community to store telescope images together with tables of spectral information. Over the years it has developed into a scientific standard - [http://fits.gsfc.nasa.gov/iaufwg](http://fits.gsfc.nasa.gov/iaufwg). CamiFITS offers the basic FITS functionality for scientific users not requiring celestal coordinates. 
+FITS stands for 'Flexible Image Transport System'. This is an open standard origionally developed for the astronomy community to store telescope images together with tables of spectral information. Over the years it has developed into a scientific standard  - [R. J. Hanisch et al., A&A, 376 1 (2001) 359-380](https://doi.org/10.1051/0004-6361:20010923). CamiFITS offers the basic FITS functionality for scientific users not requiring celestal coordinates; e.g., to document camera images or spectral data. 
 
 
 | **Documentation**                           | **Build status**                            | **Code coverage**                          | **Tag status**                              |**Compatibility**           |                    
