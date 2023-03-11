@@ -1,6 +1,6 @@
 # CamiFITS.jl
 
-FITS stands for 'Flexible Image Transport System'. This is an open standard origionally developed for the astronomy community to store telescope images together with tables of spectral information. Over the years it has developed into a scientific standard - (http://fits.gsfc.nasa.gov/iaufwg. 
+FITS stands for 'Flexible Image Transport System'. This is an open standard origionally developed for the astronomy community to store telescope images together with tables of spectral information. Over the years it has developed into a scientific standard - [R. J. Hanisch et al](https://doi.org/10.1051/0004-6361:20010923). 
 
 CamiFITS offers the basic FITS functionality for scientific users not requiring celestal coordinates. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
@@ -21,11 +21,39 @@ julia> using Pkg; Pkg.add("CamiFITS")
 
 A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
 
-We distinguish between `PRIMARY`, `IMAGE` and `TABLE` HDU data types
+We distinguish between `IMAGE` and `TABLE` HDU data types. The first HDU in a .fits file is called the `PRIMARY` HDU.
 
-By the command `f = fits_read("filnam.fits")` we asign a collection of [`FITS_HDU`](@ref) objects from the file `"filnam.fits"` to the variable `f`.
+By the command f = [`fits_read`](@ref)("filnam.fits") we asign a collection of [`FITS_HDU`](@ref) objects from the file `"filnam.fits"` to the variable `f`. 
+The elements of this HDU collection are `f[1], f[2], ...`, with `f[1]` representing the `PRIMARY` HDU. The structure of HDU `f[i]` is printed in formated form by the command [`FITS_info`](@ref)(`f[i]`)
+The minimal FITS file consists of a single, empty HUD.
 
----
+#### Example:
+Ceating the minimal FITS file
+
+```
+julia> filnam = "minimal.fits";
+
+julia> fits_create(filnam; protect=false);
+
+julia> f = fits_read(filnam);
+
+julia> fits_info(f[1])
+
+File: minimal.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+NAXIS   =                    0 / number of data axes
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+END
+
+Any[]
+```
 
 ### FITS - Types
 
