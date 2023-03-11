@@ -18,7 +18,7 @@ julia> using Pkg; Pkg.add("CamiFITS")
 
 # Introduction
 
-A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a data block preceeded by header records of metainformation.
+A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
 
 ### FITS - Types
 
