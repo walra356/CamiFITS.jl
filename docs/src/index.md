@@ -31,9 +31,8 @@ The elements of the HDU collection `f` are `f[1], f[2], ...`, with `f[1]` repres
 
 FITS files are created using the command [`fits_create`](@ref).
 
-### The minimal FITS file:
-The minimal FITS file consists of a single HDU containing an empty data field of the type `Any[]`.
-#### Example:
+#### The simplest file conforming to the FITS standard
+This file consists of a single HDU containing an empty data field of the type `Any[]`.
 ```
 julia> filename = "empty.fits";
 
@@ -110,8 +109,9 @@ END
 
 julia> rm(filename); f = nothing
 ```
-Note how the keywords `NAXIS1` and `NAXIS2` represent the dimension of the 
-matrix, whereas `NAXIS3` stands for the number of matrices in the data field. 
+The keywords `NAXIS1`, `NAXIS2` and `NAXIS3` represent the dimensions 
+of the data matrix in ``x``, ``y`` and ``z`` direction. 
+
 The matrix elements are referred to as `pixels` and their bit size is 
 represented by the keyword `BITPIX`. In the above example the pixel value 
 is given by the matrix indices.
