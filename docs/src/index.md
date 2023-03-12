@@ -29,11 +29,11 @@ The elements of the HDU collection `f` are `f[1], f[2], ...`, with `f[1]` repres
 
 FITS files are created using the command [`fits_create`](@ref).
 
-### Creating an empty FITS file:
-An empty FITS file consists of a single HDU containing a data field of the type `Any[]`.
+### Creating the minimal FITS file:
+The minimal FITS file consists of a single HDU containing an empty data field of the type `Any[]`.
 #### Example:
 ```
-julia> filnam = "minimal.fits";
+julia> filnam = "empty.fits";
 
 julia> fits_create(filnam; protect=false);
 
@@ -58,6 +58,8 @@ Any[]
 
 julia> rm(filnam); f = nothing
 ```
+
+# API
 
 ### FITS - Types
 
