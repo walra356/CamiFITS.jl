@@ -16,8 +16,8 @@ The package is installed using the Julia package manager
 julia> using Pkg; Pkg.add("CamiFITS")
 ```
 
-# Documentation
-## Introduction
+# Manual
+## FITS files
 
 A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
 
@@ -25,12 +25,13 @@ We distinguish between `IMAGE` and `TABLE` HDU data types. The first HDU in a .f
 
 By the command f = [`fits_read`](@ref)("filnam.fits") we asign a collection of [`FITS_HDU`](@ref) objects from the file `"filnam.fits"` to the variable `f`. 
 
-The elements of the HDU collection `f` are `f[1], f[2], ...`, with `f[1]` representing the `PRIMARY` HDU. The structure of HDU `f[i]` can be printed in formated form using the command [`FITS_info`](@ref)(`f[i]`)
+The elements of the HDU collection `f` are `f[1], f[2], ...`, with `f[1]` representing the `PRIMARY` HDU. The structure of HDU `f[i]` can be printed in formated form using the command [`FITS_info`](@ref)(`f[i]`).
 
-The minimal FITS file consists of a single HDU, which is empty. FITS files are created using the command [`fits_create`](@ref)(filnam; protect=false).
+FITS files are created using the command [`fits_create`](@ref).
 
+### Creating an empty FITS file:
+An empty FITS file consists of a single HDU containing a data field of the type `Any[]`.
 #### Example:
-Creating the minimal FITS file. Note that the `PRIMARY` HDU contains an empty array of `Any` type.
 ```
 julia> filnam = "minimal.fits";
 
