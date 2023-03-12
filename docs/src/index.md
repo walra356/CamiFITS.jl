@@ -109,12 +109,12 @@ END
  31  23  33
 
 julia> rm(filename); f = nothing
- ```
- Note how the keywords `NAXIS1` and `NAXIS2` represent the dimension of the 
- matrix, whereas `NAXIS3` stands for the number of matrices in the data field. 
- The matrix elements are referred to as `pixels` and their bit size is 
- represented by the keyword `BITPIX`. In the above example the pixel value 
- is given by the matrix indices.
+```
+Note how the keywords `NAXIS1` and `NAXIS2` represent the dimension of the 
+matrix, whereas `NAXIS3` stands for the number of matrices in the data field. 
+The matrix elements are referred to as `pixels` and their bit size is 
+represented by the keyword `BITPIX`. In the above example the pixel value 
+is given by the matrix indices.
  
 
 # API
