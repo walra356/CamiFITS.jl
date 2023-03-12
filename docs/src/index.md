@@ -14,10 +14,12 @@ The package is installed using the Julia package manager
 
 ```
 julia> using Pkg; Pkg.add("CamiFITS")
+
+julia> using CamiFITS
 ```
 
 # Manual
-## FITS files
+### Introduction
 
 A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
 
@@ -29,15 +31,15 @@ The elements of the HDU collection `f` are `f[1], f[2], ...`, with `f[1]` repres
 
 FITS files are created using the command [`fits_create`](@ref).
 
-### Creating the minimal FITS file:
+### The minimal FITS file:
 The minimal FITS file consists of a single HDU containing an empty data field of the type `Any[]`.
 #### Example:
 ```
-julia> filnam = "empty.fits";
+julia> filename = "empty.fits";
 
-julia> fits_create(filnam; protect=false);
+julia> fits_create(filename; protect=false)
 
-julia> f = fits_read(filnam);
+julia> f = fits_read(filename);
 
 julia> fits_info(f[1])
 
@@ -56,8 +58,64 @@ END
 
 Any[]
 
-julia> rm(filnam); f = nothing
+julia> rm(filename); f = nothing
 ```
+
+### The FITS file for a single matrix
+We first create the data field in the form of a 3x3 matrix:
+```
+julia> filename = "matrix.fits";
+
+julia> data = [11,21,31,12,22,23,13,23,33];
+
+julia> data = reshape(data,(3,3,1))
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+```
+We next create and inspact the FITS file for the matrix `data`
+```
+julia> fits_create(filename, data; protect=false)
+
+julia> f = fits_read(filename);
+
+julia> fits_info(f[1])
+
+File: matrix.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Int64
+Datasize: (3, 3, 1)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
+NAXIS3  =                    1 / length of data axis 3
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+END
+
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia> rm(filename); f = nothing
+ ```
+ Note how the keywords `NAXIS1` and `NAXIS2` represent the dimension of the 
+ matrix, whereas `NAXIS3` stands for the number of matrices in the data field. 
+ The matrix elements are referred to as `pixels` and their bit size is 
+ represented by the keyword `BITPIX`. In the above example the pixel value 
+ is given by the matrix indices.
+ 
 
 # API
 
