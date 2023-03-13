@@ -65,7 +65,7 @@ function _IMAGE_input(data::Array{T,N} where {T <: Real,N})
 
 end
 
-function _table_data_types(cols::Vector{Vector{T} where T})
+function _table_data_types(cols::Vector{})
 
     ncols = length(cols)
     nrows = length(cols[1])
@@ -92,7 +92,7 @@ function _table_data_types(cols::Vector{Vector{T} where T})
 
 end
 
-function _TABLE_input(cols::Vector{Vector{T} where T})     # input array of table columns
+function _TABLE_input(cols::Vector{})     # input array of table columns
 
     pcols = 1                                              # pointer to starting position of column in table row
     ncols = length(cols)                                   # number of columns
