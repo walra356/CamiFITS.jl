@@ -6,60 +6,61 @@ function _PRIMARY_input(dataobject::FITS_data)
 
     r::Array{String,1} = []
 
-         E = Base.eltype(dataobject.data)
+    E = Base.eltype(dataobject.data)
     nbytes = E ≠ Any ? sizeof(E) : 0
-     nbits = 8 * nbytes
+    nbits = 8 * nbytes
     bitpix = E <: AbstractFloat ? -abs(nbits) : nbits
-    bitpix = Base.lpad(bitpix,20)
-      dims = Base.size(dataobject.data)
-     ndims = dims == (0,) ? 0 : Base.length(dims)
-     naxis = Base.lpad(ndims,20)
-      dims = ndims > 0 ? [Base.lpad(dims[i],20) for i=1:ndims] : 0
-     bzero = Base.lpad(string(_fits_bzero(E)),20)
+    bitpix = Base.lpad(bitpix, 20)
+    dims = Base.size(dataobject.data)
+    ndims = dims == (0,) ? 0 : Base.length(dims)
+    naxis = Base.lpad(ndims, 20)
+    dims = ndims > 0 ? [Base.lpad(dims[i], 20) for i = 1:ndims] : 0
+    bzero = Base.lpad(string(_fits_bzero(E)), 20)
 
     incl = ndims > 0 ? true : false
 
-           Base.push!(r,"SIMPLE  =                    T / file does conform to FITS standard             ")
-    incl ? Base.push!(r,"BITPIX  = "   * bitpix  *    " / number of bits per data pixel                  ") : 0
-           Base.push!(r,"NAXIS   = "   * naxis   *    " / number of data axes                            ")
-    incl ? [Base.push!(r,"NAXIS$i  = " * dims[i] *    " / length of data axis " * rpad(i,27) ) for i=1:ndims] : 0
-    incl ? Base.push!(r,"BZERO   = "   * bzero   *    " / offset data range to that of unsigned integer  ") : 0
-    incl ? Base.push!(r,"BSCALE  =                  1.0 / default scaling factor                         ") : 0
-           Base.push!(r,"EXTEND  =                    T / FITS dataset may contain extensions            ")
-           Base.push!(r,"COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg               ")
-           Base.push!(r,"END                                                                             ")
+    Base.push!(r, "SIMPLE  =                    T / file does conform to FITS standard             ")
+    incl ? Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ") : 0
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    incl ? [Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27)) for i = 1:ndims] : 0
+    incl ? Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ") : 0
+    incl ? Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ") : 0
+           Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
+           Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
+           Base.push!(r, "END                                                                             ")
 
     return r          # r: Array{String,1} of records
 
 end
 
-function _IMAGE_input(data::Array{T,N} where {T <: Real,N})
+function _IMAGE_input(data::Array{T,N} where {T<:Real,N})
 
     eltype(data) <: Real || error("FitsError: Array of real numbers expected")
 
-         E = Base.eltype(data)
+    E = Base.eltype(data)
     nbytes = sizeof(E)
-     nbits = 8 * nbytes
+    nbits = 8 * nbytes
     bitpix = E <: AbstractFloat ? -abs(nbits) : nbits
-    bitpix = Base.lpad(bitpix,20)
-      dims = Base.size(data)
-     ndims = dims == (0,) ? 0 : Base.length(dims)
-      dims = ndims > 0 ? [Base.lpad(dims[i],20) for i=1:ndims] : 0
-     naxis = Base.lpad(ndims,20)
-     bzero = Base.lpad(string(_fits_bzero(E)),20)
+    bitpix = Base.lpad(bitpix, 20)
+    dims = Base.size(data)
+    ndims = dims == (0,) ? 0 : Base.length(dims)
+    dims = ndims > 0 ? [Base.lpad(dims[i], 20) for i = 1:ndims] : 0
+    naxis = Base.lpad(ndims, 20)
+    bzero = Base.lpad(string(_fits_bzero(E)), 20)
 
-    r::Array{String,1} = [];  incl = ndims > 0 ? true : false
+    r::Array{String,1} = []
+    incl = ndims > 0 ? true : false
 
-           Base.push!(r,"XTENSION= 'IMAGE   '           / FITS standard extension                        ")
-    incl ? Base.push!(r,"BITPIX  = "   * bitpix  *    " / number of bits per data pixel                  ") : 0
-           Base.push!(r,"NAXIS   = "   * naxis   *    " / number of data axes                            ")
-    incl ? [Base.push!(r,"NAXIS$i  = " * dims[i] *    " / length of data axis " * rpad(i,27) ) for i=1:ndims] : 0
-    incl ? Base.push!(r,"PCOUNT  =                    0 / number of data axes                            ") : 0
-    incl ? Base.push!(r,"GCOUNT  =                    1 / number of data axes                            ") : 0
-    incl ? Base.push!(r,"BZERO   = "   * bzero   *    " / offset data range to that of unsigned integer  ") : 0
-    incl ? Base.push!(r,"BSCALE  =                  1.0 / default scaling factor                         ") : 0
-           Base.push!(r,"COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/iaufwg               ")
-           Base.push!(r,"END                                                                             ")
+    Base.push!(r, "XTENSION= 'IMAGE   '           / FITS standard extension                        ")
+    incl ? Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ") : 0
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    incl ? [Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27)) for i = 1:ndims] : 0
+    incl ? Base.push!(r, "PCOUNT  =                    0 / number of data axes                            ") : 0
+    incl ? Base.push!(r, "GCOUNT  =                    1 / number of data axes                            ") : 0
+    incl ? Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ") : 0
+    incl ? Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ") : 0
+           Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
+           Base.push!(r, "END                                                                             ")
 
     return (r, data)           # r: Array{String,1} of records; data: same as input
 
@@ -133,7 +134,7 @@ function _TABLE_input(cols::Vector{})     # input array of table columns
    [Base.push!(r,"TBCOL$i  = " * tbcol[i] *    " / pointer to column " * rpad(i,29) ) for i=1:ncols]
    [Base.push!(r,"TFORM$i  = " * tform[i] *    " / data type of column " * rpad(i,27) ) for i=1:ncols]
    [Base.push!(r,"TDISP$i  = " * tform[i] *    " / data type of column " * rpad(i,27) ) for i=1:ncols]
-    Base.push!(r,"COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/iaufwg               ")
+    Base.push!(r,"COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
     Base.push!(r,"END                                                                             ")
 
     return (r, data)         # r: Array{String,1} of records; data: Array{String,1} of rows of table

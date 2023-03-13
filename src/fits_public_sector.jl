@@ -169,7 +169,7 @@ fits_info(f[1])
 """
 function fits_create(filename::String, data=[]; protect=true)
 
-    strErr = "FitsError: '$filename': creation failed (filename in use - set ';protect=false' to overrule overwrite protection)"
+    strErr = "FitsError: '$filename': creation failed (filename in use - set '; protect=false' to overrule overwrite protection)"
 
     _validate_FITS_name(filename)
     _isavailable(filename, protect) || error(strErr)
