@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 # ....................... Header and Data input ..................
 
 function _PRIMARY_input(dataobject::FITS_data)

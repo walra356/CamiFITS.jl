@@ -4,6 +4,8 @@ import CamiMath
 import Printf
 import Dates           # used in fits_private_sector
 
+export dictDefinedTerms
+export definition
 export FITS_HDU
 export FITS_header
 export FITS_data
@@ -40,7 +42,7 @@ export FORTRAN_format
 export cast_FORTRAN_format
 export cast_FORTRAN_datatype
 
-
+include("dicts.jl")
 include("fits_pointers.jl")
 include("read_io.jl")
 include("write_io.jl")

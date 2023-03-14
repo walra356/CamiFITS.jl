@@ -23,11 +23,11 @@ julia> using CamiFITS
 # Manual
 ### Introduction
 
-A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
+A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
 
-We distinguish between `IMAGE` and `TABLE` HDU data types. The first HDU in a .fits file is called the `PRIMARY` HDU.
+We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .fits file is called the *PRIMARY* HDU.
 
-Let "example.fits" be an *existing* .fits file. By the commands 
+Let "example.fits" be an *existing* FITS file. By the commands 
 
 ```
 julia> filnam = "example.fits"
@@ -36,7 +36,7 @@ julia> f = fits_read(filnam)
 ```
 we asign the collection of [`FITS_HDU`](@ref) objects from `filnam` to the variable `f`. 
 
-The elements of `f`, f[1], f[2], ... are called *Header and Data Units* (*HDU*s), with f[1] representing the *PRIMARY* HDU. 
+The elements of `f`, f[1], f[2], ... correspond to the HDUs, with f[1] representing the *PRIMARY* HDU. 
 
 FITS files can be created using the command [`fits_create`](@ref).
 

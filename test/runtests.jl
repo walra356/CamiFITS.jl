@@ -16,5 +16,6 @@ using Test
     @test fits_edit_key()
     @test fits_delete_key()
     @test fits_rename_key()
-    
+    @test definition("FITS")
+
 end
