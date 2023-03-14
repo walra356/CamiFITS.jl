@@ -157,7 +157,7 @@ fits_info(f[1])
   BZERO   =                  0.0 / offset data range to that of unsigned integer
   BSCALE  =                  1.0 / default scaling factor
   EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
   END
 
   3×3×1 Array{Int64, 3}:
@@ -237,7 +237,7 @@ fits_info(f[1])
   BZERO   =                  0.0 / offset data range to that of unsigned integer
   BSCALE  =                  1.0 / default scaling factor
   EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
   END
 
   3×3×1 Array{Int64, 3}:
@@ -435,7 +435,7 @@ fits_info(f[1])
   SIMPLE  =                    T / file does conform to FITS standard
   NAXIS   =                    0 / number of data axes
   EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
   KEYNEW1 =                    T / FITS dataset may contain extension
   END
 
@@ -513,7 +513,7 @@ fits_info(f[1])
   SIMPLE  =                    T / file does conform to FITS standard
   NAXIS   =                    0 / number of data axes
   EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
   KEYNEW1 = '2020-01-01T00:00:00' / record 5 changed to a DateTime type
   END
 
@@ -679,7 +679,7 @@ fits_info(f[1])
   SIMPLE  =                    T / file does conform to FITS standard
   NAXIS   =                    0 / number of data axes
   EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
   KEYNEW2 =                    T / this is record 5
   END
 

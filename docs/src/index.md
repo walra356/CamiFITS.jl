@@ -27,7 +27,7 @@ A FITS file consists of a sequence of one or more header-data-units ([`FITS_HDU`
 
 We distinguish between `IMAGE` and `TABLE` HDU data types. The first HDU in a .fits file is called the `PRIMARY` HDU.
 
-Let us consider an *existing* .fits file, "example.fits". By the commands 
+Let "example.fits" be an *existing* .fits file. By the commands 
 
 ```
 julia> filnam = "example.fits"
@@ -36,22 +36,22 @@ julia> f = fits_read(filnam)
 ```
 we asign the collection of [`FITS_HDU`](@ref) objects from `filnam` to the variable `f`. 
 
-The elements of `f`, f[1], f[2], ... are called *Header and Data Units* (*HDU*s), with f[1] representing the `PRIMARY` HDU. The structure of the HDU f[i] can be printed in the form of metainformation the command [`FITS_info`](@ref)(`f[i]`).
+The elements of `f`, f[1], f[2], ... are called *Header and Data Units* (*HDU*s), with f[1] representing the *PRIMARY* HDU. 
 
 FITS files can be created using the command [`fits_create`](@ref).
 
 #### The simplest FITS file
 The simplest file conforming to the FITS standard consists of a single HDU containing an empty data field of the type `Any[]`.
 ```
-julia> filename = "empty.fits";
+julia> filnam = "empty.fits";
 
-julia> fits_create(filename; protect=false)
+julia> fits_create(filnam; protect=false)
 
-julia> f = fits_read(filename);
+julia> f = fits_read(filnam);
 
 julia> fits_info(f[1])
 
-File: minimal.fits
+File: empty.fits
 hdu: 1
 hdutype: PRIMARY
 DataType: Any
@@ -61,7 +61,7 @@ Metainformation:
 SIMPLE  =                    T / file does conform to FITS standard
 NAXIS   =                    0 / number of data axes
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
 END
 
 Any[]
@@ -107,7 +107,7 @@ NAXIS3  =                    1 / length of data axis 3
 BZERO   =                  0.0 / offset data range to that of unsigned integer
 BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov/iaufwg
+COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
 END
 
 3×3×1 Array{Int64, 3}:

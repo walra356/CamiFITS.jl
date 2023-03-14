@@ -3,13 +3,15 @@
 """
     FITS_HDU{T,V}
 
-Object to hold a single "Header-Data Unit" (HDU).
+Object to hold a single "Header and Data Unit" (HDU).
 
 The fields are
 * `.filename`:  name of the corresponding FITS file (`::String`)
 * `.hduindex:`:  identifier (a file may contain more than one HDU) (`:Int`)
 * `.header`:  the header object where T=FITS_header (`::T`)
 * `.dataobject`:  the data object where V=FITS_data (`::V`)
+
+NB. An empty data block (`.dataobject = nothing`) conforms to the standard.
 """
 struct FITS_HDU{T,V}
 
