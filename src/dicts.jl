@@ -90,17 +90,26 @@ function _suggest(dict::Dict, term::String; test=false)
 
 end
 @doc raw"""
-    terminology(term::String)
+    terminology([term::String [; test=false]])
 
-Description of the *defined terms* from [FITS standard - Version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html)
+Description of the *defined terms* from [FITS standard - Version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html): 
+
+ANSI, ASCII, ASCII NULL, ASCII character, ASCII digit, ASCII space, ASCII text, 
+Array, Array value, Basic FITS, Big endian, Bit, Byte, Card image, 
+Character string, Conforming extension, Data block, Deprecate, Entry, 
+Extension, Extension type name, FITS, FITS Support Office, FITS block, 
+FITS file, FITS structure, Field, File, Floating point, Fraction, 
+Group parameter value, HDU Header and Data Unit., Header, Header block, Heap, 
+IAU, IAUFWG, IEEE, IEEE NaN, IEEE special values, Indexed keyword, 
+Keyword name, Keyword record, MEF, Mandatory keyword, Mantissa, NOST, 
+Physical value, Pixel, Primary HDU, Primary data array, Primary header, 
+Random Group, Record, Repeat count, Reserved keyword, SIF, Special records, 
+Standard extension.
 ```
 
-julia> terminology([term::String [; test=false]])
+julia> terminology()
 FITS defined terms:
-ANSI, ASCII, ASCII NULL, ASCII character, ASCII digit, ASCII space, ASCII text, Array, Array value, Basic FITS, 
-Big endian, Bit, Byte, ..., Record, Repeat count,Reserved keyword, SIF, Special records, Standard extension.
-
-see FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html
+ANSI, ASCII, ASCII NULL, ASCII character, ..., SIF, Special records, Standard extension.
 
 julia> terminology("FITS")
 FITS:
