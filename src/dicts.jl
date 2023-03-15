@@ -64,7 +64,8 @@ dictDefinedTerms = Dict("ANSI" => "American National Standards Institute.",
     "Standard extension" => "A conforming extensionwhose header and data content are completely specified in Sect. 7 of this Standard, namely, an image extension, an ASCII-table extension, or a binary-table extension."
 )
 
-
+# ------------------------------------------------------------------------------
+#                            terminology()
 # ..............................................................................
 function _suggest(dict::Dict, term::String)
 
@@ -89,18 +90,26 @@ function _suggest(dict::Dict, term::String)
 
 end
 @doc raw"""
-    definition(term::String)
+    terminology(term::String)
 
-Definition of *defined terms* from [FITS standard - Version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html)
+Description of the *defined terms* from [FITS standard - Version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html)
 ```
-julia> fits_defined_term("FITS")
+
+julia> terminology()
+FITS defined terms:
+ANSI, ASCII, ASCII NULL, ASCII character, ASCII digit, ASCII space, ASCII text, Array, Array value, Basic FITS, 
+Big endian, Bit, Byte, ..., Record, Repeat count,Reserved keyword, SIF, Special records, Standard extension.
+
+see FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html
+
+julia> terminology("FITS")
 FITS:
 Flexible Image Transport System.
 
 julia> get(dictDefinedTerms, "FITS", nothing)
 "Flexible Image Transport System."
 
-julia> fits_defined_term("p")
+julia> terminology("p")
 p:
 Not one of the FITS defined terms.
 suggestions: Physical value, Pixel, Primary HDU, Primary data array, Primary header.
@@ -108,12 +117,12 @@ suggestions: Physical value, Pixel, Primary HDU, Primary data array, Primary hea
 see FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html
 ```
 """
-function fits_defined_term(term::String)
+function terminology(term::String; test=false)
 
     term = isnothing(term) ? "" : term
     dict = dictDefinedTerms
 
-    length(term) > 0 || return fits_defined_term()
+    length(term) > 0 || return terminology()
 
     o = sort(collect(keys(dict)))
     u = [Base.uppercase(o[i]) for i ∈ eachindex(o)]
@@ -123,10 +132,11 @@ function fits_defined_term(term::String)
 
     str = length(itr) == 0 ? _suggest(dict::Dict, term::String) :
           (o[itr][1] * ":\n" * Base.get(dict, o[itr][1], nothing))
-    return println(str)
+    
+    test ? (return str) : println(str)
 
 end
-function fits_defined_term()
+function terminology(; test=false)
 
     dict = dictDefinedTerms
 
@@ -142,6 +152,6 @@ function fits_defined_term()
 
     str *= ".\n\nsee FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html"
 
-    return println(str)
+    test ? true : println(str)
 
 end

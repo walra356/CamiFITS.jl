@@ -38,14 +38,14 @@ we asign the collection of [`FITS_HDU`](@ref) objects from `filnam` to the varia
 
 The elements of `f`, f[1], f[2], ... correspond to the HDUs, with f[1] representing the *PRIMARY* HDU. 
 
-The formal terminology of the FITS standard can be consulted using [fits_defined_terms](@ref). 
+The formal terminology of the FITS standard can be consulted using [terminology](@ref). 
 ##### Examples:
 ```
-julia> fits_defined_term("FITS")
+julia> terminology("FITS")
 FITS:
 Flexible Image Transport System.
 
-julia> fits_defined_term("primary hdu")
+julia> terminology("primary hdu")
 Primary HDU:
 The first HDU in a FITS file.
 ```
@@ -139,6 +139,11 @@ is given by the matrix indices.
  
 
 # API
+
+### Terminology
+
+```@docs
+
 
 ### FITS - Types
 

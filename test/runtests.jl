@@ -16,6 +16,7 @@ using Test
     @test fits_edit_key()
     @test fits_delete_key()
     @test fits_rename_key()
-    @test fits_defined_term("FITS")
+    @test terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."
+    @test terminology(; test=true)
 
 end
