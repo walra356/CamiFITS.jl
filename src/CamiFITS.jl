@@ -5,7 +5,8 @@ import Printf
 import Dates           # used in fits_private_sector
 
 export dictDefinedTerms
-export definition
+export fits_defined_term
+
 export FITS_HDU
 export FITS_header
 export FITS_data
