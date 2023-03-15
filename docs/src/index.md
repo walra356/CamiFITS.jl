@@ -143,7 +143,8 @@ is given by the matrix indices.
 ### Terminology
 
 ```@docs
-
+terminology(term::String; test=false)
+```
 
 ### FITS - Types
 
@@ -154,8 +155,6 @@ FITS_data
 FITS_table
 FITS_name
 ```
-
-
 
 ### FITS - HDU Methods
 

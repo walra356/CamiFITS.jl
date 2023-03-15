@@ -67,7 +67,7 @@ dictDefinedTerms = Dict("ANSI" => "American National Standards Institute.",
 # ------------------------------------------------------------------------------
 #                            terminology()
 # ..............................................................................
-function _suggest(dict::Dict, term::String)
+function _suggest(dict::Dict, term::String; test=false)
 
     o = sort(collect(keys(dict)))
     a = [o[i][1] for i ∈ eachindex(o)]
@@ -86,7 +86,7 @@ function _suggest(dict::Dict, term::String)
     str = str[1:end-2]
     str *= ".\n\nsee FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html"
 
-    return str
+    return test ? true : str
 
 end
 @doc raw"""
@@ -95,7 +95,7 @@ end
 Description of the *defined terms* from [FITS standard - Version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html)
 ```
 
-julia> terminology()
+julia> terminology([term::String [; test=false]])
 FITS defined terms:
 ANSI, ASCII, ASCII NULL, ASCII character, ASCII digit, ASCII space, ASCII text, Array, Array value, Basic FITS, 
 Big endian, Bit, Byte, ..., Record, Repeat count,Reserved keyword, SIF, Special records, Standard extension.
@@ -130,9 +130,9 @@ function terminology(term::String; test=false)
 
     itr = findall(x -> x == X, u)
 
-    str = length(itr) == 0 ? _suggest(dict::Dict, term::String) :
+    str = length(itr) == 0 ? _suggest(dict::Dict, term::String; test) :
           (o[itr][1] * ":\n" * Base.get(dict, o[itr][1], nothing))
-    
+
     test ? (return str) : println(str)
 
 end
