@@ -40,10 +40,6 @@ The elements of `f`, f[1], f[2], ... correspond to the HDUs, with f[1] represent
 
 The formal terminology of the FITS standard can be consulted using [`terminology`](@ref): 
 ```
-julia> terminology("FITS")
-FITS:
-Flexible Image Transport System.
-
 julia> terminology("primary hdu")
 Primary HDU:
 The first HDU in a FITS file.

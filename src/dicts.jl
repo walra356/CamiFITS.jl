@@ -106,7 +106,6 @@ Physical value, Pixel, Primary HDU, Primary data array, Primary header,
 Random Group, Record, Repeat count, Reserved keyword, SIF, Special records, 
 Standard extension.
 ```
-
 julia> terminology()
 FITS defined terms:
 ANSI, ASCII, ASCII NULL, ASCII character, ..., SIF, Special records, Standard extension.
