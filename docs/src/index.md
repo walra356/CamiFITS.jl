@@ -38,7 +38,7 @@ we asign the collection of [`FITS_HDU`](@ref) objects from `filnam` to the varia
 
 The elements of `f`, f[1], f[2], ... correspond to the HDUs, with f[1] representing the *PRIMARY* HDU. 
 
-The formal terminology of the FITS standard can be consulted using [terminology](@ref): 
+The formal terminology of the FITS standard can be consulted using [`terminology`](@ref): 
 ```
 julia> terminology("FITS")
 FITS:
