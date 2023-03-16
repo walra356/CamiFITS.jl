@@ -18,7 +18,7 @@ using Test
     @test fits_rename_key()
     @test terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."
     @test terminology("s"; test=true)
-    @test terminology(; test=true)
+    @test terminology(; test=true) 
     @test isvalid_FITS_name(; msg=false) == false
     @test isvalid_FITS_name("example"; msg=false) == false
     @test isvalid_FITS_name(".fits"; msg=false) == false
