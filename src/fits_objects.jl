@@ -117,6 +117,11 @@ function isvalid_FITS_name(; msg=true)
 
 end
 
+# ------------------------------------------------------------------------------
+#                            cast_FITS_name(filnam)
+# ------------------------------------------------------------------------------
+
+# ..............................................................................
 """
     cast_FITS_name(str::String)
 
@@ -151,43 +156,6 @@ function cast_FITS_name(filnam::String)
             n -= 1
         end
         strPre = filnam[1:n]
-    else
-        strPre = strNam
-        strNum = " "
-    end
-
-    return FITS_name(strNam, strPre, strNum, strExt)
-
-end
-function cast_FITS_name1(str::String)
-
-    Base.length(Base.strip(str)) == 0 && error("FitsError: filnam required")
-
-    ne = Base.findlast('.', str)                                     # ne: first digit of extension
-    nl = Base.length(str)                                           # ne: length of file name including extension
-
-    hasextension = isnothing(ne) ? false : true
-
-    if hasextension
-        strNam = str[1:ne-1]
-        strExt = Base.rstrip(str[ne:nl])
-        strExt = Base.Unicode.lowercase(strExt)
-        isfits = strExt == ".fits" ? true : false
-        n = Base.Unicode.isdigit(str[ne-1]) ? ne - 1 : nothing        # n: last digit of numerator (if existent)
-    else
-        isfits = false
-        n = Base.Unicode.isdigit(str[nl]) ? nl : nothing            # n: last digit of numerator (if existent)
-    end
-
-    isfits || error("FitsError: '$(str)': incorrect filnam (lacks mandatory '.fits' extension)")
-
-    if !isnothing(n)
-        strNum = ""
-        while Base.Unicode.isdigit(str[n])
-            strNum = str[n] * strNum
-            n -= 1
-        end
-        strPre = str[1:n]
     else
         strPre = strNam
         strNum = " "
