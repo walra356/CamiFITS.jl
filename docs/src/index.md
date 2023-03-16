@@ -4,7 +4,7 @@ FITS stands for *Flexible Image Transport System*. This is an open standard orig
 
 CamiFITS offers the *basic FITS functionality* for scientific users not requiring celestal coordinates. Optional *Conforming Extentions* are under development. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-03-13:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
+*Disclaimer 2023-03-16:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
 
 # Table of contents
 
@@ -30,7 +30,7 @@ We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .f
 Let "example.fits" be an *existing* FITS file. By the commands 
 
 ```
-julia> filnam = "example.fits"
+julia> 
 
 julia> f = fits_read(filnam)
 ```
@@ -149,6 +149,8 @@ FITS_header
 FITS_data
 FITS_table
 FITS_name
+isvalid_FITS_name(filnam::String; msg=true)
+cast_FITS_name(filename::String)
 ```
 
 ### FITS - HDU Methods
@@ -161,7 +163,6 @@ parse_FITS_TABLE(hdu::FITS_HDU)
 #### FITS - File Methods
 
 ```@docs
-cast_FITS_name(filename::String)
 fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 fits_copy(filenameA::String, filenameB::String=" "; protect=true)
 fits_create(filename::String, data=[]; protect=true)

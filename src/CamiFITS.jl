@@ -5,6 +5,7 @@ import Printf
 import Dates           # used in fits_private_sector
 
 export dictDefinedTerms
+export dictErrors
 export terminology
 
 export FITS_HDU
@@ -13,6 +14,7 @@ export FITS_data
 export FITS_table
 export parse_FITS_TABLE
 export FITS_name
+export isvalid_FITS_name
 export cast_FITS_name
 
 export fits_create

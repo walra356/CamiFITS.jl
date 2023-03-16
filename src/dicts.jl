@@ -1,7 +1,14 @@
 # SPDX-License-Identifier: MIT
 
 # ========================== dictDefinedTerms ===========================
+dictErrors = Dict(
 
+    0 => nothing,
+    1 => "filename required",
+    2 => "filename lacks mandatory '.fits' extension",
+    3 => "filename lacks mandatory 'name'"
+
+    )
 
 dictDefinedTerms = Dict("ANSI" => "American National Standards Institute.",
     "Array" => "A sequence of data values. \nThis sequence corresponds to the elements in a rectilinear, n-dimensional matrix (1 ≤ n ≤ 999, or n = 0 in the case of a null array).",

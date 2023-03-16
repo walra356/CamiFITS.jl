@@ -1,4 +1,11 @@
-# ...................................................... FITS_HDU Objects .........................................................
+# SPDX-License-Identifier: MIT
+
+# ------------------------------------------------------------------------------
+#                          fits_objects.jl
+#                      Jook Walraven 15-03-2023
+# ------------------------------------------------------------------------------
+
+# ========================== FITS_HDU Objects ==================================
 
 """
     FITS_HDU{T,V}
@@ -22,9 +29,40 @@ struct FITS_HDU{T,V}
 
 end
 
-# ........................................... FITS_name Object..........................................................
+# ------------------------------------------------------------------------------
+#                            FITS_name
+# ------------------------------------------------------------------------------
 
-"""
+# ..............................................................................
+function _err_FITS_name(filnam::String)
+
+    nl = Base.length(filnam)      # nl: length of file name including extension
+    ne = Base.findlast('.', filnam)              # ne: first digit of extension
+
+    if nl == 0
+        err = 1 # filename required
+    else
+        if Base.isnothing(ne)
+            err = 2  # filnam lacks mandatory '.fits' extension
+        elseif ne == 1
+            err = 3  # filnam lacks mandatory filename
+        else
+            strExt = Base.rstrip(filnam[ne:nl])
+            strExt = Base.Unicode.lowercase(strExt)
+            if strExt == ".fits"
+                err = 0  # no error
+            else
+                err = 2  # filnam lacks mandatory '.fits' extension
+            end
+        end
+    end
+
+    return err
+
+end
+
+# ..............................................................................
+@doc raw"""
     FITS_name
 
 FITS object to hold the decomposed name of a .fits file.
@@ -41,6 +79,117 @@ struct FITS_name
     prefix::String
     numerator::String
     extension::String
+
+end
+
+# ------------------------------------------------------------------------------
+#                            isvalid_FITS_name(filnam)
+# ------------------------------------------------------------------------------
+
+# ..............................................................................
+@doc raw"""
+    isvalid_FITS_name(filnam::String; msg=true)
+
+Decompose the FITS filename 'filnam.fits' into its name, prefix, numerator and extension.
+#### Examples:
+```
+julia> isvalid_FITS_name("example.fits")
+true
+```
+"""
+function isvalid_FITS_name(filnam::String; msg=true)
+
+    err = _err_FITS_name(filnam)
+    str = get(dictErrors, err, nothing)
+
+    msg && !isnothing(str) && println("Error: " * str)
+
+    return err > 0 ? false : true
+
+end
+function isvalid_FITS_name(; msg=true)
+
+    return isvalid_FITS_name(""; msg)
+
+end
+
+"""
+    cast_FITS_name(str::String)
+
+Decompose the FITS filename 'filnam.fits' into its name, prefix, numerator and extension.
+#### Examples:
+```
+strExample = "T23.01.fits"
+f = cast_FITS_name(strExample)
+FITS_name("T23.01", "T23.", "01", ".fits")
+
+f.name, f.prefix, f.numerator, f.extension
+("T23.01", "T23.", "01", ".fits")
+```
+"""
+function cast_FITS_name(filnam::String)
+
+    isvalid_FITS_name(filnam; msg=false) || error("Error: '$(filnam)' not a valid FITS_name")
+
+    nl = Base.length(filnam)      # nl: length of file name including extension
+    ne = Base.findlast('.', filnam)              # ne: first digit of extension
+
+    strNam = filnam[1:ne-1]
+    strExt = Base.rstrip(filnam[ne:nl])
+    strExt = Base.Unicode.lowercase(strExt)
+
+    n = ne - 1                         # n: last digit of numerator (if existent)
+
+    if !isnothing(n)
+        strNum = ""
+        while Base.Unicode.isdigit(filnam[n])
+            strNum = filnam[n] * strNum
+            n -= 1
+        end
+        strPre = filnam[1:n]
+    else
+        strPre = strNam
+        strNum = " "
+    end
+
+    return FITS_name(strNam, strPre, strNum, strExt)
+
+end
+function cast_FITS_name1(str::String)
+
+    Base.length(Base.strip(str)) == 0 && error("FitsError: filename required")
+
+    ne = Base.findlast('.', str)                                     # ne: first digit of extension
+    nl = Base.length(str)                                           # ne: length of file name including extension
+
+    hasextension = isnothing(ne) ? false : true
+
+    if hasextension
+        strNam = str[1:ne-1]
+        strExt = Base.rstrip(str[ne:nl])
+        strExt = Base.Unicode.lowercase(strExt)
+        isfits = strExt == ".fits" ? true : false
+        n = Base.Unicode.isdigit(str[ne-1]) ? ne - 1 : nothing        # n: last digit of numerator (if existent)
+    else
+        isfits = false
+        n = Base.Unicode.isdigit(str[nl]) ? nl : nothing            # n: last digit of numerator (if existent)
+    end
+
+    isfits || error("FitsError: '$(str)': incorrect filename (lacks mandatory '.fits' extension)")
+
+    if !isnothing(n)
+        strNum = ""
+        while Base.Unicode.isdigit(str[n])
+            strNum = str[n] * strNum
+            n -= 1
+        end
+        strPre = str[1:n]
+    else
+        strPre = strNam
+        strNum = " "
+    end
+
+    return FITS_name(strNam, strPre, strNum, strExt)
 
 end
 

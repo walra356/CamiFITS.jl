@@ -4,60 +4,6 @@
 
 using Dates
 
-# ........................................... cast filename into a FITSname object .................................
-
-"""
-    cast_FITS_name(str::String)
-
-Decompose the FITS filename 'filnam.fits' into its name, prefix, numerator and extension.
-#### Examples:
-```
-strExample = "T23.01.fits"
-f = cast_FITS_name(strExample)
-FITS_name("T23.01", "T23.", "01", ".fits")
-
-f.name, f.prefix, f.numerator, f.extension
-("T23.01", "T23.", "01", ".fits")
-```
-"""
-function cast_FITS_name(str::String)
-
-    Base.length(Base.strip(str)) == 0 && error("FitsError: filename required")
-
-    ne = Base.findlast('.',str)                                     # ne: first digit of extension
-    nl = Base.length(str)                                           # ne: length of file name including extension
-
-    hasextension = isnothing(ne) ? false : true
-
-    if hasextension
-        strNam = str[1:ne-1]
-        strExt = Base.rstrip(str[ne:nl])
-        strExt = Base.Unicode.lowercase(strExt)
-        isfits = strExt == ".fits" ? true : false
-        n = Base.Unicode.isdigit(str[ne-1]) ? ne-1 : nothing        # n: last digit of numerator (if existent)
-    else
-        isfits = false
-        n = Base.Unicode.isdigit(str[nl]) ? nl : nothing            # n: last digit of numerator (if existent)
-    end
-
-    isfits || error("FitsError: '$(str)': incorrect filename (lacks mandatory '.fits' extension)")
-
-    if !isnothing(n)
-        strNum = ""
-        while Base.Unicode.isdigit(str[n])
-            strNum = str[n] * strNum
-            n -= 1
-        end
-        strPre = str[1:n]
-    else
-        strPre = strNam
-        strNum = " "
-    end
-
-    return FITS_name(strNam,strPre,strNum,strExt)
-
-end
-
 # ........................................... cast records into a FITS_header object .................................
 
 function _cast_header(records::Array{String,1}, hduindex::Int)
