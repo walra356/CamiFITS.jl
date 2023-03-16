@@ -156,7 +156,6 @@ FITS_name
 
 ```@docs
 isvalid_FITS_name(filnam::String; msg=true)
-cast_FITS_name(filnam::String)
 ```
 #### Type casing
 
