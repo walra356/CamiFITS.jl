@@ -141,9 +141,9 @@ is given by the matrix indices.
 terminology(term::String; test=false)
 ```
 
-### FITS types
+### FITS 
 
-#### Objects
+#### Types
 
 ```@docs
 FITS_HDU{T,V}
