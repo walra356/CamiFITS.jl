@@ -157,7 +157,7 @@ FITS_name
 ```@docs
 isvalid_FITS_name(filnam::String; msg=true)
 ```
-#### Type casing
+#### Type casting
 
 ```@docs
 cast_FITS_name(filnam::String)
