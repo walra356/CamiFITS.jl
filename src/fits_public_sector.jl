@@ -7,9 +7,9 @@
 # .................................................... fits_copy ...................................................
 
 """
-    fits_copy(filenameA [, filenameB="" [; protect=true]])
+    fits_copy(filnamA [, filnamB="" [; protect=true]])
 
-Copy "filenameA" to "filenameB" (with mandatory ".fits" extension)
+Copy "filnamA" to "filnamB" (with mandatory ".fits" extension)
 Key:
 * `protect::Bool`: overwrite protection
 #### Examples:
@@ -24,18 +24,18 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
   'T01.fits' was saved as 'T01a.fits'
 ```
 """
-function fits_copy(filenameA::String, filenameB::String=" "; protect=true)
+function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
 
-    o = _fits_read_IO(filenameA)
-    f = cast_FITS_name(filenameA)
+    o = _fits_read_IO(filnamA)
+    f = cast_FITS_name(filnamA)
 
-    filenameB = filenameB == " " ? "$(f.name) - Copy.fits" : filenameB
+    filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
 
-    _validate_FITS_name(filenameB)
-    _isavailable(filenameB, protect) || error("FitsError: '$filenameB' in use (set ';protect=false' to lift overwrite protection)")
-    _fits_write_IO(o, filenameB)
+    _validate_FITS_name(filnamB)
+    _isavailable(filnamB, protect) || error("FitsError: '$filnamB' in use (set ';protect=false' to lift overwrite protection)")
+    _fits_write_IO(o, filnamB)
 
-    return println("'$filenameA' was saved as '$filenameB'")
+    return println("'$filnamA' was saved as '$filnamB'")
 
 end
 
@@ -44,7 +44,7 @@ end
 """
     fits_combine(strFirst, strLast [; protect=true])
 
-Copy "filenameFirst" to "filenameLast" (with mandatory ".fits" extension)
+Copy "filnamFirst" to "filnamLast" (with mandatory ".fits" extension)
 
 Key:
 * `protect::Bool`: overwrite protection
@@ -117,9 +117,9 @@ end
 # .................................................... fits_create ...................................................
 
 """
-    fits_create(filename [, data [; protect=true]])
+    fits_create(filnam [, data [; protect=true]])
 
-Create FITS file of given filename [, optional data block [, default overwrite
+Create FITS file of given filnam [, optional data block [, default overwrite
 protection]] and return Array of HDUs.
 Key:
 * `protect::Bool`: overwrite protection
@@ -171,7 +171,7 @@ fits_info(f[1])
 """
 function fits_create(filnam::String, data=[]; protect=true)
 
-    strErr = "FitsError: '$(filnam)': creation failed (filename in use - set '; protect=false' to overrule overwrite protection)"
+    strErr = "FitsError: '$(filnam)': creation failed (filnam in use - set '; protect=false' to overrule overwrite protection)"
 
     #_validate_FITS_name(filnam)
 
@@ -258,7 +258,7 @@ function fits_info(hdu::FITS_HDU)
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
     info = [
-        "\r\nFile: " * hdu.filename,
+        "\r\nFile: " * hdu.filnam,
         "hdu: " * Base.string(hdu.hduindex),
         "hdutype: " * hdu.dataobject.hdutype,
         "DataType: " * Base.string(Base.eltype(hdu.dataobject.data)),
@@ -278,7 +278,7 @@ end
 
 # .................................................... fits_read ...................................................
 """
-    fits_read(filename)
+    fits_read(filnam)
 
 Read FITS file and return Array of `FITS_HDU`s
 #### Example:
@@ -293,16 +293,16 @@ f[1].dataobject.data
 rm(strExample); f = nothing
 ```
 """
-function fits_read(filename::String)
+function fits_read(filnam::String)
 
-    o = _fits_read_IO(filename)
+    o = _fits_read_IO(filnam)
 
     nhdu = _hdu_count(o)
 
     FITS_headers = [_read_header(o, i) for i = 1:nhdu]
     FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-    FITS = [FITS_HDU(filename, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return FITS
 
@@ -329,9 +329,9 @@ end
 
 # .................................................... fits_extend ...................................................
 """
-    fits_extend(filename, data_extend, hdutype="IMAGE")
+    fits_extend(filnam, data_extend, hdutype="IMAGE")
 
-Extend the FITS file of given filename with the data of `hdutype` from `data_extend`  and return Array of HDUs.
+Extend the FITS file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
 ```
 strExample = "test_example.fits"
@@ -359,13 +359,13 @@ f[2].dataobject.data
 rm(strExample); f = data = a = b = c = d = e = nothing
 ```
 """
-function fits_extend(filename::String, data_extend, hdutype="IMAGE")
+function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 
     hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
     hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
     hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("FitsError: unknown HDU type")
 
-    o = _fits_read_IO(filename)
+    o = _fits_read_IO(filnam)
 
     nhdu = _hdu_count(o)
 
@@ -377,7 +377,7 @@ function fits_extend(filename::String, data_extend, hdutype="IMAGE")
     Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
     Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
 
-    FITS = [FITS_HDU(filename, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     _fits_save(FITS)
 
@@ -418,9 +418,9 @@ end
 # .................................................... fits_add_key ...................................................
 
 """
-    fits_add_key(filename, hduindex, key, value, comment)
+    fits_add_key(filnam, hduindex, key, value, comment)
 
-Add a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filename'
+Add a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
 #### Example:
 ```
 strExample="minimal.fits"
@@ -447,9 +447,9 @@ fits_info(f[1])
   Any[]
 ```
 """
-function fits_add_key(filename::String, hduindex::Int, key::String, val::Any, com::String)
+function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-    o = _fits_read_IO(filename)
+    o = _fits_read_IO(filnam)
 
     nhdu = _hdu_count(o)
 
@@ -469,7 +469,7 @@ function fits_add_key(filename::String, hduindex::Int, key::String, val::Any, co
 
     FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filename, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return _fits_save(FITS)
 
@@ -494,9 +494,9 @@ function fits_add_key()
 end
 
 """
-    fits_edit_key(filename, hduindex, key, value, comment)
+    fits_edit_key(filnam, hduindex, key, value, comment)
 
-Edit a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filename'
+Edit a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
 #### Example:
 ```
 data = DateTime("2020-01-01T00:00:00.000")
@@ -525,9 +525,9 @@ fits_info(f[1])
   Any[]
 ```
 """
-function fits_edit_key(filename::String, hduindex::Int, key::String, val::Any, com::String)
+function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-    o = _fits_read_IO(filename)
+    o = _fits_read_IO(filnam)
 
     nhdu = _hdu_count(o)
 
@@ -552,7 +552,7 @@ function fits_edit_key(filename::String, hduindex::Int, key::String, val::Any, c
 
     FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filename, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return _fits_save(FITS)
 
@@ -578,9 +578,9 @@ function fits_edit_key()
 end
 
 """
-    fits_delete_key(filename, hduindex, key)
+    fits_delete_key(filnam, hduindex, key)
 
-Delete a header record of given `key`, `value` and `comment` to `FITS_HDU[hduindex]` of file with name  'filename'
+Delete a header record of given `key`, `value` and `comment` to `FITS_HDU[hduindex]` of file with name  'filnam'
 #### Examples:
 ```
 strExample="minimal.fits"
@@ -601,9 +601,9 @@ fits_delete_key(filnam, 1, "NAXIS")
  'NAXIS': cannot be deleted (key protected under FITS standard)
 ```
 """
-function fits_delete_key(filename::String, hduindex::Int, key::String)
+function fits_delete_key(filnam::String, hduindex::Int, key::String)
 
-    o = _fits_read_IO(filename)
+    o = _fits_read_IO(filnam)
 
     nhdu = _hdu_count(o)
 
@@ -626,7 +626,7 @@ function fits_delete_key(filename::String, hduindex::Int, key::String)
 
     FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filename, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return _fits_save(FITS)
 
@@ -661,9 +661,9 @@ function fits_delete_key()
 end
 
 """
-    fits_rename_key(filename, hduindex, keyold, kewnew)
+    fits_rename_key(filnam, hduindex, keyold, kewnew)
 
-Rename the key of a header record of file with name 'filename'
+Rename the key of a header record of file with name 'filnam'
 #### Example:
 ```
 strExample="minimal.fits"
@@ -691,9 +691,9 @@ fits_info(f[1])
   Any[]
 ```
 """
-function fits_rename_key(filename::String, hduindex::Int, keyold::String, keynew::String)
+function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 
-    o = _fits_read_IO(filename)
+    o = _fits_read_IO(filnam)
 
     nhdu = _hdu_count(o)
 
@@ -713,7 +713,7 @@ function fits_rename_key(filename::String, hduindex::Int, keyold::String, keynew
 
     FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filename, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return _fits_save(FITS)
 

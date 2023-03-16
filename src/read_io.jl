@@ -1,14 +1,14 @@
 # .................................. read-io (header sector) .......................................................
 
-function _fits_read_IO(filename::String)
+function _fits_read_IO(filnam::String)
 
-    Base.Filesystem.isfile(filename) || error("Error: $filename: file not found in current directory")
+    Base.Filesystem.isfile(filnam) || error("Error: $filnam: file not found in current directory")
 
-    a = _validate_FITS_name(filename)
+    a = _validate_FITS_name(filnam)
 
     o = IOBuffer()
 
-    nbytes = Base.write(o,Base.read(filename))            # number of bytes
+    nbytes = Base.write(o,Base.read(filnam))            # number of bytes
     nblock = nbytes ÷ 2880                                # number of blocks (2880 bytes/block)
     remain = nbytes % 2880                                # remainder (incomplete block)
 

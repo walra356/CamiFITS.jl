@@ -243,9 +243,9 @@ function _hdu_count(o::IO)
 
 end
 
-function _isavailable(filename::String, protect::Bool)
+function _isavailable(filnam::String, protect::Bool)
 
-     return (!Base.Filesystem.isfile(filename) | !protect)
+     return (!Base.Filesystem.isfile(filnam) | !protect)
 
 end
 
@@ -257,8 +257,8 @@ function _rm_blanks(records::Array{String,1})               # remove blank recor
 
 end
 
-function _validate_FITS_name(filename::String)
+function _validate_FITS_name(filnam::String)
 
-    return cast_FITS_name(filename)
+    return cast_FITS_name(filnam)
 
 end

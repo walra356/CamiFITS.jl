@@ -73,13 +73,13 @@ END
 
 Any[]
 
-julia> rm(filename); f = nothing
+julia> rm(filnam); f = nothing
 ```
 
 ### The FITS file for a single matrix
 We first create the data field in the form of a 3x3 matrix:
 ```
-julia> filename = "matrix.fits";
+julia> filnam = "matrix.fits";
 
 julia> data = [11,21,31,12,22,23,13,23,33];
 
@@ -92,9 +92,9 @@ julia> data = reshape(data,(3,3,1))
 ```
 We next create and inspact the FITS file for the matrix `data`
 ```
-julia> fits_create(filename, data; protect=false)
+julia> fits_create(filnam, data; protect=false)
 
-julia> f = fits_read(filename);
+julia> f = fits_read(filnam);
 
 julia> fits_info(f[1])
 
@@ -123,7 +123,7 @@ END
  21  22  23
  31  23  33
 
-julia> rm(filename); f = nothing
+julia> rm(filnam); f = nothing
 ```
 The keywords `NAXIS1`, `NAXIS2` and `NAXIS3` represent the dimensions 
 of the data matrix in ``x``, ``y`` and ``z`` direction. 
@@ -141,7 +141,9 @@ is given by the matrix indices.
 terminology(term::String; test=false)
 ```
 
-### FITS - Types
+### FITS types
+
+#### Objects
 
 ```@docs
 FITS_HDU{T,V}
@@ -149,8 +151,17 @@ FITS_header
 FITS_data
 FITS_table
 FITS_name
+```
+#### Type tests
+
+```@docs
 isvalid_FITS_name(filnam::String; msg=true)
-cast_FITS_name(filename::String)
+cast_FITS_name(filnam::String)
+```
+#### Type casing
+
+```@docs
+cast_FITS_name(filnam::String)
 ```
 
 ### FITS - HDU Methods
@@ -164,19 +175,19 @@ parse_FITS_TABLE(hdu::FITS_HDU)
 
 ```@docs
 fits_combine(filnamFirst::String, filnamLast::String; protect=true)
-fits_copy(filenameA::String, filenameB::String=" "; protect=true)
-fits_create(filename::String, data=[]; protect=true)
-fits_extend(filename::String, data_extend, hdutype="IMAGE")
-fits_read(filename::String)
+fits_copy(filnamA::String, filnamB::String=" "; protect=true)
+fits_create(filnam::String, data=[]; protect=true)
+fits_extend(filnam::String, data_extend, hdutype="IMAGE")
+fits_read(filnam::String)
 ```
 
 ### FITS - Key Methods
 
 ```@docs
-fits_add_key(filename::String, hduindex::Int, key::String, val::Real, com::String)
-fits_delete_key(filename::String, hduindex::Int, key::String)
-fits_edit_key(filename::String, hduindex::Int, key::String, val::Real, com::String)
-fits_rename_key(filename::String, hduindex::Int, keyold::String, keynew::String)
+fits_add_key(filnam::String, hduindex::Int, key::String, val::Real, com::String)
+fits_delete_key(filnam::String, hduindex::Int, key::String)
+fits_edit_key(filnam::String, hduindex::Int, key::String, val::Real, com::String)
+fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 ```
 
 ## FORTRAN

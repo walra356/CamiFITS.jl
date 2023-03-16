@@ -13,7 +13,7 @@
 Object to hold a single "Header and Data Unit" (HDU).
 
 The fields are
-* `.filename`:  name of the corresponding FITS file (`::String`)
+* `.filnam`:  name of the corresponding FITS file (`::String`)
 * `.hduindex:`:  identifier (a file may contain more than one HDU) (`:Int`)
 * `.header`:  the header object where T=FITS_header (`::T`)
 * `.dataobject`:  the data object where V=FITS_data (`::V`)
@@ -22,7 +22,7 @@ NB. An empty data block (`.dataobject = nothing`) conforms to the standard.
 """
 struct FITS_HDU{T,V}
 
-    filename::String
+    filnam::String
     hduindex::Int
     header::T        #FITS_header
     dataobject::V    #FITS_data
@@ -40,12 +40,12 @@ function _err_FITS_name(filnam::String)
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
 
     if nl == 0
-        err = 1 # filename required
+        err = 1 # filnam required
     else
         if Base.isnothing(ne)
             err = 2  # filnam lacks mandatory '.fits' extension
         elseif ne == 1
-            err = 3  # filnam lacks mandatory filename
+            err = 3  # filnam lacks mandatory filnam
         else
             strExt = Base.rstrip(filnam[ne:nl])
             strExt = Base.Unicode.lowercase(strExt)
@@ -88,13 +88,17 @@ end
 
 # ..............................................................................
 @doc raw"""
-    isvalid_FITS_name(filnam::String; msg=true)
+    isvalid_FITS_name(filnam::String; msg=true)::Bool
 
-Decompose the FITS filename 'filnam.fits' into its name, prefix, numerator and extension.
+Validity test of fits filnam.
 #### Examples:
 ```
 julia> isvalid_FITS_name("example.fits")
 true
+
+julia> isvalid_FITS_name("example")
+Error: filnam lacks mandatory '.fits' extension
+false
 ```
 """
 function isvalid_FITS_name(filnam::String; msg=true)
@@ -116,7 +120,7 @@ end
 """
     cast_FITS_name(str::String)
 
-Decompose the FITS filename 'filnam.fits' into its name, prefix, numerator and extension.
+Decompose the FITS filnam 'filnam.fits' into its name, prefix, numerator and extension.
 #### Examples:
 ```
 strExample = "T23.01.fits"
@@ -157,7 +161,7 @@ function cast_FITS_name(filnam::String)
 end
 function cast_FITS_name1(str::String)
 
-    Base.length(Base.strip(str)) == 0 && error("FitsError: filename required")
+    Base.length(Base.strip(str)) == 0 && error("FitsError: filnam required")
 
     ne = Base.findlast('.', str)                                     # ne: first digit of extension
     nl = Base.length(str)                                           # ne: length of file name including extension
@@ -175,7 +179,7 @@ function cast_FITS_name1(str::String)
         n = Base.Unicode.isdigit(str[nl]) ? nl : nothing            # n: last digit of numerator (if existent)
     end
 
-    isfits || error("FitsError: '$(str)': incorrect filename (lacks mandatory '.fits' extension)")
+    isfits || error("FitsError: '$(str)': incorrect filnam (lacks mandatory '.fits' extension)")
 
     if !isnothing(n)
         strNum = ""

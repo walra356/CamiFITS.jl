@@ -2,7 +2,7 @@
 """
     decompose_filnam(str)
 
-Decompose filename into its name (and, if present, extension, prefix and numerator).
+Decompose filnam into its name (and, if present, extension, prefix and numerator).
 #### Examples:
 ```
 strExample = "T23.01.fits"

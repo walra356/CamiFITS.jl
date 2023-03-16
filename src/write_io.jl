@@ -11,13 +11,13 @@ function _fits_save(FITS)
         b.size > 0 && Base.write(o,Array{UInt8,1}(b.data))
     end
         
-    return _fits_write_IO(o, FITS[1].filename)                    # same filename in all HDUs                
+    return _fits_write_IO(o, FITS[1].filnam)                    # same filnam in all HDUs                
     
 end
 
-function _fits_write_IO(o::IO, filename::String)
+function _fits_write_IO(o::IO, filnam::String)
       
-    s = Base.open(filename,"w")   
+    s = Base.open(filnam,"w")   
         Base.write(s,o.data)    
         Base.close(s)
 
