@@ -2,9 +2,11 @@
 
 function _fits_read_IO(filnam::String)
 
-    Base.Filesystem.isfile(filnam) || error("Error: $(filnam): file not found in current directory")
+    #Base.Filesystem.isfile(filnam) || error("Error: $(filnam): file not found in current directory")
 
-    CamiFITS.isvalid_FITS_name(filnam) || error()
+    # err = CamiFITS.Error_FITS_name(filnam)
+    # str = get(dictErrors, err, nothing)
+    # err > 0 && error("Error $(err): " * str)
 
     o = IOBuffer()
 

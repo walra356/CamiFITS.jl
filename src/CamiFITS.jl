@@ -9,6 +9,18 @@ export dictErrors
 export terminology
 export _isavailable
 
+export err_FITS_name
+export test_err_FITS_name
+
+export test_fits_create
+export test_fits_extend
+export test_fits_read
+
+export test_fits_add_key
+export test_fits_edit_key
+export test_fits_delete_key
+export test_fits_rename_key
+
 export FITS_HDU
 export FITS_header
 export FITS_data
@@ -19,6 +31,7 @@ export isvalid_FITS_name
 export cast_FITS_name
 
 export fits_create
+export fits_create_test
 export fits_read
 export fits_extend
 export fits_info
@@ -57,5 +70,6 @@ include("plot_private_sector.jl")
 include("plot_public_sector.jl")
 include("Header-and-Data-Input.jl")
 include("FORTRAN.jl")
+include("fits_tests.jl")
 
 end

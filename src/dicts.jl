@@ -4,9 +4,10 @@
 dictErrors = Dict(
 
     0 => nothing,
-    1 => "filiname required",
-    2 => "filename lacks mandatory '.fits' extension",
-    3 => "filename lacks 'name'"
+    1 => "file not found\n",
+    2 => "filename lacks mandatory '.fits' extension\n",
+    3 => "filename lacks 'name'\n",
+    4 => "creation failed (filnam in use - set '; protect=false' to overrule overwrite protection)"
 
     )
 

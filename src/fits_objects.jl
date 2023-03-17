@@ -34,34 +34,6 @@ end
 # ------------------------------------------------------------------------------
 
 # ..............................................................................
-function _err_FITS_name(filnam::String)
-
-    nl = Base.length(filnam)      # nl: length of file name including extension
-    ne = Base.findlast('.', filnam)              # ne: first digit of extension
-
-    if nl == 0
-        err = 1 # filnam required
-    else
-        if Base.isnothing(ne)
-            err = 2  # filnam lacks mandatory '.fits' extension
-        elseif ne == 1
-            err = 3  # filnam lacks mandatory filnam
-        else
-            strExt = Base.rstrip(filnam[ne:nl])
-            strExt = Base.Unicode.lowercase(strExt)
-            if strExt == ".fits"
-                err = 0  # no error
-            else
-                err = 2  # filnam lacks mandatory '.fits' extension
-            end
-        end
-    end
-
-    return err
-
-end
-
-# ..............................................................................
 @doc raw"""
     FITS_name
 
@@ -86,7 +58,37 @@ end
 #                            isvalid_FITS_name(filnam)
 # ------------------------------------------------------------------------------
 
-# ..............................................................................
+function err_FITS_name(filnam::String; protect=true)
+
+    nl = Base.length(filnam)      # nl: length of file name including extension
+    ne = Base.findlast('.', filnam)              # ne: first digit of extension
+
+    if !Base.Filesystem.isfile(filnam)
+        err = 1  # file not found
+    else
+        if Base.isnothing(ne)
+            err = 2  # filnam lacks mandatory '.fits' extension
+        elseif ne == 1
+            err = 3  # filnam lacks mandatory filnam
+        else
+            strExt = Base.rstrip(filnam[ne:nl])
+            strExt = Base.Unicode.lowercase(strExt)
+            if strExt ≠ ".fits"
+                err = 2  # filnam lacks mandatory '.fits' extension
+            else
+                if protect
+                    err = 4  # creation failed (filnam in use 
+                else  # set ';protect=false' to overrule overwrite protection)
+                    err = 0  # no error
+                end
+            end
+        end
+    end
+
+    return err
+
+end
+
 @doc raw"""
     isvalid_FITS_name(filnam::String; msg=true)::Bool
 
@@ -103,17 +105,12 @@ false
 """
 function isvalid_FITS_name(filnam::String; msg=true)
 
-    err = _err_FITS_name(filnam)
+    err = err_FITS_name(filnam)
     str = get(dictErrors, err, nothing)
 
-    msg && !isnothing(str) && println("Error: " * str)
+    msg && !isnothing(str) && error("Error $(err): " * str)
 
     return err > 0 ? false : true
-
-end
-function isvalid_FITS_name(; msg=true)
-
-    return isvalid_FITS_name(""; msg)
 
 end
 
@@ -138,7 +135,8 @@ f.name, f.prefix, f.numerator, f.extension
 """
 function cast_FITS_name(filnam::String)
 
-    isvalid_FITS_name(filnam; msg=false) || error("Error: '$(filnam)' not a valid FITS_name")
+    isvalid_FITS_name(filnam) || error("Error: '$(filnam)' not a valid FITS_name")
+    #isvalid_FITS_name(filnam; msg=false) || error("Error: '$(filnam)' not a valid FITS_name")
 
     nl = Base.length(filnam)      # nl: length of file name including extension
     ne = Base.findlast('.', filnam)              # ne: first digit of extension

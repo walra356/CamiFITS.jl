@@ -171,13 +171,17 @@ fits_info(f[1])
 """
 function fits_create(filnam::String, data=[]; protect=true)
 
-    strErr = "FitsError: '$(filnam)': creation failed (filnam in use - set '; protect=false' to overrule overwrite protection)"
+    #strErr = "FitsError: '$(filnam)': creation failed (filnam in use - set '; protect=false' to overrule overwrite protection)"
 
     #_validate_FITS_name(filnam)
 
-    isvalid_FITS_name(filnam) ? cast_FITS_name(filnam::String) : error("Error: '$(filnam)' not a valid FITS_name")
-    
-    _isavailable(filnam, protect) || error(strErr)
+    #isvalid_FITS_name(filnam) ? cast_FITS_name(filnam::String) : error("Error: '$(filnam)' not a valid FITS_name")
+
+    #_isavailable(filnam, protect) || error(strErr)
+
+    err = CamiFITS.err_FITS_name(filnam; protect)
+    str = get(dictErrors, err, nothing)
+    err > 1 && error("Error $(err): " * str)
 
     nhdu = 1
     hdutype = "PRIMARY"
@@ -188,25 +192,6 @@ function fits_create(filnam::String, data=[]; protect=true)
     FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return _fits_save(FITS)
-
-end
-# test ...
-function fits_create()
-
-    strExample = "minimal.fits"
-    fits_create(strExample; protect=false)
-
-    f = fits_read(strExample)
-    a = f[1].header.keys[1] == "SIMPLE"
-    b = f[1].dataobject.data == Any[]
-    c = get(Dict(f[1].header.dict), "SIMPLE", 0)
-    d = get(Dict(f[1].header.dict), "NAXIS", 0) == 0
-
-    rm(strExample)
-
-    o = isnothing(findfirst(.![a, b, c, d])) ? true : false
-
-    return o
 
 end
 
@@ -307,25 +292,6 @@ function fits_read(filnam::String)
     return FITS
 
 end
-# test ...
-function fits_read()
-
-    strExample = "minimal.fits"
-    fits_create(strExample; protect=false)
-
-    f = fits_read(strExample)
-    a = f[1].header.keys[1] == "SIMPLE"
-    b = f[1].dataobject.data == Any[]
-    c = get(Dict(f[1].header.dict), "SIMPLE", 0)
-    d = get(Dict(f[1].header.dict), "NAXIS", 0) == 0
-
-    rm(strExample)
-
-    o = isnothing(findfirst(.![a, b, c, d])) ? true : false
-
-    return o
-
-end
 
 # .................................................... fits_extend ...................................................
 """
@@ -384,37 +350,6 @@ function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
     return FITS
 
 end
-# test ...
-function fits_extend()
-
-    strExample = "test_example.fits"
-    data = [0x0000043e, 0x0000040c, 0x0000041f]
-    fits_create(strExample, data; protect=false)
-
-    f = fits_read(strExample)
-    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
-    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
-    c = [1.23, 2.12, 3.0, 4.0, 5.0]
-    d = ['a', 'b', 'c', 'd', 'e']
-    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data = [a, b, c, d, e]
-    fits_extend(strExample, data, "TABLE")
-
-    f = fits_read(strExample)
-    a = f[1].header.keys[1] == "SIMPLE"
-    b = f[1].dataobject.data[1] == 0x0000043e
-    c = f[2].header.keys[1] == "XTENSION"
-    d = f[2].dataobject.data[1] == "1.0e-6 1086 1.23 a a                    "
-    e = get(Dict(f[2].header.dict), "NAXIS", 0) == 2
-
-    rm(strExample)
-
-    o = isnothing(findfirst(.![a, b, c, d, e])) ? true : false
-
-    return o
-
-end
-
 # .................................................... fits_add_key ...................................................
 
 """
@@ -472,24 +407,6 @@ function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com:
     FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return _fits_save(FITS)
-
-end
-# test ...
-function fits_add_key()
-
-    strExample = "minimal.fits"
-    fits_create(strExample; protect=false)
-    fits_add_key(strExample, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-
-    f = fits_read(strExample)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-    r = f[1].header.records
-
-    test = r[i] == "KEYNEW1 =                    T / FITS dataset may contain extension             "
-
-    rm(strExample)
-
-    return test
 
 end
 
@@ -557,25 +474,6 @@ function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com
     return _fits_save(FITS)
 
 end
-# test ...
-function fits_edit_key()
-
-    strExample = "minimal.fits"
-    fits_create(strExample; protect=false)
-    fits_add_key(strExample, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-    fits_edit_key(strExample, 1, "KEYNEW1", false, "comment has changed")
-
-    f = fits_read(strExample)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-    r = f[1].header.records
-
-    test = r[i] == "KEYNEW1 =                    F / comment has changed                            "
-
-    rm(strExample)
-
-    return test
-
-end
 
 """
     fits_delete_key(filnam, hduindex, key)
@@ -629,34 +527,6 @@ function fits_delete_key(filnam::String, hduindex::Int, key::String)
     FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
     return _fits_save(FITS)
-
-end
-# test ...
-function fits_delete_key()
-
-    strExample = "minimal.fits"
-    fits_create(strExample; protect=false)
-    fits_add_key(strExample, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-
-    f = fits_read(strExample)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-
-    test1 = i == 5
-
-    fits_delete_key(strExample, 1, "KEYNEW1")
-
-    f = fits_read(strExample)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-
-    test2 = i == 0
-
-    test = .![test1, test2]
-
-    o = isnothing(findfirst(.![test1, test2])) ? true : false
-
-    rm(strExample)
-
-    return o
 
 end
 
@@ -718,36 +588,6 @@ function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::
     return _fits_save(FITS)
 
 end
-# test ...
-function fits_rename_key()
-
-    strExample = "minimal.fits"
-    fits_create(strExample; protect=false)
-    fits_add_key(strExample, 1, "KEYNEW1", true, "this is record 5")
-
-    f = fits_read(strExample)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-
-    test1 = i == 5
-
-    fits_rename_key(strExample, 1, "KEYNEW1", "KEYNEW2")
-
-    f = fits_read(strExample)
-    i = get(f[1].header.maps, "KEYNEW2", 0)
-
-    test2 = i == 5
-
-    test = .![test1, test2]
-
-    o = isnothing(findfirst(.![test1, test2])) ? true : false
-
-    rm(strExample)
-
-    return o
-
-end
-
-
 
 # ........... parse FITS_TABLE into a Vector of its columns ....................
 
