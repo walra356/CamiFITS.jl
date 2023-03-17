@@ -31,7 +31,7 @@ function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
 
     filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
 
-    CamiFits.isvalid_FITS_name(filnamB) || error()
+    CamiFITS.isvalid_FITS_name(filnamB) || error()
     _isavailable(filnamB, protect) || error("FitsError: '$filnamB' in use (set ';protect=false' to lift overwrite protection)")
     _fits_write_IO(o, filnamB)
 

@@ -2,13 +2,13 @@
 
 function _fits_read_IO(filnam::String)
 
-    Base.Filesystem.isfile(filnam) || error("Error: $filnam: file not found in current directory")
+    Base.Filesystem.isfile(filnam) || error("Error: $(filnam): file not found in current directory")
 
-    CamiFits.isvalid_FITS_name(filnam) || error()
+    CamiFITS.isvalid_FITS_name(filnam) || error()
 
     o = IOBuffer()
 
-    nbytes = Base.write(o,Base.read(filnam))              # number of bytes
+    nbytes = Base.write(o, Base.read(filnam))             # number of bytes
     nblock = nbytes ÷ 2880                                # number of blocks (2880 bytes/block)
     remain = nbytes % 2880                                # remainder (incomplete block)
 

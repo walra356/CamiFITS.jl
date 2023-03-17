@@ -7,6 +7,7 @@ import Dates           # used in fits_private_sector
 export dictDefinedTerms
 export dictErrors
 export terminology
+export _isavailable
 
 export FITS_HDU
 export FITS_header

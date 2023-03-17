@@ -4,9 +4,9 @@
 dictErrors = Dict(
 
     0 => nothing,
-    1 => "filnam required",
-    2 => "filnam lacks mandatory '.fits' extension",
-    3 => "filnam lacks mandatory 'name'"
+    1 => "filiname required",
+    2 => "filename lacks mandatory '.fits' extension",
+    3 => "filename lacks 'name'"
 
     )
 
