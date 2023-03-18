@@ -55,7 +55,7 @@ struct FITS_name
 end
 
 # ------------------------------------------------------------------------------
-#                            isvalid_FITS_name(filnam)
+#                  err_FITS_name(filnam::String; protect=true)
 # ------------------------------------------------------------------------------
 
 function err_FITS_name(filnam::String; protect=true)
@@ -63,12 +63,14 @@ function err_FITS_name(filnam::String; protect=true)
     nl = Base.length(filnam)      # nl: length of file name including extension
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
 
-    if !Base.Filesystem.isfile(filnam)
-        err = 1  # file not found
+    if Base.Filesystem.isfile(filnam) & protect
+        err = 4  # filname in use (set ';protect=false' to overrule overwrite protection)
     else
-        if Base.isnothing(ne)
+        if Base.iszero(nl)
+            err = 1  # file not found
+        elseif Base.isnothing(ne)
             err = 2  # filnam lacks mandatory '.fits' extension
-        elseif ne == 1
+        elseif Base.isone(ne)
             err = 3  # filnam lacks mandatory filnam
         else
             strExt = Base.rstrip(filnam[ne:nl])
@@ -76,11 +78,7 @@ function err_FITS_name(filnam::String; protect=true)
             if strExt ≠ ".fits"
                 err = 2  # filnam lacks mandatory '.fits' extension
             else
-                if protect
-                    err = 4  # creation failed (filnam in use 
-                else  # set ';protect=false' to overrule overwrite protection)
-                    err = 0  # no error
-                end
+                err = 0  # no error
             end
         end
     end

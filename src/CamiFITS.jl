@@ -10,7 +10,8 @@ export terminology
 export _isavailable
 
 export err_FITS_name
-export test_err_FITS_name
+export test_FITS_name
+export force_create
 
 export test_fits_create
 export test_fits_extend
