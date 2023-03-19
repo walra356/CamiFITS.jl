@@ -10,7 +10,7 @@ CamiFITS offers the *basic FITS functionality* for scientific users not requirin
 
 ```@contents
 ```
-# Installation
+# Install
 
 The package is installed using the Julia package manager
 
@@ -30,7 +30,7 @@ We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .f
 Let "example.fits" be an *existing* FITS file. By the commands 
 
 ```
-julia> 
+julia> filnam = "example.fits"
 
 julia> f = fits_read(filnam)
 ```
@@ -90,7 +90,7 @@ julia> data = reshape(data,(3,3,1))
  21  22  23
  31  23  33
 ```
-We next create and inspact the FITS file for the matrix `data`
+We next create and inspect the FITS file for the matrix `data`
 ```
 julia> fits_create(filnam, data; protect=false)
 

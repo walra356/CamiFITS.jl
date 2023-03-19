@@ -8,6 +8,7 @@ export dictDefinedTerms
 export dictErrors
 export terminology
 export _isavailable
+export FITSError
 
 export err_FITS_name
 export test_FITS_name

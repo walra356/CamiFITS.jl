@@ -1,4 +1,25 @@
+# SPDX-License-Identifier: MIT
 
+# ------------------------------------------------------------------------------
+#                            fits_test.jl
+#                        Jook Walraven 18-03-2023
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+#                         FITSError(err::Int)
+# 
+#   - print error from CamiFITS.dictErrors
+# ------------------------------------------------------------------------------
+
+function FITSError(err::Int)
+
+    str = Base.get!(CamiFITS.dictErrors, err, nothing)
+
+    str = isnothing(str) ? "unknown" : str
+
+    return "FITSError $(err): " * str
+
+end
 
 function force_create(filnam::String, data=[])
 

@@ -171,17 +171,10 @@ fits_info(f[1])
 """
 function fits_create(filnam::String, data=[]; protect=true)
 
-    #strErr = "FitsError: '$(filnam)': creation failed (filnam in use - set '; protect=false' to overrule overwrite protection)"
-
-    #_validate_FITS_name(filnam)
-
-    #isvalid_FITS_name(filnam) ? cast_FITS_name(filnam::String) : error("Error: '$(filnam)' not a valid FITS_name")
-
-    #_isavailable(filnam, protect) || error(strErr)
-
     err = CamiFITS.err_FITS_name(filnam; protect)
-    str = get(dictErrors, err, nothing)
-    err > 1 && error("Error $(err): " * str)
+#    str = Base.get!(CamiFITS.dictErrors, err, nothing)
+#    err > 1 && error("Error $(err): " * str)
+    err > 1 && throw(FITSError(err))
 
     nhdu = 1
     hdutype = "PRIMARY"
@@ -191,7 +184,9 @@ function fits_create(filnam::String, data=[]; protect=true)
 
     FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    return _fits_save(FITS)
+    _fits_save(FITS)
+
+    return FITS
 
 end
 
