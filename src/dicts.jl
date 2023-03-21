@@ -1,15 +1,48 @@
 # SPDX-License-Identifier: MIT
 
-# ========================== dictDefinedTerms ===========================
-dictErrors = Dict(
+# ------------------------------------------------------------------------------
+#                         FITSError <: Exception
+# ------------------------------------------------------------------------------
 
-    0 => nothing,
-    1 => "file not found\n",
-    2 => "filename lacks mandatory '.fits' extension\n",
-    3 => "filename lacks 'name'\n",
-    4 => "creation failed (filnam in use - set '; protect=false' to overrule overwrite protection)"
+struct FITSError <: Exception
+    msg::String
+end
 
-    )
+# ------------------------------------------------------------------------------
+#                 Base.showerror(io::IO, err::FITSError)
+# ------------------------------------------------------------------------------
+
+function Base.showerror(io::IO, err::FITSError)
+    print(io, err.msg)
+end
+
+# ------------------------------------------------------------------------------
+#                             strErr(err::Int)
+# ------------------------------------------------------------------------------
+
+function msgFITS(err::Int)
+
+    strA = "FITSError: $(err) - "
+    strB = Base.get!(dictErrors, err, nothing)
+    strC = isnothing(strB) ? "not defined" : strB
+
+    return strA * strC
+
+end
+
+# ------------------------------------------------------------------------------
+#                               dictErrors
+# ------------------------------------------------------------------------------
+
+dictErrors = Dict(0 => nothing,
+    1 => "file not found",
+    2 => "filename lacks mandatory '.fits' extension",
+    3 => "filename lacks 'name'",
+    4 => "filnam in use - set '; protect=false' to overrule overwrite protection")
+
+# ------------------------------------------------------------------------------
+#                           dictDefinedTerms
+# ------------------------------------------------------------------------------
 
 dictDefinedTerms = Dict("ANSI" => "American National Standards Institute.",
     "Array" => "A sequence of data values. \nThis sequence corresponds to the elements in a rectilinear, n-dimensional matrix (1 ≤ n ≤ 999, or n = 0 in the case of a null array).",

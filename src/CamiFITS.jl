@@ -4,15 +4,16 @@ import CamiMath
 import Printf
 import Dates           # used in fits_private_sector
 
-export dictDefinedTerms
+export FITSError
+export errFITS
 export dictErrors
+
+export dictDefinedTerms
 export terminology
 export _isavailable
-export FITSError
 
 export err_FITS_name
 export test_FITS_name
-export force_create
 
 export test_fits_create
 export test_fits_extend
@@ -32,6 +33,7 @@ export FITS_name
 export isvalid_FITS_name
 export cast_FITS_name
 
+#export force_create
 export fits_create
 export fits_create_test
 export fits_read

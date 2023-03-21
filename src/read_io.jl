@@ -78,7 +78,7 @@ function _read_data(o::IO, hduindex::Int)                   # read all data usin
     hdutype == "TABLE" && return _read_TABLE_data(o, hduindex)
     hdutype == "BINTABLE" && return _read_BINTABLE_data(o, hduindex)
 
-    return error("FitsError: '$hdutype': not a 'FITS standard extension'")
+    return error("strError: '$hdutype': not a 'FITS standard extension'")
 
 end
 
@@ -92,6 +92,7 @@ function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data us
 
     dicts = FITS_header.dict
     ndims = Base.get(dicts, "NAXIS", 0)
+    # println("ndims = $(ndims)") # ........................................................................................................................................................................
 
     if ndims > 0
         dims = Core.tuple([Base.get(dicts, "NAXIS$n", 0) for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
@@ -104,7 +105,7 @@ function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data us
         data = data .+ E(bzero)                            # offset from Int to UInt
         data = Base.reshape(data, dims)
     else
-        data = []
+        data = nothing
     end
 
     return FITS_data = _cast_data(hduindex, "PRIMARY", data)

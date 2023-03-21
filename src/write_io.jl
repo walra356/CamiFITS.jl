@@ -9,6 +9,7 @@ function _fits_save(FITS)
         Base.write(o, Array{UInt8,1}(a.data))
         b = _write_data(FITS[i])
         b.size > 0 && Base.write(o, Array{UInt8,1}(b.data))
+        # println("b.size = $(b.size)") # =================================================================================================================================================================
     end
         
     return _fits_write_IO(o, FITS[1].filnam)                    # same filnam in all HDUs                
@@ -52,34 +53,35 @@ function _write_data(FITS_HDU)
     hdutype == "TABLE"    && return _write_TABLE_data(FITS_HDU)  
     hdutype == "BINTABLE" && return _write_BINTABLE_data(FITS_HDU)  
     
-    return error("FitsError: '$hdutype': not a 'FITS standard extension'")
+    return error("strError: '$hdutype': not a 'FITS standard extension'")
         
 end
 
-function _write_IMAGE_data(FITS_HDU) 
-     
-    o = IOBuffer() 
-    
-    Base.seekstart(o)  
-        
+function _write_IMAGE_data(FITS_HDU)
+
+    o = IOBuffer()
+
+    Base.seekstart(o)
+
     data = FITS_HDU.dataobject.data
-    ndat = Base.length(data)
-        
-    ndat == 0 && return o
-      
-         E = Base.eltype(data)
-         E <: Real || error("FitsError: incorrect DataType (Real type mandatory for image HDUs)")
+    # ndat = Base.length(data)
+    ndat = !isnothing(data) ? Base.length(data) : 0
+    ndat ≠ 0 || return o
+
+    E = Base.eltype(data)
+    E <: Real || error("strError: incorrect DataType (Real type mandatory for image HDUs)")
+
     nbyte = sizeof(E)
     bzero = _fits_bzero(E)
-     data = Base.vec(data)
-     data = data .- E(bzero)                                           # change between Int and UInt (if applicable)
-     data = hton.(data)                                                # change from 'host' to 'network' ordering
+    data = Base.vec(data)
+    data = data .- E(bzero)                                           # change between Int and UInt (if applicable)
+    data = hton.(data)                                                # change from 'host' to 'network' ordering
 
-    [Base.write(o, data[i]) for i=1:ndat]                               # write data
-    [Base.write(o, E(0)) for i=1:((2880÷nbyte)-ndat % (2880÷nbyte))]  # complement with type E zero elements
-    
+    [Base.write(o, data[i]) for i = 1:ndat]                               # write data
+    [Base.write(o, E(0)) for i = 1:((2880÷nbyte)-ndat%(2880÷nbyte))]  # complement with type E zero elements
+
     return o
-    
+
 end
 
 function _write_TABLE_data(FITS_HDU) 

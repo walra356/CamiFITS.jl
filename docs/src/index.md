@@ -175,7 +175,7 @@ parse_FITS_TABLE(hdu::FITS_HDU)
 ```@docs
 fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 fits_copy(filnamA::String, filnamB::String=" "; protect=true)
-fits_create(filnam::String, data=[]; protect=true)
+fits_create(filnam::String, data=nothing; protect=true, msg=true)
 fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 fits_read(filnam::String)
 ```

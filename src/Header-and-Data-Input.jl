@@ -4,17 +4,19 @@
 
 function _PRIMARY_input(dataobject::FITS_data)
 
-    dataobject.hdutype == "PRIMARY" || error("FitsError: FITS_data is not of hdutype 'PRIMARY'")
+    dataobject.hdutype == "PRIMARY" || error("strError: FITS_data is not of hdutype 'PRIMARY'")
 
     r::Array{String,1} = []
 
     E = Base.eltype(dataobject.data)
-    nbytes = E ≠ Any ? sizeof(E) : 0
-    nbits = 8 * nbytes
+    nbyte = E ≠ Any ? sizeof(E) : 0
+    nbits = 8 * nbyte
     bitpix = E <: AbstractFloat ? -abs(nbits) : nbits
     bitpix = Base.lpad(bitpix, 20)
-    dims = Base.size(dataobject.data)
-    ndims = dims == (0,) ? 0 : Base.length(dims)
+    # dims = Base.size(dataobject.data)
+    # ndims = dims == (0,) ? 0 : Base.length(dims)
+    dims = isnothing(dataobject.data) ? 0 : Base.size(dataobject.data)
+    ndims = isnothing(dataobject.data) ? 0 : Base.length(dims)
     naxis = Base.lpad(ndims, 20)
     dims = ndims > 0 ? [Base.lpad(dims[i], 20) for i = 1:ndims] : 0
     bzero = Base.lpad(string(_fits_bzero(E)), 20)
@@ -37,11 +39,11 @@ end
 
 function _IMAGE_input(data::Array{T,N} where {T<:Real,N})
 
-    eltype(data) <: Real || error("FitsError: Array of real numbers expected")
+    eltype(data) <: Real || error("strError: Array of real numbers expected")
 
     E = Base.eltype(data)
-    nbytes = sizeof(E)
-    nbits = 8 * nbytes
+    nbyte = sizeof(E)
+    nbits = 8 * nbyte
     bitpix = E <: AbstractFloat ? -abs(nbits) : nbits
     bitpix = Base.lpad(bitpix, 20)
     dims = Base.size(data)
@@ -79,7 +81,7 @@ function _table_data_types(cols::Vector{})
         x = E <: Integer ? "I" : E <: Real ? "E" : E == Float64 ? "D" : E <: Union{String,Char} ? "A" : "X"
         w = string(maximum([length(string(cols[i][j])) for j=1:nrows]))
 
-        E <: Union{Char,String} ? (isascii(join(cols[i])) || error("FitsError: non-ASCII character in table $i")) : 0
+        E <: Union{Char,String} ? (isascii(join(cols[i])) || error("strError: non-ASCII character in table $i")) : 0
 
         if E <: Union{Float16,Float32,Float64}
             v = string(cols[i][1])
@@ -100,12 +102,12 @@ function _TABLE_input(cols::Vector{})     # input array of table columns
     pcols = 1                                              # pointer to starting position of column in table row
     ncols = length(cols)                                   # number of columns
     nrows = length(cols[1])
-    ncols < 1 && error("FitsError: a minimum of one column is mandatory")
+    ncols < 1 && error("strError: a minimum of one column is mandatory")
     ncols = ncols < 999 ? ncols : 999
     ncols == 999 && println("FitsWarning: maximum number of columns exceeded (truncated at 999)")
     lcols = [length(cols[i]) for i=1:ncols]                          # length of columns (number of rows)
      pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)             # equal colum length test
-     pass || error("FitsError: cannot create ASCII table (columns not of equal length)")
+     pass || error("strError: cannot create ASCII table (columns not of equal length)")
 
         w = [maximum([length(string(cols[i][j])) + 1  for j=1:nrows])  for i=1:ncols]
      data = [join([rpad(string(cols[i][j]),w[i])[1:w[i]] for i=1:ncols]) for j=1:nrows]

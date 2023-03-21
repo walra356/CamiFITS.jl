@@ -5,42 +5,13 @@
 #                        Jook Walraven 18-03-2023
 # ------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
-#                         FITSError(err::Int)
-# 
-#   - print error from CamiFITS.dictErrors
-# ------------------------------------------------------------------------------
-
-function FITSError(err::Int)
-
-    str = Base.get!(CamiFITS.dictErrors, err, nothing)
-
-    str = isnothing(str) ? "unknown" : str
-
-    return "FITSError $(err): " * str
-
-end
-
-function force_create(filnam::String, data=[])
-
-    nhdu = 1
-    hdutype = "PRIMARY"
-
-    FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
-    FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
-
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-    return _fits_save(FITS)
-
-end
 # ..............................................................................
 
 function test_FITS_name(o=[])
 
     let filnam = "kanweg.fits"
 
-        force_create(filnam)
+        fits_create(filnam; protect=false)
 
         text = filnam * " is an existing file"
         err1 = err_FITS_name(filnam)
@@ -68,7 +39,7 @@ function test_FITS_name(o=[])
 
     let filnam = "kanweg"
 
-        force_create(filnam)
+        fits_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
         err1 = err_FITS_name(filnam)
@@ -96,7 +67,7 @@ function test_FITS_name(o=[])
 
     let filnam = "kanweg.fit"
 
-        force_create(filnam)
+        fits_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
         err1 = err_FITS_name(filnam)
@@ -125,7 +96,7 @@ function test_FITS_name(o=[])
 
     let filnam = ".fits"
 
-        force_create(filnam)
+        fits_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
         err1 = err_FITS_name(filnam)
@@ -163,113 +134,26 @@ end
 
 function test_fits_create()
 
-    filnam = "runtest.fits"
-    force_create(filnam)
+    filnam = "kanweg.fits"
+    #fits_create(filnam; protect=false)
+    fits_create(filnam; protect=false)
 
     f = fits_read(filnam)
+
+    # fits_info(f[1]) # =====================================================================================================================================================
     a = f[1].header.keys[1] == "SIMPLE"
-    b = f[1].dataobject.data == Any[]
+    # b = f[1].dataobject.data == Any[]
+    b = isnothing(f[1].dataobject.data)
     c = get(Dict(f[1].header.dict), "SIMPLE", 0)
+    # println("NAXIS =", get(Dict(f[1].header.dict), "NAXIS", 0)) # ====================================================================================================================
     d = get(Dict(f[1].header.dict), "NAXIS", 0) == 0
+    # println([a, b, c, d]) # ===========================================================================================================================
 
     rm(filnam)
 
     o = isnothing(findfirst(.![a, b, c, d])) ? true : false
 
     return o
-
-end
-
-function test_fits_rename_key()
-
-    filnam = "minimal.fits"
-    force_create(filnam)
-    fits_add_key(filnam, 1, "KEYNEW1", true, "this is record 5")
-
-    f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-
-    test1 = i == 5
-
-    fits_rename_key(filnam, 1, "KEYNEW1", "KEYNEW2")
-
-    f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW2", 0)
-
-    test2 = i == 5
-
-    test = .![test1, test2]
-
-    o = isnothing(findfirst(.![test1, test2])) ? true : false
-
-    rm(filnam)
-
-    return o
-
-end
-
-function test_fits_delete_key()
-
-    filnam = "minimal.fits"
-    force_create(filnam)
-    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-
-    f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-
-    test1 = i == 5
-
-    fits_delete_key(filnam, 1, "KEYNEW1")
-
-    f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-
-    test2 = i == 0
-
-    test = .![test1, test2]
-
-    o = isnothing(findfirst(.![test1, test2])) ? true : false
-
-    rm(filnam)
-
-    return o
-
-end
-
-function test_fits_edit_key()
-
-    filnam = "minimal.fits"
-    force_create(filnam)
-    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-    fits_edit_key(filnam, 1, "KEYNEW1", false, "comment has changed")
-
-    f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-    r = f[1].header.records
-
-    test = r[i] == "KEYNEW1 =                    F / comment has changed                            "
-
-    rm(filnam)
-
-    return test
-
-end
-
-function test_fits_add_key()
-
-    filnam = "minimal.fits"
-    force_create(filnam)
-    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-
-    f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-    r = f[1].header.records
-
-    test = r[i] == "KEYNEW1 =                    T / FITS dataset may contain extension             "
-
-    rm(filnam)
-
-    return test
 
 end
 
@@ -306,11 +190,11 @@ end
 function test_fits_read()
 
     filnam = "minimal.fits"
-    force_create(filnam)
+    fits_create(filnam; protect=false)
 
     f = fits_read(filnam)
     a = f[1].header.keys[1] == "SIMPLE"
-    b = f[1].dataobject.data == Any[]
+    b = isnothing(f[1].dataobject.data)
     c = get(Dict(f[1].header.dict), "SIMPLE", 0)
     d = get(Dict(f[1].header.dict), "NAXIS", 0) == 0
 
@@ -319,6 +203,99 @@ function test_fits_read()
     o = isnothing(findfirst(.![a, b, c, d])) ? true : false
 
     return o
+
+end
+
+function test_fits_rename_key()
+
+    filnam = "minimal.fits"
+    fits_create(filnam; protect=false)
+    fits_add_key(filnam, 1, "KEYNEW1", true, "this is record 5")
+
+    f = fits_read(filnam)
+    i = get(f[1].header.maps, "KEYNEW1", 0)
+
+    test1 = i == 5
+
+    fits_rename_key(filnam, 1, "KEYNEW1", "KEYNEW2")
+
+    f = fits_read(filnam)
+    i = get(f[1].header.maps, "KEYNEW2", 0)
+
+    test2 = i == 5
+
+    test = .![test1, test2]
+
+    o = isnothing(findfirst(.![test1, test2])) ? true : false
+
+    rm(filnam)
+
+    return o
+
+end
+
+function test_fits_delete_key()
+
+    filnam = "minimal.fits"
+    fits_create(filnam; protect=false)
+    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+
+    f = fits_read(filnam)
+    i = get(f[1].header.maps, "KEYNEW1", 0)
+
+    test1 = i == 5
+
+    fits_delete_key(filnam, 1, "KEYNEW1")
+
+    f = fits_read(filnam)
+    i = get(f[1].header.maps, "KEYNEW1", 0)
+
+    test2 = i == 0
+
+    test = .![test1, test2]
+
+    o = isnothing(findfirst(.![test1, test2])) ? true : false
+
+    rm(filnam)
+
+    return o
+
+end
+
+function test_fits_edit_key()
+
+    filnam = "minimal.fits"
+    fits_create(filnam; protect=false)
+    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+    fits_edit_key(filnam, 1, "KEYNEW1", false, "comment has changed")
+
+    f = fits_read(filnam)
+    i = get(f[1].header.maps, "KEYNEW1", 0)
+    r = f[1].header.records
+
+    test = r[i] == "KEYNEW1 =                    F / comment has changed                            "
+
+    rm(filnam)
+
+    return test
+
+end
+
+function test_fits_add_key()
+
+    filnam = "minimal.fits"
+    fits_create(filnam; protect=false)
+    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+
+    f = fits_read(filnam)
+    i = get(f[1].header.maps, "KEYNEW1", 0)
+    r = f[1].header.records
+
+    test = r[i] == "KEYNEW1 =                    T / FITS dataset may contain extension             "
+
+    rm(filnam)
+
+    return test
 
 end
 

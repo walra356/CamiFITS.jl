@@ -18,7 +18,7 @@ fits_copy("T01.fits")
   'T01.fits' was saved as 'T01 - Copy.fits'
 
 fits_copy("T01.fits", "T01a.fits")
-  FitsError: 'T01a.fits' in use (set ';protect=false' to lift overwrite protection)
+  strError: 'T01a.fits' in use (set ';protect=false' to lift overwrite protection)
 
 fits_copy("T01.fits", "T01a.fits"; protect=false)
   'T01.fits' was saved as 'T01a.fits'
@@ -26,16 +26,16 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
 """
 function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
 
-    o = _fits_read_IO(filnamA)
-    f = cast_FITS_name(filnamA)
+  o = _fits_read_IO(filnamA)
+  f = cast_FITS_name(filnamA)
 
-    filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
+  filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
 
-    CamiFITS.isvalid_FITS_name(filnamB) || error()
-    _isavailable(filnamB, protect) || error("FitsError: '$filnamB' in use (set ';protect=false' to lift overwrite protection)")
-    _fits_write_IO(o, filnamB)
+  CamiFITS.isvalid_FITS_name(filnamB) || error()
+  _isavailable(filnamB, protect) || error("strError: '$filnamB' in use (set ';protect=false' to lift overwrite protection)")
+  _fits_write_IO(o, filnamB)
 
-    return println("'$filnamA' was saved as '$filnamB'")
+  return println("'$filnamA' was saved as '$filnamB'")
 
 end
 
@@ -56,61 +56,61 @@ fits_combine("T01.fits", "T22.fits")
 """
 function fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 
-    Base.Filesystem.isfile(filnamFirst) || error("FitsError: '$filnamFirst': file not found")
-    Base.Filesystem.isfile(filnamLast) || error("FitsError: '$filnamLast': file not found")
+  Base.Filesystem.isfile(filnamFirst) || error("strError: '$filnamFirst': file not found")
+  Base.Filesystem.isfile(filnamLast) || error("strError: '$filnamLast': file not found")
 
-    filnamFirst = uppercase(filnamFirst)
-    filnamLast = uppercase(filnamLast)
+  filnamFirst = uppercase(filnamFirst)
+  filnamLast = uppercase(filnamLast)
 
-    nam = cast_FITS_name(filnamFirst)
-    strPre = nam.prefix
-    strNum = nam.numerator
-    strExt = nam.extension
-    valNum = parse(Int, strNum)
-    numLeadingZeros = length(strNum) - length(string(valNum))
+  nam = cast_FITS_name(filnamFirst)
+  strPre = nam.prefix
+  strNum = nam.numerator
+  strExt = nam.extension
+  valNum = parse(Int, strNum)
+  numLeadingZeros = length(strNum) - length(string(valNum))
 
-    nam2 = cast_FITS_name(filnamLast)
-    strPre2 = nam2.prefix
-    strNum2 = nam2.numerator
-    strExt2 = nam2.extension
-    valNum2 = parse(Int, strNum2)
-    numLeadingZeros2 = length(strNum2) - length(string(valNum2))
+  nam2 = cast_FITS_name(filnamLast)
+  strPre2 = nam2.prefix
+  strNum2 = nam2.numerator
+  strExt2 = nam2.extension
+  valNum2 = parse(Int, strNum2)
+  numLeadingZeros2 = length(strNum2) - length(string(valNum2))
 
-    if strPre ≠ strPre2
-        error(strPre * " ≠ " * strPre2 * " (prefixes must be identical)")
-    elseif strExt ≠ strExt2
-        error(strExt * " ≠ " * strExt2 * " (file extensions must be identical)")
-    elseif uppercase(strExt) ≠ ".FITS"
-        error("file extension must be '.fits'")
+  if strPre ≠ strPre2
+    error(strPre * " ≠ " * strPre2 * " (prefixes must be identical)")
+  elseif strExt ≠ strExt2
+    error(strExt * " ≠ " * strExt2 * " (file extensions must be identical)")
+  elseif uppercase(strExt) ≠ ".FITS"
+    error("file extension must be '.fits'")
+  end
+
+  numFiles = 1 + valNum2 - valNum
+  f = fits_read(filnamFirst)
+  dataFirst = f[1].dataobject.data  # read an image from disk
+  t = typeof(f[1].dataobject.data[1, 1, 1])
+  s = size(f[1].dataobject.data)
+
+  dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
+
+  itr = valNum:valNum2
+  filnamNext = filnamFirst
+  for i ∈ itr
+    l = length(filnamNext)
+    filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
+    if l < length(filnamNext)
+      numLeadingZeros = numLeadingZeros - 1
+      filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
     end
+    f = fits_read(filnamNext)
+    dataNext = f[1].dataobject.data                # read an image from disk
+    dataStack[:, :, i] = dataNext[:, :, 1]
+  end
 
-    numFiles = 1 + valNum2 - valNum
-    f = fits_read(filnamFirst)
-    dataFirst = f[1].dataobject.data  # read an image from disk
-    t = typeof(f[1].dataobject.data[1, 1, 1])
-    s = size(f[1].dataobject.data)
+  filnamOut = strPre * strNum * "-" * strPre * strNum2 * strExt
 
-    dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
+  fits_create(filnamOut, dataStack; protect)
 
-    itr = valNum:valNum2
-    filnamNext = filnamFirst
-    for i ∈ itr
-        l = length(filnamNext)
-        filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
-        if l < length(filnamNext)
-            numLeadingZeros = numLeadingZeros - 1
-            filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
-        end
-        f = fits_read(filnamNext)
-        dataNext = f[1].dataobject.data                # read an image from disk
-        dataStack[:, :, i] = dataNext[:, :, 1]
-    end
-
-    filnamOut = strPre * strNum * "-" * strPre * strNum2 * strExt
-
-    fits_create(filnamOut, dataStack; protect)
-
-    return println("'$filnamOut': file created")
+  return println("'$filnamOut': file created")
 
 end
 
@@ -125,71 +125,86 @@ Key:
 * `protect::Bool`: overwrite protection
 #### Examples:
 ```
-strExample = "minimal.fits"
-fits_create(strExample; protect=false)
+julia> filnam = "minimal.fits"
+"minimal.fits"
 
-f = fits_read(strExample)
-a = f[1].dataobject.data
-b = f[1].header.keys
-println(a);println(b)
-  Any[]
-  ["SIMPLE", "NAXIS", "EXTEND", "COMMENT", "END"]
+julia> f = fits_create(filnam; protect=false);
 
-strExample = "remove.fits"
-data = [11,21,31,12,22,23,13,23,33]
-data = reshape(data,(3,3,1))
-fits_create(strExample, data; protect=false)
+julia> f[1].dataobject.data
 
-f = fits_read(strExample)
-fits_info(f[1])
+julia> f[1].header.keys
+5-element Vector{String}:
+ "SIMPLE"
+ "NAXIS"
+ "EXTEND"
+ "COMMENT"
+ "END"
 
-  File: remove.fits
-  hdu: 1
-  hdutype: PRIMARY
-  DataType: Int64
-  Datasize: (3, 3, 1)
+julia> rm(filnam)
 
-  Metainformation:
-  SIMPLE  =                    T / file does conform to FITS standard
-  BITPIX  =                   64 / number of bits per data pixel
-  NAXIS   =                    3 / number of data axes
-  NAXIS1  =                    3 / length of data axis 1
-  NAXIS2  =                    3 / length of data axis 2
-  NAXIS3  =                    1 / length of data axis 3
-  BZERO   =                  0.0 / offset data range to that of unsigned integer
-  BSCALE  =                  1.0 / default scaling factor
-  EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
-  END
+julia> filnam = "kanweg.fits"
+"kanweg.fits"
 
-  3×3×1 Array{Int64, 3}:
-  [:, :, 1] =
-   11  12  13
-   21  22  23
-   31  23  33
+julia> f = fits_create(filnam, data; protect=false);
+
+julia> data = [11,21,31,12,22,23,13,23,33];
+
+julia> data = reshape(data,(3,3,1))
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia> fits_info(f[1])
+
+File: kanweg.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Int64
+Datasize: (3, 3, 1)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
+NAXIS3  =                    1 / length of data axis 3
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia> rm(filnam)
 ```
 """
-function fits_create(filnam::String, data=[]; protect=true)
+function fits_create(filnam::String, data=nothing; protect=true, msg=true)
 
-    err = CamiFITS.err_FITS_name(filnam; protect)
-#    str = Base.get!(CamiFITS.dictErrors, err, nothing)
-#    err > 1 && error("Error $(err): " * str)
-    err > 1 && throw(FITSError(err))
+  err = CamiFITS.err_FITS_name(filnam; protect)
+  err > 1 && msg && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
 
-    nhdu = 1
-    hdutype = "PRIMARY"
+  nhdu = 1
+  hdutype = "PRIMARY"
 
-    FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
-    FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
+  FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
+  FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
 
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    _fits_save(FITS)
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    return FITS
+  _fits_save(FITS)
+
+  return FITS
 
 end
-
 
 # .................................................... fits_info ...................................................
 """
@@ -198,61 +213,63 @@ end
 Print metafinformation and data of given `FITS_HDU`
 #### Example:
 ```
-strExample = "remove.fits"
-data = [11,21,31,12,22,23,13,23,33]
-data = reshape(data,(3,3,1))
-fits_create(strExample, data; protect=false)
+File: kanweg.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Int64
+Datasize: (3, 3, 1)
 
-f = fits_read(strExample)
-fits_info(f[1])
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
+NAXIS3  =                    1 / length of data axis 3
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
 
-  File: remove.fits
-  hdu: 1
-  hdutype: PRIMARY
-  DataType: Int64
-  Datasize: (3, 3, 1)
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
 
-  Metainformation:
-  SIMPLE  =                    T / file does conform to FITS standard
-  BITPIX  =                   64 / number of bits per data pixel
-  NAXIS   =                    3 / number of data axes
-  NAXIS1  =                    3 / length of data axis 1
-  NAXIS2  =                    3 / length of data axis 2
-  NAXIS3  =                    1 / length of data axis 3
-  BZERO   =                  0.0 / offset data range to that of unsigned integer
-  BSCALE  =                  1.0 / default scaling factor
-  EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
-  END
-
-  3×3×1 Array{Int64, 3}:
-  [:, :, 1] =
-   11  12  13
-   21  22  23
-   31  23  33
-
+julia> rm(filnam)
 ```
 """
 function fits_info(hdu::FITS_HDU)
 
-    typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
+  typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
-    info = [
-        "\r\nFile: " * hdu.filnam,
-        "hdu: " * Base.string(hdu.hduindex),
-        "hdutype: " * hdu.dataobject.hdutype,
-        "DataType: " * Base.string(Base.eltype(hdu.dataobject.data)),
-        "Datasize: " * Base.string(Base.size(hdu.dataobject.data)),
-        "\r\nMetainformation:"
-    ]
+  if isnothing(hdu.dataobject.data)
+    strDataType = "nothing"
+    strDatasize = "0"
+  else
+    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
+    strDatasize = Base.string(Base.size(hdu.dataobject.data))
+  end
 
-    records = hdu.header.records
+  info = [
+    "\r\nFile: " * hdu.filnam,
+    "hdu: " * Base.string(hdu.hduindex),
+    "hdutype: " * hdu.dataobject.hdutype,
+    "DataType: " * strDataType,
+    "Datasize: " * strDatasize,
+    "\r\nMetainformation:"
+  ]
 
-    Base.append!(info, records)
+  records = hdu.header.records
+  records = _rm_blanks(records)         # remove blank records
 
-    println(Base.join(info .* "\r\n"))
+  Base.append!(info, records)
 
-    return hdu.dataobject.data
+  println(Base.join(info .* "\r\n"))
+
+  return hdu.dataobject.data
 
 end
 
@@ -275,16 +292,16 @@ rm(strExample); f = nothing
 """
 function fits_read(filnam::String)
 
-    o = _fits_read_IO(filnam)
+  o = _fits_read_IO(filnam)
 
-    nhdu = _hdu_count(o)
+  nhdu = _hdu_count(o)
 
-    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-    FITS_data = [_read_data(o, i) for i = 1:nhdu]
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    return FITS
+  return FITS
 
 end
 
@@ -322,27 +339,27 @@ rm(strExample); f = data = a = b = c = d = e = nothing
 """
 function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 
-    hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
-    hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
-    hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("FitsError: unknown HDU type")
+  hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
+  hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
+  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("strError: unknown HDU type")
 
-    o = _fits_read_IO(filnam)
+  o = _fits_read_IO(filnam)
 
-    nhdu = _hdu_count(o)
+  nhdu = _hdu_count(o)
 
-    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-    FITS_data = [_read_data(o, i) for i = 1:nhdu]
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-    nhdu = nhdu + 1
+  nhdu = nhdu + 1
 
-    Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
-    Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
+  Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
+  Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
 
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    _fits_save(FITS)
+  _fits_save(FITS)
 
-    return FITS
+  return FITS
 
 end
 # .................................................... fits_add_key ...................................................
@@ -379,29 +396,29 @@ fits_info(f[1])
 """
 function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-    o = _fits_read_IO(filnam)
+  o = _fits_read_IO(filnam)
 
-    nhdu = _hdu_count(o)
+  nhdu = _hdu_count(o)
 
-    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-    FITS_data = [_read_data(o, i) for i = 1:nhdu]
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-    key = _format_key(key)
+  key = _format_key(key)
 
-    h = FITS_headers[hduindex]
-    Base.get(h.maps, key, 0) > 0 && return println("FitsError: '$key': key in use (use different name or edit key)")
+  h = FITS_headers[hduindex]
+  Base.get(h.maps, key, 0) > 0 && return println("strError: '$key': key in use (use different name or edit key)")
 
-    newrecords = _fits_new_records(key, val, com)
+  newrecords = _fits_new_records(key, val, com)
 
-    Base.pop!(h.records)
-    [Base.push!(h.records, newrecords[i]) for i ∈ eachindex(newrecords)]
-    Base.push!(h.records, "END" * Base.repeat(" ", 77))
+  Base.pop!(h.records)
+  [Base.push!(h.records, newrecords[i]) for i ∈ eachindex(newrecords)]
+  Base.push!(h.records, "END" * Base.repeat(" ", 77))
 
-    FITS_headers[hduindex] = _cast_header(h.records, hduindex)
+  FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    return _fits_save(FITS)
+  return _fits_save(FITS)
 
 end
 
@@ -439,34 +456,34 @@ fits_info(f[1])
 """
 function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-    o = _fits_read_IO(filnam)
+  o = _fits_read_IO(filnam)
 
-    nhdu = _hdu_count(o)
+  nhdu = _hdu_count(o)
 
-    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-    FITS_data = [_read_data(o, i) for i = 1:nhdu]
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-    key = _format_key(key)
-    res = ["SIMPLE", "BITPIX", "NAXIS", "NAXIS1", "NAXIS2", "NAXIS3", "BZERO", "END"]
-    key ∈ res && return println("FitsError: '$key': cannot be edited (key protected under FITS standard)")
+  key = _format_key(key)
+  res = ["SIMPLE", "BITPIX", "NAXIS", "NAXIS1", "NAXIS2", "NAXIS3", "BZERO", "END"]
+  key ∈ res && return println("strError: '$key': cannot be edited (key protected under FITS standard)")
 
-    h = FITS_headers[hduindex]
-    i = Base.get(h.maps, key, 0)
-    i == 0 && return println("FitsError: '$key': key not found")
+  h = FITS_headers[hduindex]
+  i = Base.get(h.maps, key, 0)
+  i == 0 && return println("strError: '$key': key not found")
 
-    nold = length(h.keys)
-    nobs = length(_fits_obsolete_records(h, i))
-    newrecords = _fits_new_records(key, val, com)
-    oldrecords = h.records[i+nobs:end]
-    [Base.pop!(h.records) for j = i:nold]
-    [Base.push!(h.records, newrecords[i]) for i ∈ eachindex(newrecords)]
-    [Base.push!(h.records, oldrecords[i]) for i ∈ eachindex(oldrecords)]
+  nold = length(h.keys)
+  nobs = length(_fits_obsolete_records(h, i))
+  newrecords = _fits_new_records(key, val, com)
+  oldrecords = h.records[i+nobs:end]
+  [Base.pop!(h.records) for j = i:nold]
+  [Base.push!(h.records, newrecords[i]) for i ∈ eachindex(newrecords)]
+  [Base.push!(h.records, oldrecords[i]) for i ∈ eachindex(oldrecords)]
 
-    FITS_headers[hduindex] = _cast_header(h.records, hduindex)
+  FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    return _fits_save(FITS)
+  return _fits_save(FITS)
 
 end
 
@@ -496,32 +513,32 @@ fits_delete_key(filnam, 1, "NAXIS")
 """
 function fits_delete_key(filnam::String, hduindex::Int, key::String)
 
-    o = _fits_read_IO(filnam)
+  o = _fits_read_IO(filnam)
 
-    nhdu = _hdu_count(o)
+  nhdu = _hdu_count(o)
 
-    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-    FITS_data = [_read_data(o, i) for i = 1:nhdu]
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-    key = _format_key(key)
-    res = ["SIMPLE", "BITPIX", "NAXIS", "NAXIS1", "NAXIS2", "NAXIS3", "BZERO", "END"]
-    key ∈ res && return println("FitsError: '$key': cannot be edited (key protected under FITS standard)")
+  key = _format_key(key)
+  res = ["SIMPLE", "BITPIX", "NAXIS", "NAXIS1", "NAXIS2", "NAXIS3", "BZERO", "END"]
+  key ∈ res && return println("strError: '$key': cannot be edited (key protected under FITS standard)")
 
-    h = FITS_headers[hduindex]
-    i = Base.get(h.maps, key, 0)
-    i == 0 && return println("FitsError: '$key': key not found")
+  h = FITS_headers[hduindex]
+  i = Base.get(h.maps, key, 0)
+  i == 0 && return println("strError: '$key': key not found")
 
-    nold = length(h.keys)
-    nobs = length(_fits_obsolete_records(h, i))
-    oldrecords = h.records[i+nobs:end]
-    [Base.pop!(h.records) for j = i:nold]
-    [Base.push!(h.records, oldrecords[i]) for i ∈ eachindex(oldrecords)]
+  nold = length(h.keys)
+  nobs = length(_fits_obsolete_records(h, i))
+  oldrecords = h.records[i+nobs:end]
+  [Base.pop!(h.records) for j = i:nold]
+  [Base.push!(h.records, oldrecords[i]) for i ∈ eachindex(oldrecords)]
 
-    FITS_headers[hduindex] = _cast_header(h.records, hduindex)
+  FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    return _fits_save(FITS)
+  return _fits_save(FITS)
 
 end
 
@@ -558,29 +575,29 @@ fits_info(f[1])
 """
 function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 
-    o = _fits_read_IO(filnam)
+  o = _fits_read_IO(filnam)
 
-    nhdu = _hdu_count(o)
+  nhdu = _hdu_count(o)
 
-    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-    FITS_data = [_read_data(o, i) for i = 1:nhdu]
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-    keyold = _format_key(keyold)
-    res = ["SIMPLE", "BITPIX", "NAXIS", "NAXIS1", "NAXIS2", "NAXIS3", "BZERO", "END"]
-    keyold ∈ res && return println("FitsWarning: '$keyold': cannot be renamed (key protected under FITS standard)")
+  keyold = _format_key(keyold)
+  res = ["SIMPLE", "BITPIX", "NAXIS", "NAXIS1", "NAXIS2", "NAXIS3", "BZERO", "END"]
+  keyold ∈ res && return println("FitsWarning: '$keyold': cannot be renamed (key protected under FITS standard)")
 
-    h = FITS_headers[hduindex]
-    i = Base.get(h.maps, keyold, 0)
-    i == 0 && return println("FitsError: '$keyold': key not found")
-    Base.get(h.maps, keynew, 0) > 0 && return println("FitsWarning: '$keynew': key in use (use different name or edit key)")
+  h = FITS_headers[hduindex]
+  i = Base.get(h.maps, keyold, 0)
+  i == 0 && return println("strError: '$keyold': key not found")
+  Base.get(h.maps, keynew, 0) > 0 && return println("FitsWarning: '$keynew': key in use (use different name or edit key)")
 
-    h.records[i] = rpad(keynew, 8) * h.records[i][9:80]
+  h.records[i] = rpad(keynew, 8) * h.records[i][9:80]
 
-    FITS_headers[hduindex] = _cast_header(h.records, hduindex)
+  FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-    return _fits_save(FITS)
+  return _fits_save(FITS)
 
 end
 
@@ -631,26 +648,26 @@ parse_FITS_TABLE(f[2])
 """
 function parse_FITS_TABLE(hdu::FITS_HDU)
 
-    dict = hdu.header.dict
-    thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])
+  dict = hdu.header.dict
+  thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])
 
-    thdu == "TABLE" || return error("Error: $thdu is not an ASCII TABLE HDU")
+  thdu == "TABLE" || return error("Error: $thdu is not an ASCII TABLE HDU")
 
-    ncols = Base.get(dict, "TFIELDS", 0)
-    nrows = Base.get(dict, "NAXIS2", 0)
-    tbcol = [Base.get(dict, "TBCOL$n", 0) for n = 1:ncols]
-    tform = [Base.get(dict, "TFORM$n", 0) for n = 1:ncols]
-    ttype = [cast_FORTRAN_format(tform[n]).Type for n = 1:ncols]
-    tchar = [cast_FORTRAN_format(tform[n]).TypeChar for n = 1:ncols]
-    width = [cast_FORTRAN_format(tform[n]).width for n = 1:ncols]
-    itr = [(tbcol[k]:tbcol[k]+width[k]-1) for k = 1:ncols]
+  ncols = Base.get(dict, "TFIELDS", 0)
+  nrows = Base.get(dict, "NAXIS2", 0)
+  tbcol = [Base.get(dict, "TBCOL$n", 0) for n = 1:ncols]
+  tform = [Base.get(dict, "TFORM$n", 0) for n = 1:ncols]
+  ttype = [cast_FORTRAN_format(tform[n]).Type for n = 1:ncols]
+  tchar = [cast_FORTRAN_format(tform[n]).TypeChar for n = 1:ncols]
+  width = [cast_FORTRAN_format(tform[n]).width for n = 1:ncols]
+  itr = [(tbcol[k]:tbcol[k]+width[k]-1) for k = 1:ncols]
 
-    data = hdu.dataobject.data
-    data = [[data[i][itr[k]] for i = 1:nrows] for k = 1:ncols]
-    data = [tchar[k] == 'D' ? Base.join.(Base.replace!.(Base.collect.(data[k]), 'D' => 'E')) : data[k] for k = 1:ncols]
-    Type = [ttype[k] == "Aw" ? (width[k] == 1 ? Char : String) : ttype[k] == "Iw" ? Int : Float64 for k = 1:ncols]
-    data = [ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
+  data = hdu.dataobject.data
+  data = [[data[i][itr[k]] for i = 1:nrows] for k = 1:ncols]
+  data = [tchar[k] == 'D' ? Base.join.(Base.replace!.(Base.collect.(data[k]), 'D' => 'E')) : data[k] for k = 1:ncols]
+  Type = [ttype[k] == "Aw" ? (width[k] == 1 ? Char : String) : ttype[k] == "Iw" ? Int : Float64 for k = 1:ncols]
+  data = [ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
 
-    return data
+  return data
 
 end

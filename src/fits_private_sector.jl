@@ -105,7 +105,7 @@ function _fits_parse(str::String) # routine
     sp == 1 && s[ip[1]] == '.' && s[ia[1]] ∈ E && ip[1] < ia[1]  && return Base.parse(T,s)
     sp == 2 && s[ip[1]] == '.' && s[ip[2]] == '-' && s[ip[2]-1] ∈ E && ip[1] < ia[1]  &&  return Base.parse(T,s)
 
-    return error("FitsError: $(str): parsing error")
+    return error("strError: $(str): parsing error")
 
 end
 
@@ -113,7 +113,7 @@ function _format_key(key::String)::String
 
     key = Base.Unicode.uppercase(Base.strip(key))
 
-    length(key) > 8 && error("FitsError: '$(key)': length exceeds 8 characters (FITS standard)")
+    length(key) > 8 && error("strError: '$(key)': length exceeds 8 characters (FITS standard)")
 
     return key
 
@@ -177,28 +177,28 @@ end
 
 function _format_recordvalue(val::Any)
 
-    typeof(val) <: AbstractChar && error("FitsError: '$(val)': invalid record value (not 'numeric', 'date' or 'single quote' delimited string')")
-    typeof(val) <: AbstractString ? (length(val) > 1 ? true : error("FitsError: string value not delimited by single quotes")) : 0
+    typeof(val) <: AbstractChar && error("strError: '$(val)': invalid record value (not 'numeric', 'date' or 'single quote' delimited string')")
+    typeof(val) <: AbstractString ? (length(val) > 1 ? true : error("strError: string value not delimited by single quotes")) : 0
 
     typeof(val) <: AbstractString && return _format_recordvalue_charstring(val)
     typeof(val) <: DateTime && return _format_recordvalue_datetime(val)
     typeof(val) <: Real   && return _format_recordvalue_numeric(val)
 
-    return error("FitsError: '$(val)' invalid record value type")
+    return error("strError: '$(val)' invalid record value type")
 
 end
 
 function _format_recordvalue_charstring(val::AbstractString)
 
-    isascii(val) || error("FitsError: string not standard ASCII")
+    isascii(val) || error("strError: string not standard ASCII")
 
     isasciiprintable = !convert(Bool,sum(.!(31 .< Int.(collect(val)) .< 127)))
 
-    isasciiprintable || error("FitsError: string not printable (not restricted to ASCII range 32-126)")
+    isasciiprintable || error("strError: string not printable (not restricted to ASCII range 32-126)")
 
     v = (strip(val))
 
-    (v[1] == '\'') & (v[end] == '\'') || error("FitsError: string value not delimited by single quotes")
+    (v[1] == '\'') & (v[end] == '\'') || error("strError: string value not delimited by single quotes")
 
     recordvalue = length(v) == 10 ? rpad(v,20) : length(v) < 21 ? rpad(v[1:end-1],19) * "'" : val
 

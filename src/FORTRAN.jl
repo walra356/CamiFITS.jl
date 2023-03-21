@@ -65,7 +65,7 @@ function cast_FORTRAN_format(str::String)
 
     s = strip(str,['\'',' ']); w = m = d = e = 0
 
-    strErr = "FitsError: $s: not a valid FORTRAN print format "
+    strErr = "strError: $s: not a valid FORTRAN print format "
     accept = ['A','I','B','O','Z','F','E','G','D','N','S','.','1','2','3','4','5','6','7','8','9','0']
 
     sum([s[i] ∉ accept for i ∈ eachindex(s)]) == 0 ? n=length(s) : return error(strErr * "(unknown type character)")
@@ -136,7 +136,7 @@ function cast_FORTRAN_datatype(str::String)
 
     s = strip(str,['\'',' ']); w = d = 0
 
-    strErr = "FitsError: $s: not a valid FORTRAN datatype "
+    strErr = "strError: $s: not a valid FORTRAN datatype "
     accept = ['A','I','F','E','D','.','1','2','3','4','5','6','7','8','9','0']
 
     sum([s[i] ∉ accept for i ∈ eachindex(s)]) == 0 ? n=length(s) : return error(strErr * "(unknown type character)")
