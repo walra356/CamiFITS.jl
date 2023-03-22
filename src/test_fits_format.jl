@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 
 # ------------------------------------------------------------------------------
-#                            fits_format_test.jl
+#                            test_fits_format.jl
 #                          Jook Walraven 22-03-2023
 # ------------------------------------------------------------------------------
 
@@ -60,7 +60,7 @@ function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
 
 end
 
-function fits_format_test(filnam::String)
+function test_fits_format(filnam::String)
 
     a = _passed_fname_test(filnam::String)
     b = _passed_block_test(filnam::String)
