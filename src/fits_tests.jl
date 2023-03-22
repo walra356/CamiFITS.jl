@@ -136,9 +136,9 @@ function test_fits_create()
 
     filnam = "kanweg.fits"
     #fits_create(filnam; protect=false)
-    fits_create(filnam; protect=false)
+    f = fits_create(filnam; protect=false)
 
-    f = fits_read(filnam)
+    # f = fits_read(filnam)
 
     # fits_info(f[1]) # =====================================================================================================================================================
     a = f[1].header.keys[1] == "SIMPLE"
@@ -161,9 +161,9 @@ function test_fits_extend()
 
     filnam = "test_example.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
-    fits_create(filnam, data; protect=false)
+    f = fits_create(filnam, data; protect=false)
 
-    f = fits_read(filnam)
+    # f = fits_read(filnam)
     a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
     b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
     c = [1.23, 2.12, 3.0, 4.0, 5.0]
@@ -190,9 +190,9 @@ end
 function test_fits_read()
 
     filnam = "minimal.fits"
-    fits_create(filnam; protect=false)
+    f = fits_create(filnam; protect=false)
 
-    f = fits_read(filnam)
+    # f = fits_read(filnam)
     a = f[1].header.keys[1] == "SIMPLE"
     b = isnothing(f[1].dataobject.data)
     c = get(Dict(f[1].header.dict), "SIMPLE", 0)

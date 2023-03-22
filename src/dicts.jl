@@ -38,7 +38,11 @@ dictErrors = Dict(0 => nothing,
     1 => "file not found",
     2 => "filename lacks mandatory '.fits' extension",
     3 => "filename lacks 'name'",
-    4 => "filnam in use - set '; protect=false' to overrule overwrite protection")
+    4 => "filnam in use - set '; protect=false' to overrule overwrite protection",
+    5 => "incorrect DataType (Real type mandatory for image HDUs)",
+    6 => "FITS format requires integer number of blocks of 2880 bytes",
+    7 => "HDU key in use (use different name or edit key)"                       # _write_IMAGE_data(FITS_HDU)
+)
 
 # ------------------------------------------------------------------------------
 #                           dictDefinedTerms

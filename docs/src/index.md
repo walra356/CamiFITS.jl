@@ -4,7 +4,7 @@ FITS stands for *Flexible Image Transport System*. This is an open standard orig
 
 CamiFITS offers the *basic FITS functionality* for scientific users not requiring celestal coordinates. Optional *Conforming Extentions* are under development. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-03-18:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
+*Disclaimer 2023-03-21:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
 
 # Table of contents
 
@@ -31,8 +31,9 @@ Let "example.fits" be an *existing* FITS file. By the commands
 
 ```
 julia> filnam = "example.fits"
+"example.fits"
 
-julia> f = fits_read(filnam)
+julia> f = fits_read(filnam);
 ```
 we asign the collection of [`FITS_HDU`](@ref) objects from `filnam` to the variable `f`. 
 
@@ -48,31 +49,30 @@ The first HDU in a FITS file.
 FITS files can be created using the command [`fits_create`](@ref).
 
 #### The simplest FITS file
-The simplest file conforming to the FITS standard consists of a single HDU containing an empty data field of the type `Any[]`.
+The simplest file conforming to the FITS standard consists of a single HDU 
+without a data field.
 ```
-julia> filnam = "empty.fits";
+julia> filnam = "minimal.fits"
+"minimal.fits"
 
-julia> fits_create(filnam; protect=false)
-
-julia> f = fits_read(filnam);
+julia> f = fits_create(filnam; protect=false);
 
 julia> fits_info(f[1])
 
-File: empty.fits
+File: minimal.fits
 hdu: 1
 hdutype: PRIMARY
-DataType: Any
-Datasize: (0,)
+DataType: nothing
+Datasize: 0
 
 Metainformation:
 SIMPLE  =                    T / file does conform to FITS standard
 NAXIS   =                    0 / number of data axes
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
 
-Any[]
-
+                                 # note the absence of the data block   
 julia> rm(filnam); f = nothing
 ```
 

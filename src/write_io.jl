@@ -9,7 +9,6 @@ function _fits_save(FITS)
         Base.write(o, Array{UInt8,1}(a.data))
         b = _write_data(FITS[i])
         b.size > 0 && Base.write(o, Array{UInt8,1}(b.data))
-        # println("b.size = $(b.size)") # =================================================================================================================================================================
     end
         
     return _fits_write_IO(o, FITS[1].filnam)                    # same filnam in all HDUs                
@@ -64,12 +63,12 @@ function _write_IMAGE_data(FITS_HDU)
     Base.seekstart(o)
 
     data = FITS_HDU.dataobject.data
-    # ndat = Base.length(data)
     ndat = !isnothing(data) ? Base.length(data) : 0
     ndat ≠ 0 || return o
 
     E = Base.eltype(data)
-    E <: Real || error("strError: incorrect DataType (Real type mandatory for image HDUs)")
+    E <: Real || Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(5))) 
+                 # 5 - incorrect DataType (Real type mandatory for image HDUs)
 
     nbyte = sizeof(E)
     bzero = _fits_bzero(E)

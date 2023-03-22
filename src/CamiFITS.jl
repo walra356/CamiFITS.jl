@@ -14,6 +14,7 @@ export _isavailable
 
 export err_FITS_name
 export test_FITS_name
+export fits_format_test
 
 export test_fits_create
 export test_fits_extend
@@ -75,5 +76,6 @@ include("plot_public_sector.jl")
 include("Header-and-Data-Input.jl")
 include("FORTRAN.jl")
 include("fits_tests.jl")
+include("fits_format_test.jl")
 
 end

@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: MIT
 
-# ......................................... FITS public sector .................................................................
+# ------------------------------------------------------------------------------
+#                          fits_public_sector.jl
+#                         Jook Walraven 21-03-2023
+# ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+#                 fits_copy(filnamA [, filnamB="" [; protect=true]])
+# ------------------------------------------------------------------------------
 
-
-# .................................................... fits_copy ...................................................
-
-"""
+@doc raw"""
     fits_copy(filnamA [, filnamB="" [; protect=true]])
 
 Copy "filnamA" to "filnamB" (with mandatory ".fits" extension)
@@ -26,25 +29,34 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
 """
 function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
 
+  err = CamiFITS.err_FITS_name(filnamA; protect)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+
   o = _fits_read_IO(filnamA)
   f = cast_FITS_name(filnamA)
 
   filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
 
-  CamiFITS.isvalid_FITS_name(filnamB) || error()
-  _isavailable(filnamB, protect) || error("strError: '$filnamB' in use (set ';protect=false' to lift overwrite protection)")
+  err = CamiFITS.err_FITS_name(filnamB; protect)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+
+  # CamiFITS.isvalid_FITS_name(filnamB) || error()
+  # _isavailable(filnamB, protect) || error("strError: '$filnamB' in use (set ';protect=false' to lift overwrite protection)")
+
   _fits_write_IO(o, filnamB)
 
   return println("'$filnamA' was saved as '$filnamB'")
 
 end
 
-# .................................................... fits_copy ...................................................
+# ------------------------------------------------------------------------------
+#                 fits_combine(strA, strB [; protect=true])
+# ------------------------------------------------------------------------------
 
-"""
-    fits_combine(strFirst, strLast [; protect=true])
+@doc raw"""
+    fits_combine(strA, strB [; protect=true])
 
-Copy "filnamFirst" to "filnamLast" (with mandatory ".fits" extension)
+Combine "filnamA" with "filnamB" (with mandatory ".fits" extension)
 
 Key:
 * `protect::Bool`: overwrite protection
@@ -54,22 +66,25 @@ fits_combine("T01.fits", "T22.fits")
   'T01-T22.fits': file created
 ```
 """
-function fits_combine(filnamFirst::String, filnamLast::String; protect=true)
+function fits_combine(filnamA::String, filnamB::String; protect=true)
 
-  Base.Filesystem.isfile(filnamFirst) || error("strError: '$filnamFirst': file not found")
-  Base.Filesystem.isfile(filnamLast) || error("strError: '$filnamLast': file not found")
+  err = CamiFITS.err_FITS_name(filnamA; protect)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
 
-  filnamFirst = uppercase(filnamFirst)
-  filnamLast = uppercase(filnamLast)
+  err = CamiFITS.err_FITS_name(filnamB; protect)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
 
-  nam = cast_FITS_name(filnamFirst)
+  filnamA = uppercase(filnamA)
+  filnamB = uppercase(filnamB)
+
+  nam = cast_FITS_name(filnamA)
   strPre = nam.prefix
   strNum = nam.numerator
   strExt = nam.extension
   valNum = parse(Int, strNum)
   numLeadingZeros = length(strNum) - length(string(valNum))
 
-  nam2 = cast_FITS_name(filnamLast)
+  nam2 = cast_FITS_name(filnamB)
   strPre2 = nam2.prefix
   strNum2 = nam2.numerator
   strExt2 = nam2.extension
@@ -85,15 +100,15 @@ function fits_combine(filnamFirst::String, filnamLast::String; protect=true)
   end
 
   numFiles = 1 + valNum2 - valNum
-  f = fits_read(filnamFirst)
-  dataFirst = f[1].dataobject.data  # read an image from disk
+  f = fits_read(filnamA)
+  dataA = f[1].dataobject.data  # read an image from disk
   t = typeof(f[1].dataobject.data[1, 1, 1])
   s = size(f[1].dataobject.data)
 
   dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
 
   itr = valNum:valNum2
-  filnamNext = filnamFirst
+  filnamNext = filnamA
   for i ∈ itr
     l = length(filnamNext)
     filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
@@ -108,15 +123,20 @@ function fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 
   filnamOut = strPre * strNum * "-" * strPre * strNum2 * strExt
 
+  err = CamiFITS.err_FITS_name(filnamOut; protect)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+
   fits_create(filnamOut, dataStack; protect)
 
   return println("'$filnamOut': file created")
 
 end
 
-# .................................................... fits_create ...................................................
+# ------------------------------------------------------------------------------
+#                 fits_create(filnam [, data [; protect=true]])
+# ------------------------------------------------------------------------------
 
-"""
+@doc raw"""
     fits_create(filnam [, data [; protect=true]])
 
 Create FITS file of given filnam [, optional data block [, default overwrite
@@ -140,7 +160,7 @@ julia> f[1].header.keys
  "COMMENT"
  "END"
 
-julia> rm(filnam)
+julia> rm(filnam); f = nothing
 
 julia> filnam = "kanweg.fits"
 "kanweg.fits"
@@ -183,7 +203,7 @@ END
  21  22  23
  31  23  33
 
-julia> rm(filnam)
+julia> rm(filnam); f = nothing
 ```
 """
 function fits_create(filnam::String, data=nothing; protect=true, msg=true)
@@ -206,39 +226,37 @@ function fits_create(filnam::String, data=nothing; protect=true, msg=true)
 
 end
 
-# .................................................... fits_info ...................................................
-"""
-    fits_info(hdu)
+# ------------------------------------------------------------------------------
+#                     fits_info(hdu::FITS_HDU)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_info(hdu::FITS_HDU)
 
 Print metafinformation and data of given `FITS_HDU`
 #### Example:
 ```
-File: kanweg.fits
+julia> filnam = "minimal.fits";
+
+julia> f = fits_create(filnam; protect=false);
+
+julia> fits_info(f[1])
+
+File: minimal.fits
 hdu: 1
 hdutype: PRIMARY
-DataType: Int64
-Datasize: (3, 3, 1)
+DataType: nothing
+Datasize: 0
 
 Metainformation:
 SIMPLE  =                    T / file does conform to FITS standard
-BITPIX  =                   64 / number of bits per data pixel
-NAXIS   =                    3 / number of data axes
-NAXIS1  =                    3 / length of data axis 1
-NAXIS2  =                    3 / length of data axis 2
-NAXIS3  =                    1 / length of data axis 3
-BZERO   =                  0.0 / offset data range to that of unsigned integer
-BSCALE  =                  1.0 / default scaling factor
+NAXIS   =                    0 / number of data axes
 EXTEND  =                    T / FITS dataset may contain extensions
 COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
 
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
- 11  12  13
- 21  22  23
- 31  23  33
-
-julia> rm(filnam)
+                                 # note the absence of the data block   
+julia> rm(filnam); f = nothing
 ```
 """
 function fits_info(hdu::FITS_HDU)
@@ -273,21 +291,40 @@ function fits_info(hdu::FITS_HDU)
 
 end
 
-# .................................................... fits_read ...................................................
-"""
-    fits_read(filnam)
+# ------------------------------------------------------------------------------
+#                     fits_read(filnam::String)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_read(filnam::String)
 
 Read FITS file and return Array of `FITS_HDU`s
 #### Example:
 ```
-strExample = "minimal.fits"
-fits_create(strExample; protect=false)
+julia> filnam = "minimal.fits"
+"minimal.fits"
 
-f = fits_read(strExample)
-f[1].dataobject.data
-  Any[]
+julia> fits_create(filnam; protect=false);
 
-rm(strExample); f = nothing
+julia> f = fits_read(filnam);
+
+julia> fits_info(f[1])
+
+File: minimal.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: nothing
+Datasize: 0
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+NAXIS   =                    0 / number of data axes
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+                                 # note the absence of the data block   
+julia> rm(filnam); f = nothing
 ```
 """
 function fits_read(filnam::String)
@@ -305,9 +342,12 @@ function fits_read(filnam::String)
 
 end
 
-# .................................................... fits_extend ...................................................
-"""
-    fits_extend(filnam, data_extend, hdutype="IMAGE")
+# ------------------------------------------------------------------------------
+#           fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
 
 Extend the FITS file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
@@ -343,6 +383,9 @@ function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
   hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
   hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("strError: unknown HDU type")
 
+  err = CamiFITS.err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+
   o = _fits_read_IO(filnam)
 
   nhdu = _hdu_count(o)
@@ -362,10 +405,13 @@ function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
   return FITS
 
 end
-# .................................................... fits_add_key ...................................................
 
-"""
-    fits_add_key(filnam, hduindex, key, value, comment)
+# ------------------------------------------------------------------------------
+#              fits_add_key(filnam, hduindex, key, val, com)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
 Add a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
 #### Example:
@@ -396,6 +442,9 @@ fits_info(f[1])
 """
 function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
+  err = CamiFITS.err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+
   o = _fits_read_IO(filnam)
 
   nhdu = _hdu_count(o)
@@ -406,7 +455,8 @@ function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com:
   key = _format_key(key)
 
   h = FITS_headers[hduindex]
-  Base.get(h.maps, key, 0) > 0 && return println("strError: '$key': key in use (use different name or edit key)")
+  Base.get(h.maps, key, 0) > 0 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(7)))
+  # 7 - HDU key in use (use different name or edit key)
 
   newrecords = _fits_new_records(key, val, com)
 
@@ -418,12 +468,18 @@ function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com:
 
   FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-  return _fits_save(FITS)
+  _fits_save(FITS)
+
+  return FITS
 
 end
 
-"""
-    fits_edit_key(filnam, hduindex, key, value, comment)
+# ------------------------------------------------------------------------------
+#              fits_edit_key(filnam, hduindex, key, val, com)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
 Edit a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
 #### Example:
@@ -456,6 +512,9 @@ fits_info(f[1])
 """
 function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
+  err = CamiFITS.err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+
   o = _fits_read_IO(filnam)
 
   nhdu = _hdu_count(o)
@@ -483,12 +542,18 @@ function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com
 
   FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-  return _fits_save(FITS)
+  _fits_save(FITS)
+
+  return FITS
 
 end
 
-"""
-    fits_delete_key(filnam, hduindex, key)
+# ------------------------------------------------------------------------------
+#         fits_delete_key(filnam::String, hduindex::Int, key::String)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_delete_key(filnam::String, hduindex::Int, key::String)
 
 Delete a header record of given `key`, `value` and `comment` to `FITS_HDU[hduindex]` of file with name  'filnam'
 #### Examples:
@@ -512,6 +577,9 @@ fits_delete_key(filnam, 1, "NAXIS")
 ```
 """
 function fits_delete_key(filnam::String, hduindex::Int, key::String)
+
+  err = CamiFITS.err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
 
   o = _fits_read_IO(filnam)
 
@@ -542,8 +610,12 @@ function fits_delete_key(filnam::String, hduindex::Int, key::String)
 
 end
 
-"""
-    fits_rename_key(filnam, hduindex, keyold, kewnew)
+# ------------------------------------------------------------------------------
+#            fits_rename_key(filnam, hduindex, keyold, keynew)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 
 Rename the key of a header record of file with name 'filnam'
 #### Example:
@@ -575,6 +647,9 @@ fits_info(f[1])
 """
 function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 
+  err = CamiFITS.err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+
   o = _fits_read_IO(filnam)
 
   nhdu = _hdu_count(o)
@@ -597,14 +672,18 @@ function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::
 
   FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-  return _fits_save(FITS)
+  _fits_save(FITS)
+
+  return FITS
 
 end
 
-# ........... parse FITS_TABLE into a Vector of its columns ....................
+# ------------------------------------------------------------------------------
+#                    parse_FITS_TABLE(hdu::FITS_HDU)
+# ------------------------------------------------------------------------------
 
-"""
-    parse_FITS_TABLE(hdu)
+@doc raw"""
+    parse_FITS_TABLE(hdu::FITS_HDU)
 
 Parse `FITS_TABLE` (ASCII table) into a Vector of its columns for further
 processing by the user. Default formatting in ISO 2004 FORTRAN data format

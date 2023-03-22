@@ -14,19 +14,14 @@
 
 function _fits_read_IO(filnam::String)
 
-    #Base.Filesystem.isfile(filnam) || error("Error: $(filnam): file not found in current directory")
-
-    # err = CamiFITS.Error_FITS_name(filnam)
-    # str = get(dictErrors, err, nothing)
-    # err > 0 && error("Error $(err): " * str)
-
     o = IOBuffer()
 
     nbytes = Base.write(o, Base.read(filnam))   # number of bytes
     nblock = nbytes ÷ 2880                      # number of blocks 
     remain = nbytes % 2880                      # remainder (incomplete block)
 
-    remain > 0 && error("Error: FITS format requires integer number of blocks of 2880 bytes")
+    remain > 0 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(6))) 
+            # 6 - FITS format requires integer number of blocks of 2880 bytes")
 
     return o
 
