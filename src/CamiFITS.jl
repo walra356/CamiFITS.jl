@@ -65,10 +65,10 @@ export cast_FORTRAN_format
 export cast_FORTRAN_datatype
 
 include("dicts.jl")
+include("fits_objects.jl")
 include("fits_pointers.jl")
 include("read_io.jl")
 include("write_io.jl")
-include("fits_objects.jl")
 include("fits_private_sector.jl")
 include("fits_public_sector.jl")
 include("plot_private_sector.jl")

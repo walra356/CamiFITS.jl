@@ -6,6 +6,279 @@
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
+#                     fits_info(hdu::FITS_HDU)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_info(hdu::FITS_HDU)
+
+Print metafinformation and data of given `FITS_HDU`
+#### Example:
+```
+julia> filnam = "minimal.fits";
+
+julia> f = fits_create(filnam; protect=false);
+
+julia> fits_info(f[1])
+
+File: minimal.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: nothing
+Datasize: 0
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+NAXIS   =                    0 / number of data axes
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+                                 # note the absence of the data block   
+julia> rm(filnam); f = nothing
+```
+"""
+function fits_info(hdu::FITS_HDU)
+
+  typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
+
+  if isnothing(hdu.dataobject.data)
+    strDataType = "nothing"
+    strDatasize = "0"
+  else
+    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
+    strDatasize = Base.string(Base.size(hdu.dataobject.data))
+  end
+
+  info = [
+    "\r\nFile: " * hdu.filnam,
+    "hdu: " * Base.string(hdu.hduindex),
+    "hdutype: " * hdu.dataobject.hdutype,
+    "DataType: " * strDataType,
+    "Datasize: " * strDatasize,
+    "\r\nMetainformation:"
+  ]
+
+  records = hdu.header.records
+  records = _rm_blanks(records)         # remove blank records
+
+  Base.append!(info, records)
+
+  println(Base.join(info .* "\r\n"))
+
+  return hdu.dataobject.data
+
+end
+
+# ------------------------------------------------------------------------------
+#                 fits_create(filnam [, data [; protect=true]])
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_create(filnam [, data [; protect=true]])
+
+Create FITS file of given filnam [, optional data block [, default overwrite
+protection]] and return Array of HDUs.
+Key:
+* `protect::Bool`: overwrite protection
+#### Examples:
+```
+julia> filnam = "minimal.fits"
+"minimal.fits"
+
+julia> f = fits_create(filnam; protect=false);
+
+julia> f[1].dataobject.data
+
+julia> f[1].header.keys
+5-element Vector{String}:
+ "SIMPLE"
+ "NAXIS"
+ "EXTEND"
+ "COMMENT"
+ "END"
+
+julia> rm(filnam); f = nothing
+
+julia> filnam = "kanweg.fits"
+"kanweg.fits"
+
+julia> f = fits_create(filnam, data; protect=false);
+
+julia> data = [11,21,31,12,22,23,13,23,33];
+
+julia> data = reshape(data,(3,3,1))
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia> fits_info(f[1])
+
+File: kanweg.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Int64
+Datasize: (3, 3, 1)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
+NAXIS3  =                    1 / length of data axis 3
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia> rm(filnam); f = nothing
+```
+"""
+function fits_create(filnam::String, data=nothing; protect=true, msg=true)
+
+  err = CamiFITS.err_FITS_name(filnam; protect)
+  err > 1 && msg && Base.throw(FITSError(msgFITS(err)))
+
+  nhdu = 1
+  hdutype = "PRIMARY"
+
+  FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
+  FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
+
+
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+
+  _fits_save(FITS)
+
+  return FITS
+
+end
+
+# ------------------------------------------------------------------------------
+#                     fits_read(filnam::String)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_read(filnam::String)
+
+Read FITS file and return Array of `FITS_HDU`s
+#### Example:
+```
+julia> filnam = "minimal.fits"
+"minimal.fits"
+
+julia> fits_create(filnam; protect=false);
+
+julia> f = fits_read(filnam);
+
+julia> fits_info(f[1])
+
+File: minimal.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: nothing
+Datasize: 0
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+NAXIS   =                    0 / number of data axes
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+                                 # note the absence of the data block   
+julia> rm(filnam); f = nothing
+```
+"""
+function fits_read(filnam::String)
+
+  o = _fits_read_IO(filnam)
+
+  nhdu = _hdu_count(o)
+
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
+
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+
+  return FITS
+
+end
+
+# ------------------------------------------------------------------------------
+#           fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+
+Extend the FITS file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
+#### Examples:
+```
+strExample = "test_example.fits"
+data = [0x0000043e, 0x0000040c, 0x0000041f]
+fits_create(strExample, data; protect=false)
+
+f = fits_read(strExample)
+a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6]
+b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
+c = [1.23,2.12,3.,4.,5.]
+d = ['a','b','c','d','e']
+e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"]
+data = [a,b,c,d,e]
+fits_extend(strExample, data, "TABLE")
+
+f = fits_read(strExample)
+f[2].dataobject.data
+  5-element Vector{String}:
+   "1.0e-6 1086 1.23 a a                    "
+   "2.0e-6 1036 2.12 b bb                   "
+   "3.0e-6 1055 3.0  c ccc                  "
+   "4.0e-6 1070 4.0  d dddd                 "
+   "5.0e-6 1071 5.0  e ABCeeaeeEEEEEEEEEEEE "
+
+rm(strExample); f = data = a = b = c = d = e = nothing
+```
+"""
+function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
+
+  hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
+  hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
+  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("strError: unknown HDU type")
+
+  o = _fits_read_IO(filnam)
+
+  nhdu = _hdu_count(o)
+
+  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+  FITS_data = [_read_data(o, i) for i = 1:nhdu]
+
+  nhdu = nhdu + 1
+
+  Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
+  Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
+
+  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+
+
+
+  _fits_save(FITS)
+
+  return FITS
+
+end
+
+# ------------------------------------------------------------------------------
 #                 fits_copy(filnamA [, filnamB="" [; protect=true]])
 # ------------------------------------------------------------------------------
 
@@ -129,280 +402,6 @@ function fits_combine(filnamA::String, filnamB::String; protect=true)
   fits_create(filnamOut, dataStack; protect)
 
   return println("'$filnamOut': file created")
-
-end
-
-# ------------------------------------------------------------------------------
-#                 fits_create(filnam [, data [; protect=true]])
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_create(filnam [, data [; protect=true]])
-
-Create FITS file of given filnam [, optional data block [, default overwrite
-protection]] and return Array of HDUs.
-Key:
-* `protect::Bool`: overwrite protection
-#### Examples:
-```
-julia> filnam = "minimal.fits"
-"minimal.fits"
-
-julia> f = fits_create(filnam; protect=false);
-
-julia> f[1].dataobject.data
-
-julia> f[1].header.keys
-5-element Vector{String}:
- "SIMPLE"
- "NAXIS"
- "EXTEND"
- "COMMENT"
- "END"
-
-julia> rm(filnam); f = nothing
-
-julia> filnam = "kanweg.fits"
-"kanweg.fits"
-
-julia> f = fits_create(filnam, data; protect=false);
-
-julia> data = [11,21,31,12,22,23,13,23,33];
-
-julia> data = reshape(data,(3,3,1))
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
- 11  12  13
- 21  22  23
- 31  23  33
-
-julia> fits_info(f[1])
-
-File: kanweg.fits
-hdu: 1
-hdutype: PRIMARY
-DataType: Int64
-Datasize: (3, 3, 1)
-
-Metainformation:
-SIMPLE  =                    T / file does conform to FITS standard
-BITPIX  =                   64 / number of bits per data pixel
-NAXIS   =                    3 / number of data axes
-NAXIS1  =                    3 / length of data axis 1
-NAXIS2  =                    3 / length of data axis 2
-NAXIS3  =                    1 / length of data axis 3
-BZERO   =                  0.0 / offset data range to that of unsigned integer
-BSCALE  =                  1.0 / default scaling factor
-EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-END
-
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
- 11  12  13
- 21  22  23
- 31  23  33
-
-julia> rm(filnam); f = nothing
-```
-"""
-function fits_create(filnam::String, data=nothing; protect=true, msg=true)
-
-  err = CamiFITS.err_FITS_name(filnam; protect)
-  err > 1 && msg && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
-
-  nhdu = 1
-  hdutype = "PRIMARY"
-
-  FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
-  FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
-
-
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-  _fits_save(FITS)
-
-  return FITS
-
-end
-
-# ------------------------------------------------------------------------------
-#                     fits_info(hdu::FITS_HDU)
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_info(hdu::FITS_HDU)
-
-Print metafinformation and data of given `FITS_HDU`
-#### Example:
-```
-julia> filnam = "minimal.fits";
-
-julia> f = fits_create(filnam; protect=false);
-
-julia> fits_info(f[1])
-
-File: minimal.fits
-hdu: 1
-hdutype: PRIMARY
-DataType: nothing
-Datasize: 0
-
-Metainformation:
-SIMPLE  =                    T / file does conform to FITS standard
-NAXIS   =                    0 / number of data axes
-EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-END
-
-                                 # note the absence of the data block   
-julia> rm(filnam); f = nothing
-```
-"""
-function fits_info(hdu::FITS_HDU)
-
-  typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
-
-  if isnothing(hdu.dataobject.data)
-    strDataType = "nothing"
-    strDatasize = "0"
-  else
-    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
-    strDatasize = Base.string(Base.size(hdu.dataobject.data))
-  end
-
-  info = [
-    "\r\nFile: " * hdu.filnam,
-    "hdu: " * Base.string(hdu.hduindex),
-    "hdutype: " * hdu.dataobject.hdutype,
-    "DataType: " * strDataType,
-    "Datasize: " * strDatasize,
-    "\r\nMetainformation:"
-  ]
-
-  records = hdu.header.records
-  records = _rm_blanks(records)         # remove blank records
-
-  Base.append!(info, records)
-
-  println(Base.join(info .* "\r\n"))
-
-  return hdu.dataobject.data
-
-end
-
-# ------------------------------------------------------------------------------
-#                     fits_read(filnam::String)
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_read(filnam::String)
-
-Read FITS file and return Array of `FITS_HDU`s
-#### Example:
-```
-julia> filnam = "minimal.fits"
-"minimal.fits"
-
-julia> fits_create(filnam; protect=false);
-
-julia> f = fits_read(filnam);
-
-julia> fits_info(f[1])
-
-File: minimal.fits
-hdu: 1
-hdutype: PRIMARY
-DataType: nothing
-Datasize: 0
-
-Metainformation:
-SIMPLE  =                    T / file does conform to FITS standard
-NAXIS   =                    0 / number of data axes
-EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-END
-
-                                 # note the absence of the data block   
-julia> rm(filnam); f = nothing
-```
-"""
-function fits_read(filnam::String)
-
-  o = _fits_read_IO(filnam)
-
-  nhdu = _hdu_count(o)
-
-  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
-
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-  return FITS
-
-end
-
-# ------------------------------------------------------------------------------
-#           fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
-
-Extend the FITS file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
-#### Examples:
-```
-strExample = "test_example.fits"
-data = [0x0000043e, 0x0000040c, 0x0000041f]
-fits_create(strExample, data; protect=false)
-
-f = fits_read(strExample)
-a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6]
-b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
-c = [1.23,2.12,3.,4.,5.]
-d = ['a','b','c','d','e']
-e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"]
-data = [a,b,c,d,e]
-fits_extend(strExample, data, "TABLE")
-
-f = fits_read(strExample)
-f[2].dataobject.data
-  5-element Vector{String}:
-   "1.0e-6 1086 1.23 a a                    "
-   "2.0e-6 1036 2.12 b bb                   "
-   "3.0e-6 1055 3.0  c ccc                  "
-   "4.0e-6 1070 4.0  d dddd                 "
-   "5.0e-6 1071 5.0  e ABCeeaeeEEEEEEEEEEEE "
-
-rm(strExample); f = data = a = b = c = d = e = nothing
-```
-"""
-function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
-
-  hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
-  hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
-  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("strError: unknown HDU type")
-
-  err = CamiFITS.err_FITS_name(filnam; protect=false)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
-
-  o = _fits_read_IO(filnam)
-
-  nhdu = _hdu_count(o)
-
-  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
-
-  nhdu = nhdu + 1
-
-  Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
-  Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
-
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-  _fits_save(FITS)
-
-  return FITS
 
 end
 

@@ -20,8 +20,7 @@ function _fits_read_IO(filnam::String)
     nblock = nbytes ÷ 2880                      # number of blocks 
     remain = nbytes % 2880                      # remainder (incomplete block)
 
-    remain > 0 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(6))) 
-            # 6 - FITS format requires integer number of blocks of 2880 bytes")
+    remain > 0 && Base.throw(FITSError(msgFITS(6))) 
 
     return o
 
@@ -38,16 +37,18 @@ function _read_header(o::IO, hduindex::Int)
 
     ptr = _hdu_pointers(o)
 
-    header::Array{String,1} = []
+    records::Array{String,1} = []
     record = " "
     Base.seek(o, ptr[hduindex])
 
     while record ≠ "END" * Base.repeat(" ", 77)
         record = String(Base.read(o, 80))
-        Base.push!(header, record)
+        Base.push!(records, record)
     end
 
-    FITS_header = _cast_header(header, hduindex)
+    _append_blanks!(records)
+
+    FITS_header = _cast_header(records, hduindex)
 
     return FITS_header
 

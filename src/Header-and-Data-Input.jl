@@ -1,6 +1,41 @@
 # SPDX-License-Identifier: MIT
 
-# ....................... Header and Data input ..................
+# ------------------------------------------------------------------------------
+#                        Header_and_Data_input.jl
+#                        Jook Walraven 23-03-2023
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+#                  _append_blanks!(records::Vector{String})
+# 
+#   - 
+#   - 
+# ------------------------------------------------------------------------------  
+
+function _append_blanks!(records::Array{String,1})
+
+    remainder = length(records) % 36
+    nblanks = 36 - remainder
+
+    if nblanks > 0
+        blanks = [Base.repeat(' ', 80) for i = 1:nblanks]
+        append!(records, blanks)
+    end
+
+    # remainder = length(records) % 36
+    # remainder > 0 && println("Error: remainder = $(remainder) > 0")
+
+    return nothing
+
+end
+
+# ------------------------------------------------------------------------------
+#                  _PRIMARY_input(dataobject::FITS_data)
+# 
+#   - use dataobject to generate one or more header blocks
+#   - each header block consists of an integer number of 32 records
+#   - each record consists of an ASCII string of 80 bytes
+# ------------------------------------------------------------------------------  
 
 function _PRIMARY_input(dataobject::FITS_data)
 
@@ -13,8 +48,6 @@ function _PRIMARY_input(dataobject::FITS_data)
     nbits = 8 * nbyte
     bitpix = E <: AbstractFloat ? -abs(nbits) : nbits
     bitpix = Base.lpad(bitpix, 20)
-    # dims = Base.size(dataobject.data)
-    # ndims = dims == (0,) ? 0 : Base.length(dims)
     dims = isnothing(dataobject.data) ? 0 : Base.size(dataobject.data)
     ndims = isnothing(dataobject.data) ? 0 : Base.length(dims)
     naxis = Base.lpad(ndims, 20)
@@ -29,11 +62,13 @@ function _PRIMARY_input(dataobject::FITS_data)
     incl ? [Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27)) for i = 1:ndims] : 0
     incl ? Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ") : 0
     incl ? Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ") : 0
-           Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
-           Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
-           Base.push!(r, "END                                                                             ")
+    Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
+    Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
+    Base.push!(r, "END                                                                             ")
 
-    return r          # r: Array{String,1} of records
+    _append_blanks!(r)
+
+    return r                                  # r: Array{String,1} of records
 
 end
 
@@ -63,8 +98,10 @@ function _IMAGE_input(data::Array{T,N} where {T<:Real,N})
     incl ? Base.push!(r, "GCOUNT  =                    1 / number of data axes                            ") : 0
     incl ? Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ") : 0
     incl ? Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ") : 0
-           Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
-           Base.push!(r, "END                                                                             ")
+    Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
 
     return (r, data)           # r: Array{String,1} of records; data: same as input
 
@@ -74,20 +111,20 @@ function _table_data_types(cols::Vector{})
 
     ncols = length(cols)
     nrows = length(cols[1])
-        f = Array{String,1}(undef,ncols)                                        # format specifier Xw.d
+    f = Array{String,1}(undef, ncols)                                        # format specifier Xw.d
 
     for i ∈ eachindex(f)
         E = eltype(cols[i][1])
         x = E <: Integer ? "I" : E <: Real ? "E" : E == Float64 ? "D" : E <: Union{String,Char} ? "A" : "X"
-        w = string(maximum([length(string(cols[i][j])) for j=1:nrows]))
+        w = string(maximum([length(string(cols[i][j])) for j = 1:nrows]))
 
         E <: Union{Char,String} ? (isascii(join(cols[i])) || error("strError: non-ASCII character in table $i")) : 0
 
         if E <: Union{Float16,Float32,Float64}
             v = string(cols[i][1])
             x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
-            v = 'e' ∈ v ? split(v,'e')[1] : 'p' ∈ v ? split(v,'p')[1] : v
-            d = !isnothing(findfirst('.',v)) ? string(length(split(v,'.')[2])) : '0'
+            v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
+            d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
         end
 
         f[i] = E <: Union{Float16,Float32,Float64} ? (x * w * '.' * d) : x * w
@@ -105,41 +142,43 @@ function _TABLE_input(cols::Vector{})     # input array of table columns
     ncols < 1 && error("strError: a minimum of one column is mandatory")
     ncols = ncols < 999 ? ncols : 999
     ncols == 999 && println("FitsWarning: maximum number of columns exceeded (truncated at 999)")
-    lcols = [length(cols[i]) for i=1:ncols]                          # length of columns (number of rows)
-     pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)             # equal colum length test
-     pass || error("strError: cannot create ASCII table (columns not of equal length)")
+    lcols = [length(cols[i]) for i = 1:ncols]                          # length of columns (number of rows)
+    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)             # equal colum length test
+    pass || error("strError: cannot create ASCII table (columns not of equal length)")
 
-        w = [maximum([length(string(cols[i][j])) + 1  for j=1:nrows])  for i=1:ncols]
-     data = [join([rpad(string(cols[i][j]),w[i])[1:w[i]] for i=1:ncols]) for j=1:nrows]
-    tbcol = [pcols += w[i] for i=1:(ncols-1)]                        # field pointers (first column)
-    tbcol = prepend!(tbcol,1)
-    tbcol = [Base.lpad(tbcol[i],20) for i=1:ncols]
+    w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
+    data = [join([rpad(string(cols[i][j]), w[i])[1:w[i]] for i = 1:ncols]) for j = 1:nrows]
+    tbcol = [pcols += w[i] for i = 1:(ncols-1)]                        # field pointers (first column)
+    tbcol = prepend!(tbcol, 1)
+    tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
     tform = _table_data_types(cols)
-    tform = ["'" * Base.rpad(tform[i],8) * "'"  for i=1:ncols]
-    tform = [Base.rpad(tform[i],20) for i=1:ncols]
-    ttype = ["HEAD$i"  for i=1:ncols]
-    ttype = ["'" * Base.rpad(ttype[i],18) * "'" for i=1:ncols]          # default column headers
-    nrows = Base.lpad(nrows,20)
-    wcols = Base.lpad(sum(w),20)
-    tcols = Base.lpad(ncols,20)
+    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
+    tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
+    ttype = ["HEAD$i" for i = 1:ncols]
+    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]          # default column headers
+    nrows = Base.lpad(nrows, 20)
+    wcols = Base.lpad(sum(w), 20)
+    tcols = Base.lpad(ncols, 20)
 
     r::Array{String,1} = []
 
-    Base.push!(r,"XTENSION= 'TABLE   '           / FITS standard extension                        ")
-    Base.push!(r,"BITPIX  =                    8 / number of bits per data pixel                  ")
-    Base.push!(r,"NAXIS   =                    2 / number of data axes                            ")
-    Base.push!(r,"NAXIS1  = "  * wcols    *    " / number of bytes/row                            ")
-    Base.push!(r,"NAXIS2  = "  * nrows    *    " / number of rows                                 ")
-    Base.push!(r,"PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
-    Base.push!(r,"GCOUNT  =                    1 / data blocks contain single table               ")
-    Base.push!(r,"TFIELDS = "  * tcols    *    " / number of data fields (columns)                ")
-    Base.push!(r,"COLSEP  =                    1 / number of spaces in column separator           ")
-   [Base.push!(r,"TTYPE$i  = " * ttype[i] *    " / header of column " * rpad(i,30) ) for i=1:ncols]
-   [Base.push!(r,"TBCOL$i  = " * tbcol[i] *    " / pointer to column " * rpad(i,29) ) for i=1:ncols]
-   [Base.push!(r,"TFORM$i  = " * tform[i] *    " / data type of column " * rpad(i,27) ) for i=1:ncols]
-   [Base.push!(r,"TDISP$i  = " * tform[i] *    " / data type of column " * rpad(i,27) ) for i=1:ncols]
-    Base.push!(r,"COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
-    Base.push!(r,"END                                                                             ")
+    Base.push!(r, "XTENSION= 'TABLE   '           / FITS standard extension                        ")
+    Base.push!(r, "BITPIX  =                    8 / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   =                    2 / number of data axes                            ")
+    Base.push!(r, "NAXIS1  = " * wcols * " / number of bytes/row                            ")
+    Base.push!(r, "NAXIS2  = " * nrows * " / number of rows                                 ")
+    Base.push!(r, "PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
+    Base.push!(r, "GCOUNT  =                    1 / data blocks contain single table               ")
+    Base.push!(r, "TFIELDS = " * tcols * " / number of data fields (columns)                ")
+    Base.push!(r, "COLSEP  =                    1 / number of spaces in column separator           ")
+    [Base.push!(r, "TTYPE$i  = " * ttype[i] * " / header of column " * rpad(i, 30)) for i = 1:ncols]
+    [Base.push!(r, "TBCOL$i  = " * tbcol[i] * " / pointer to column " * rpad(i, 29)) for i = 1:ncols]
+    [Base.push!(r, "TFORM$i  = " * tform[i] * " / data type of column " * rpad(i, 27)) for i = 1:ncols]
+    [Base.push!(r, "TDISP$i  = " * tform[i] * " / data type of column " * rpad(i, 27)) for i = 1:ncols]
+    Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
 
     return (r, data)         # r: Array{String,1} of records; data: Array{String,1} of rows of table
 
