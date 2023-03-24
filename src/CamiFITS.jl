@@ -4,13 +4,14 @@ import CamiMath
 import Printf
 import Dates           # used in fits_private_sector
 
-export FITSError
-export errFITS
 export dictPass
 export dictFail
 export dictWarn
 export dictHint
 export dictError
+
+export FITSError
+export errFITS
 
 export dictDefinedTerms
 export terminology
@@ -54,6 +55,7 @@ export fits_add_key
 export fits_edit_key
 export fits_delete_key
 export fits_rename_key
+export fits_verifier
 
 #export plot_matrices
 #export plot!

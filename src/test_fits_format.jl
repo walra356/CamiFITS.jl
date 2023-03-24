@@ -25,12 +25,125 @@ function test_fits_format(filnam::String; msg=true)
 end
 
 # ------------------------------------------------------------------------------
-#                  fits_verifier(filnam::String; msg=true)
+#                      fits_verifier(filnam; msg=true)
 # ------------------------------------------------------------------------------
 
-function fits_verifier(filnam::String; msg=true)
+function fits_verifier(filnam::String; protect=true, msg=true)
+
+    passed = Bool[]
+
+    push!(passed, _filnam_test(filnam; protect, msg))
+    push!(passed, _block_test(filnam; msg))
+
+    return passed
 
 end
+
+# ------------------------------------------------------------------------------
+#               test 1: _filnam_test(filnam; protect=false, msg=true)
+# ------------------------------------------------------------------------------
+
+function _filnam_test(filnam::String; protect=false, msg=true)
+
+    nl = Base.length(filnam)      # nl: length of file name including extension
+    ne = Base.findlast('.', filnam)              # ne: first digit of extension
+
+    if Base.Filesystem.isfile(filnam) & protect
+        err = 4  # filname in use (set ';protect=false' to lift protection)
+    else
+        if Base.iszero(nl)
+            err = 1  # file not found
+        elseif Base.isnothing(ne)
+            err = 2  # filnam lacks mandatory '.fits' extension
+        elseif Base.isone(ne)
+            err = 3  # filnam lacks mandatory filnam
+        else
+            strExt = Base.rstrip(filnam[ne:nl])
+            strExt = Base.Unicode.lowercase(strExt)
+            if strExt ≠ ".fits"
+                err = 2  # filnam lacks mandatory '.fits' extension
+            else
+                err = 0  # no error
+            end
+        end
+    end
+
+    F = cast_FITS_test(1, err)
+
+    if msg
+        str = F.passed ? "Passed " : "Failed: "
+        str *= F.name * ": "
+        str *= err == 0 ? F.msgpass :
+            err == 1 ? F.msgfail :
+            err == 2 ? F.msgwarn :
+            err == 3 ? F.msgwarn :
+            err == 4 ? F.msghint : "err $(err) not found"
+        println(str)
+    end
+
+    return F.passed
+
+end
+
+# ------------------------------------------------------------------------------
+#                       test 2: _block_test(filnam)
+# ------------------------------------------------------------------------------
+
+function _block_test(filnam::String; msg=true)
+
+    o = IOBuffer()
+
+    nbytes = Base.write(o, Base.read(filnam))   # number of bytes
+    nblock = nbytes ÷ 2880                      # number of blocks 
+    remain = nbytes % 2880                      # remainder (incomplete block)
+
+    err = remain > 0 ? 1 : 0
+      
+    F = cast_FITS_test(2, err)
+
+    if msg
+        str = F.passed ? "Passed " : "Failed: "
+        str *= F.name * ": "
+        str *= (err == 0 ? F.msgpass : F.msgfail)
+        println(str)
+    end
+
+    return F.passed
+
+end
+
+
+
+
+
+
+function _passed_filnam_test(filnam::String)
+
+    err = err_FITS_name(filnam)
+
+    if err === 0
+        str = "$(filnam) - passed name test:    "
+        str *= "file exists, has valid name and may be overwritten."
+    elseif err === 1
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+    elseif err === 2
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+    elseif err === 3
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+    elseif err === 4
+        str = "$(filnam) - passed name test:    "
+        str *= "file exists and has valid name "
+        str *= "- use ';protect=false' to lift overwrite protection."
+    end
+
+    println(str)
+
+    passed = err === 0 ? true : err === 4 ? true : false
+
+    return passed
+
+end
+
 
 function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
 
@@ -167,34 +280,6 @@ function _passed_keyword_test(hdu::FITS_HDU)
     println(str)
 
     passed = err > 0 ? false : true
-
-    return passed
-
-end
-
-
-function _passed_filnam_test(filnam::String)
-
-    err = err_FITS_name(filnam)
-
-    if err === 0
-        str = "$(filnam) - passed name test:    "
-        str *= "file exists, has valid name and may be overwritten."
-    elseif err === 1
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
-    elseif err === 2
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
-    elseif err === 3
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
-    elseif err === 4
-        str = "$(filnam) - passed name test:    "
-        str *= "file exists and has valid name "
-        str *= "- use ';protect=false' to lift overwrite protection."
-    end
-
-    println(str)
-
-    passed = err === 0 ? true : err === 4 ? true : false
 
     return passed
 

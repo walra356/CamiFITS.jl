@@ -261,25 +261,33 @@ end
 
 mutable struct FITS_test
     index::Int
+    err::Int
     name::String
-    pass::Bool
-    msgp::String
-    msgf::String
-    msgw::String
+    passed::Bool
+    msgpass::String
+    msgfail::String
+    msgwarn::String
+    msghint::String
+    msgerror::String
 end
 
 # ------------------------------------------------------------------------------
 #                    cast_FITS_test(index::Int)
 # ------------------------------------------------------------------------------
 
-function cast_FITS_test(index::Int)
+function cast_FITS_test(index::Int, err)
+
+    passed = err == 0 ? true : false
 
     name = get!(dictTest, index, "testname not found")
-    pass = runtest(index)
-    msgp = get!(dictReport, index, "pass message not found")
-    msgf = get!(dictError, index, "error message not found")
-    msgw = get!(dictWarning, index, "warning not found")
+    p = get!(dictPass, index, "pass message not found")
+    f = get!(dictFail, index, "error message not found")
+    w = get!(dictWarn, index, "warning not found")
+    h = get!(dictHint, index, "warning not found")
+    e = get!(dictError, index, "error not found")
 
-    return FITS_test(index, name, pass, msgp, msgf, msgw)
+    FT = FITS_test(index, err, name, passed, p, f, w, h, e)
+
+    return FT
 
 end

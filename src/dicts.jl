@@ -35,44 +35,44 @@ end
 # ------------------------------------------------------------------------------
 
 dictTest = Dict(0 => nothing,
-    1 => "filename",
-    2 => "overwrite"
+    1 => "filename test",
+    2 => "block test"
 )
 
 # ------------------------------------------------------------------------------
 #                               dictPass
 # ------------------------------------------------------------------------------
 
-dictPass = Dict(0 => nothing,
+dictPass = Dict(
     1 => "file exists and has valid name.",
-    2 => "file may be created or overwritten."
+    2 => "integer number of blocks (of 2880 bytes)."
 )
 
 # ------------------------------------------------------------------------------
 #                               dictFail
 # ------------------------------------------------------------------------------
 
-dictFail = Dict(0 => nothing,
+dictFail = Dict(
     1 => "file not found.",
-    2 => "file is overwrite protected"
+    2 => "not integer number of blocks (of 2880 bytes)."
 )
 
 # ------------------------------------------------------------------------------
 #                               dictWarn
 # ------------------------------------------------------------------------------
 
-dictWarn = Dict(0 => nothing,
-    1 => "file not conform the CamiFITS naming convention.",
-    2 => "ion"
+dictWarn = Dict(
+    1 => "filename not conform the CamiFITS naming convention.",
+    2 => "-"
 )
 
 # ------------------------------------------------------------------------------
 #                               dictHint
 # ------------------------------------------------------------------------------
 
-dictHint = Dict(0 => nothing,
-    1 => "",
-    2 => "use ';protect=false' to lift overwrite protection"
+dictHint = Dict(
+    1 => "file in use - set ';protect=false' to lift overwrite protection",
+    2 => "-"
 )
 
 # ------------------------------------------------------------------------------
