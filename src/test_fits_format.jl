@@ -5,30 +5,30 @@
 #                          Jook Walraven 22-03-2023
 # ------------------------------------------------------------------------------
 
-function _passed_filnam_test(filnam::String)
 
-    err = err_FITS_name(filnam)
 
-    if err === 0
-        str = "$(filnam) - passed name test:    "
-        str *= "file exists, has valid name and may be overwritten."
-    elseif err === 1
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
-    elseif err === 2
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
-    elseif err === 3
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
-    elseif err === 4
-        str = "$(filnam) - passed name test:    "
-        str *= "file exists and has valid name "
-        str *= "- use ';protect=false' to lift overwrite protection."
-    end
+function test_fits_format(filnam::String; msg=true)
 
-    println(str)
+    o = Bool[]
 
-    passed = err === 0 ? true : err === 4 ? true : false
+    push!(o, _passed_filnam_test(filnam::String))
+    push!(o, _passed_block_test(filnam::String))
 
-    return passed
+    hdu = fits_read(filnam)
+
+    append!(o, [_passed_record_count(hdu[i]) for i ∈ eachindex(hdu)])
+    append!(o, [_passed_ASCII_test(hdu[i]) for i ∈ eachindex(hdu)])
+    append!(o, [_passed_keyword_test(hdu[i]) for i ∈ eachindex(hdu)])
+
+    return o
+
+end
+
+# ------------------------------------------------------------------------------
+#                  fits_verifier(filnam::String; msg=true)
+# ------------------------------------------------------------------------------
+
+function fits_verifier(filnam::String; msg=true)
 
 end
 
@@ -41,7 +41,7 @@ function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
     remain = nbytes % 2880                      # remainder (incomplete block)
 
     txt = nblock > 1 ? "blocks " : "block "
-    
+
     if remain > 0
         err = 6 # FITS format requires integer number of blocks (of 2880 bytes)
         str = "$(filnam) - failed block test:    " * CamiFITS.msgFITS(err)
@@ -75,7 +75,7 @@ function _passed_record_count(hdu::FITS_HDU)
 
     if remain > 0
         err = 8 # header shall consist of integer number of blocks (of 36 records)
-        str = "HDU$(hduindex) - header failed block test:    " 
+        str = "HDU$(hduindex) - header failed block test:    "
         str *= msgFITS(err)
         str *= " - nrec = $(nrec), nblock = $(nblock), remainder = $(remain)"
     else
@@ -109,7 +109,7 @@ function _passed_ASCII_test(hdu::FITS_HDU)
         str *= "header contains only the restricted set of ASCII text characters, decimal 32 through 126."
     else
         err = 9 # header blocks shall contain only the restricted set of ASCII text characters, decimal 32 through 126
-        str = "HDU$(hduindex) - header failed ASCII test:    " 
+        str = "HDU$(hduindex) - header failed ASCII test:    "
         str *= msgFITS(err)
     end
 
@@ -132,8 +132,8 @@ function _passed_keyword_test(hdu::FITS_HDU)
     nrec = length(recs)                # number of keys in header with given hduindex
 
     keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
-    vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : 
-                                _fits_parse(records[i][11:31]) for i = 1:nrec]
+    vals = [records[i][9:10] ≠ "= " ? records[i][11:31] :
+            _fits_parse(records[i][11:31]) for i = 1:nrec]
 
     err = 0
 
@@ -159,11 +159,11 @@ function _passed_keyword_test(hdu::FITS_HDU)
         str = "HDU$(hduindex) - header passed keyword test:    "
         str *= "mandatory keywords all present and in proper order."
     else
-       err = 11 # mandatory keyword not present or out of order
+        err = 11 # mandatory keyword not present or out of order
         str = "HDU$(hduindex) - header failed keyword test:    "
         str *= msgFITS(err)
     end
-    
+
     println(str)
 
     passed = err > 0 ? false : true
@@ -172,19 +172,30 @@ function _passed_keyword_test(hdu::FITS_HDU)
 
 end
 
-function test_fits_format(filnam::String; msg=true)
 
-    o = Bool[]
+function _passed_filnam_test(filnam::String)
 
-    push!(o, _passed_filnam_test(filnam::String))
-    push!(o, _passed_block_test(filnam::String))
+    err = err_FITS_name(filnam)
 
-    hdu = fits_read(filnam)
+    if err === 0
+        str = "$(filnam) - passed name test:    "
+        str *= "file exists, has valid name and may be overwritten."
+    elseif err === 1
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+    elseif err === 2
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+    elseif err === 3
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+    elseif err === 4
+        str = "$(filnam) - passed name test:    "
+        str *= "file exists and has valid name "
+        str *= "- use ';protect=false' to lift overwrite protection."
+    end
 
-    append!(o, [_passed_record_count(hdu[i]) for i ∈ eachindex(hdu)])
-    append!(o, [_passed_ASCII_test(hdu[i]) for i ∈ eachindex(hdu)])
-    append!(o, [_passed_keyword_test(hdu[i]) for i ∈ eachindex(hdu)])
+    println(str)
 
-    return o
+    passed = err === 0 ? true : err === 4 ? true : false
+
+    return passed
 
 end

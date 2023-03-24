@@ -23,7 +23,7 @@ end
 function msgFITS(err::Int)
 
     strA = "FITSError: $(err) - "
-    strB = Base.get!(dictErrors, err, nothing)
+    strB = Base.get!(dictError, err, nothing)
     strC = isnothing(strB) ? "not defined" : strB
 
     return strA * strC
@@ -31,10 +31,55 @@ function msgFITS(err::Int)
 end
 
 # ------------------------------------------------------------------------------
-#                               dictErrors
+#                               dictTest
 # ------------------------------------------------------------------------------
 
-dictErrors = Dict(0 => nothing,
+dictTest = Dict(0 => nothing,
+    1 => "filename",
+    2 => "overwrite"
+)
+
+# ------------------------------------------------------------------------------
+#                               dictPass
+# ------------------------------------------------------------------------------
+
+dictPass = Dict(0 => nothing,
+    1 => "file exists and has valid name.",
+    2 => "file may be created or overwritten."
+)
+
+# ------------------------------------------------------------------------------
+#                               dictFail
+# ------------------------------------------------------------------------------
+
+dictFail = Dict(0 => nothing,
+    1 => "file not found.",
+    2 => "file is overwrite protected"
+)
+
+# ------------------------------------------------------------------------------
+#                               dictWarn
+# ------------------------------------------------------------------------------
+
+dictWarn = Dict(0 => nothing,
+    1 => "file not conform the CamiFITS naming convention.",
+    2 => "ion"
+)
+
+# ------------------------------------------------------------------------------
+#                               dictHint
+# ------------------------------------------------------------------------------
+
+dictHint = Dict(0 => nothing,
+    1 => "",
+    2 => "use ';protect=false' to lift overwrite protection"
+)
+
+# ------------------------------------------------------------------------------
+#                               dictError
+# ------------------------------------------------------------------------------
+
+dictError = Dict(0 => nothing,
     1 => "file not found",
     2 => "filename lacks mandatory '.fits' extension",
     3 => "filename lacks 'name'",

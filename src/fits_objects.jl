@@ -104,7 +104,7 @@ false
 function isvalid_FITS_name(filnam::String; msg=true)
 
     err = err_FITS_name(filnam)
-    str = get(dictErrors, err, nothing)
+    str = get(dictError, err, nothing)
 
     msg && !isnothing(str) && error("Error $(err): " * str)
 
@@ -194,8 +194,8 @@ end
 function _cast_header(records::Array{String,1}, hduindex::Int)
 
     remainder = length(records) % 36
-    
-    iszero(remainder) || Base.throw(FITSError(msgFITS(8))) 
+
+    iszero(remainder) || Base.throw(FITSError(msgFITS(8)))
 
     recs = _rm_blanks(records)         # remove blank records to collect header records data (key, val, comment)
     nrec = length(recs)                # number of keys in header with given hduindex
@@ -204,7 +204,7 @@ function _cast_header(records::Array{String,1}, hduindex::Int)
     vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : _fits_parse(records[i][11:31]) for i = 1:nrec]
 
     #pass = _passed_keyword_test(records, hduindex) 
-    
+
     #pass || Base.throw(FITSError(msgFITS(11))) 
 
     coms = [records[i][34:80] for i = 1:nrec]
@@ -252,5 +252,34 @@ struct FITS_table
 
     hduindex::Int
     rows::Array{String,1}
+
+end
+
+# ------------------------------------------------------------------------------
+#                             FITS_test 
+# ------------------------------------------------------------------------------
+
+mutable struct FITS_test
+    index::Int
+    name::String
+    pass::Bool
+    msgp::String
+    msgf::String
+    msgw::String
+end
+
+# ------------------------------------------------------------------------------
+#                    cast_FITS_test(index::Int)
+# ------------------------------------------------------------------------------
+
+function cast_FITS_test(index::Int)
+
+    name = get!(dictTest, index, "testname not found")
+    pass = runtest(index)
+    msgp = get!(dictReport, index, "pass message not found")
+    msgf = get!(dictError, index, "error message not found")
+    msgw = get!(dictWarning, index, "warning not found")
+
+    return FITS_test(index, name, pass, msgp, msgf, msgw)
 
 end

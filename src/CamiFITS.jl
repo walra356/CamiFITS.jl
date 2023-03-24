@@ -6,7 +6,11 @@ import Dates           # used in fits_private_sector
 
 export FITSError
 export errFITS
-export dictErrors
+export dictPass
+export dictFail
+export dictWarn
+export dictHint
+export dictError
 
 export dictDefinedTerms
 export terminology
@@ -29,10 +33,14 @@ export FITS_HDU
 export FITS_header
 export FITS_data
 export FITS_table
-export parse_FITS_TABLE
 export FITS_name
-export isvalid_FITS_name
+export FITS_test
+
+export cast_FITS_test
 export cast_FITS_name
+
+export parse_FITS_TABLE
+export isvalid_FITS_name
 
 #export force_create
 export fits_create
