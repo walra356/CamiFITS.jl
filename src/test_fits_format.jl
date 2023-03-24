@@ -43,7 +43,7 @@ function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
     txt = nblock > 1 ? "blocks " : "block "
     
     if remain > 0
-        err = 6
+        err = 6 # FITS format requires integer number of blocks (of 2880 bytes)
         str = "$(filnam) - failed block test:    " * CamiFITS.msgFITS(err)
     else
         err = 0
@@ -74,13 +74,13 @@ function _passed_record_count(hdu::FITS_HDU)
     txt = nblock > 1 ? "blocks " : "block "
 
     if remain > 0
-        err = 8
-        str = "HDU$(hduindex) failed block test:    " 
-        str *= CamiFITS.msgFITS(err)
+        err = 8 # header shall consist of integer number of blocks (of 36 records)
+        str = "HDU$(hduindex) - header failed block test:    " 
+        str *= msgFITS(err)
         str *= " - nrec = $(nrec), nblock = $(nblock), remainder = $(remain)"
     else
         err = 0
-        str = "HDU$(hduindex) passed block test:    "
+        str = "HDU$(hduindex) - header passed block test:    "
         str *= "HDU consists of exactly $(nblock) " * txt
         str *= "(of 36 records of 80 bytes)."
     end
@@ -97,21 +97,20 @@ function _passed_ASCII_test(hdu::FITS_HDU)
 
     typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
 
-    records = hdu.header.records
     hduindex = hdu.header.hduindex
-
     records = hdu.header.records
+
     recvals = join(records)
     isascii = !convert(Bool, sum(.!(31 .< Int.(collect(recvals)) .< 127)))
 
     if isascii
         err = 0
-        str = "HDU$(hduindex) passed ASCII test:    "
+        str = "HDU$(hduindex) - header passed ASCII test:    "
         str *= "header contains only the restricted set of ASCII text characters, decimal 32 through 126."
     else
-        err = 9
-        str = "HDU$(hduindex) failed ASCII test:    " 
-        str *= CamiFITS.msgFITS(err)
+        err = 9 # header blocks shall contain only the restricted set of ASCII text characters, decimal 32 through 126
+        str = "HDU$(hduindex) - header failed ASCII test:    " 
+        str *= msgFITS(err)
     end
 
     println(str)
@@ -122,29 +121,49 @@ function _passed_ASCII_test(hdu::FITS_HDU)
 
 end
 
-
-
 function _passed_keyword_test(hdu::FITS_HDU)
 
     typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
 
-    records = hdu.header.records
     hduindex = hdu.header.hduindex
-
     records = hdu.header.records
-    recvals = join(records)
-    isascii = !convert(Bool, sum(.!(31 .< Int.(collect(recvals)) .< 127)))
 
-    if isascii
-        err = 0
-        str = "HDU$(hduindex) passed keyword test:    "
-        str *= "header contains only the restricted set of ASCII text characters, decimal 32 through 126."
+    recs = _rm_blanks(records)         # remove blank records to collect header records data (key, val, comment)
+    nrec = length(recs)                # number of keys in header with given hduindex
+
+    keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
+    vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : 
+                                _fits_parse(records[i][11:31]) for i = 1:nrec]
+
+    err = 0
+
+    if hduindex == 1
+        err = keys[1] == "SIMPLE" ? 0 : 1
+        err += keys[2] == "BITPIX" ? 0 : 1
+        err += keys[3] == "NAXIS" ? 0 : 1
+        for i = 1:vals[3]
+            err += keys[3+i] == "NAXIS$i" ? 0 : 1
+        end
     else
-        err = 9
-        str = "HDU$(hduindex) failed keyword test:    "
-        str *= CamiFITS.msgFITS(err)
+        err = keys[1] == "XTENSION" ? 0 : 1
+        err += keys[2] == "BITPIX" ? 0 : 1
+        err += keys[3] == "NAXIS" ? 0 : 1
+        for i = 1:vals[3]
+            err += keys[3+i] == "NAXIS$i" ? 0 : 1
+        end
+        err += keys[3+vals[3]+1] == "PCOUNT  " ? 0 : 1
+        err += keys[3+vals[3]+2] == "GCOUNT  " ? 0 : 1
     end
 
+    if err == 0
+        str = "HDU$(hduindex) - header passed keyword test:    "
+        str *= "mandatory keywords all present and in proper order."
+    else
+       err = 11 # mandatory keyword not present or out of order
+        str = "HDU$(hduindex) - header failed keyword test:    "
+        str *= msgFITS(err)
+    end
+    
     println(str)
 
     passed = err > 0 ? false : true
@@ -164,6 +183,7 @@ function test_fits_format(filnam::String; msg=true)
 
     append!(o, [_passed_record_count(hdu[i]) for i ∈ eachindex(hdu)])
     append!(o, [_passed_ASCII_test(hdu[i]) for i ∈ eachindex(hdu)])
+    append!(o, [_passed_keyword_test(hdu[i]) for i ∈ eachindex(hdu)])
 
     return o
 

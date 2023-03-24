@@ -88,8 +88,7 @@ function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data us
 
     dicts = FITS_header.dict
     ndims = Base.get(dicts, "NAXIS", 0)
-    # println("ndims = $(ndims)") # ........................................................................................................................................................................
-
+    
     if ndims > 0
         dims = Core.tuple([Base.get(dicts, "NAXIS$n", 0) for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
         ndata = Base.prod(dims)                                                     # number of data points

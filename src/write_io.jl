@@ -92,7 +92,7 @@ function _write_IMAGE_data(hdu::FITS_HDU)
     ndat ≠ 0 || return o
 
     E = Base.eltype(data)
-    E <: Real || Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(5))) 
+    E <: Real || Base.throw(FITSError(msgFITS(5))) 
                  # 5 - incorrect DataType (Real type mandatory for image HDUs)
 
     nbyte = sizeof(E)

@@ -14,16 +14,17 @@
 
 function _append_blanks!(records::Array{String,1})
 
-    remainder = length(records) % 36
+    nrec = length(records)
+
+    nrec > 0 || Base.throw(FITSError(msgFITS(10))) # "END keyword not present
+
+    remainder = nrec % 36
     nblanks = 36 - remainder
 
     if nblanks > 0
         blanks = [Base.repeat(' ', 80) for i = 1:nblanks]
         append!(records, blanks)
     end
-
-    # remainder = length(records) % 36
-    # remainder > 0 && println("Error: remainder = $(remainder) > 0")
 
     return nothing
 

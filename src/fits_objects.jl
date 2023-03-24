@@ -202,6 +202,11 @@ function _cast_header(records::Array{String,1}, hduindex::Int)
 
     keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
     vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : _fits_parse(records[i][11:31]) for i = 1:nrec]
+
+    #pass = _passed_keyword_test(records, hduindex) 
+    
+    #pass || Base.throw(FITSError(msgFITS(11))) 
+
     coms = [records[i][34:80] for i = 1:nrec]
     dict = [keys[i] => vals[i] for i = 1:nrec]
     maps = [keys[i] => i for i = 1:nrec]
