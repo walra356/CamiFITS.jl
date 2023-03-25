@@ -11,7 +11,7 @@ function _fits_save(FITS)
         b.size > 0 && Base.write(o, Array{UInt8,1}(b.data))
     end
         
-    return _fits_write_IO(o, FITS[1].filnam)                    # same filnam in all HDUs                
+    return _fits_write_IO(o, FITS[1].filnam)          # same filnam in all HDUs                
     
 end
 
@@ -39,13 +39,13 @@ function _write_header(hdu::FITS_HDU)
     records = hdu.header.records
     recvals = join(records) 
     isascii = !convert(Bool, sum(.!(31 .< Int.(collect(recvals)) .< 127)))
-    isascii || Base.throw(FITSError(msgFITS(9)))
+    isascii || Base.throw(FITSError(msgError(9)))
     #nrecs = Base.length(records)
     #blanks = [Base.repeat(' ', 80) for i=1:(36 - nrecs % 36)]      # complement last header block with blank records
     #records = Base.append!(records,blanks)
     nbytes = Base.write(o, Array{UInt8,1}(join(records)))
     remain = nbytes % 2880
-    remain > 0 && Base.throw(FITSError(msgFITS(8)))
+    remain > 0 && Base.throw(FITSError(msgError(8)))
 
     return o
 
@@ -92,7 +92,7 @@ function _write_IMAGE_data(hdu::FITS_HDU)
     ndat ≠ 0 || return o
 
     E = Base.eltype(data)
-    E <: Real || Base.throw(FITSError(msgFITS(5))) 
+    E <: Real || Base.throw(FITSError(msgError(5))) 
                  # 5 - incorrect DataType (Real type mandatory for image HDUs)
 
     nbyte = sizeof(E)

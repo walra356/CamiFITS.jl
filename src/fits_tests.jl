@@ -16,8 +16,8 @@ function test_FITS_name(o=[])
         fits_create(filnam; protect=false)
 
         text = filnam * " is an existing file"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 4
         text *= " and may not be overwritten"
         ans2 = 0
@@ -28,8 +28,8 @@ function test_FITS_name(o=[])
         rm(filnam)
 
         text = filnam * " is a non-existing file"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 0
         text *= " and may be created"
         ans2 = 0
@@ -44,8 +44,8 @@ function test_FITS_name(o=[])
         fits_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 4
         text *= " and may not be overwritten"
         ans2 = 2
@@ -56,8 +56,8 @@ function test_FITS_name(o=[])
         rm(filnam)
 
         text = filnam * " does not exist"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 2
         text *= " and lacks the mandatory .fits extension"
         ans2 = 2
@@ -72,9 +72,9 @@ function test_FITS_name(o=[])
         fits_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 4
         text *= "and may not be overwritten"
         ans2 = 2
@@ -85,8 +85,8 @@ function test_FITS_name(o=[])
         rm(filnam)
 
         text = filnam * " does not exist"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 2
         text *= " and lacks the mandatory .fits extension"
         ans2 = 2
@@ -101,8 +101,8 @@ function test_FITS_name(o=[])
         fits_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 4
         text *= " and may not be overwritten"
         ans2 = 3
@@ -113,8 +113,8 @@ function test_FITS_name(o=[])
         rm(filnam)
 
         text = filnam * " does not exist"
-        err1 = err_FITS_name(filnam)
-        err2 = err_FITS_name(filnam; protect=false)
+        err1 = _err_FITS_name(filnam)
+        err2 = _err_FITS_name(filnam; protect=false)
         ans1 = 3
         text *= " and lacks a mandatory filename"
         ans2 = 3

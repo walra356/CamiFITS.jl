@@ -1,42 +1,13 @@
 # SPDX-License-Identifier: MIT
 
 # ------------------------------------------------------------------------------
-#                         FITSError <: Exception
-# ------------------------------------------------------------------------------
-
-struct FITSError <: Exception
-    msg::String
-end
-
-# ------------------------------------------------------------------------------
-#                 Base.showerror(io::IO, err::FITSError)
-# ------------------------------------------------------------------------------
-
-function Base.showerror(io::IO, err::FITSError)
-    print(io, err.msg)
-end
-
-# ------------------------------------------------------------------------------
-#                             strErr(err::Int)
-# ------------------------------------------------------------------------------
-
-function msgFITS(err::Int)
-
-    strA = "FITSError: $(err) - "
-    strB = Base.get!(dictError, err, nothing)
-    strC = isnothing(strB) ? "not defined" : strB
-
-    return strA * strC
-
-end
-
-# ------------------------------------------------------------------------------
 #                               dictTest
 # ------------------------------------------------------------------------------
 
-dictTest = Dict(0 => nothing,
+dictTest = Dict(
     1 => "filename test",
-    2 => "block test"
+    2 => "block test",
+    3 => "record count test"
 )
 
 # ------------------------------------------------------------------------------
@@ -44,8 +15,9 @@ dictTest = Dict(0 => nothing,
 # ------------------------------------------------------------------------------
 
 dictPass = Dict(
-    1 => "file exists and has valid name.",
-    2 => "integer number of blocks (of 2880 bytes)."
+    1 => "file exists in conformance to the CamiFITS naming convention.",
+    2 => "integer number of blocks (of 2880 bytes).",
+    3 => "header consists of integer number of blocks (of 36 records)"
 )
 
 # ------------------------------------------------------------------------------
@@ -54,7 +26,8 @@ dictPass = Dict(
 
 dictFail = Dict(
     1 => "file not found.",
-    2 => "not integer number of blocks (of 2880 bytes)."
+    2 => "not integer number of blocks (of 2880 bytes).",
+    3 => "header does not consist of integer number of blocks (of 36 records)"
 )
 
 # ------------------------------------------------------------------------------
@@ -62,8 +35,7 @@ dictFail = Dict(
 # ------------------------------------------------------------------------------
 
 dictWarn = Dict(
-    1 => "filename not conform the CamiFITS naming convention.",
-    2 => "-"
+    1 => "filename not conform the CamiFITS naming convention."
 )
 
 # ------------------------------------------------------------------------------
@@ -71,8 +43,8 @@ dictWarn = Dict(
 # ------------------------------------------------------------------------------
 
 dictHint = Dict(
-    1 => "file in use - set ';protect=false' to lift overwrite protection",
-    2 => "-"
+    0 => "file in use - set 'protect=false' to lift overwrite protection",
+    1 => "file in use - set 'protect=false' to lift overwrite protection"
 )
 
 # ------------------------------------------------------------------------------
@@ -82,7 +54,7 @@ dictHint = Dict(
 dictError = Dict(0 => nothing,
     1 => "file not found",
     2 => "filename lacks mandatory '.fits' extension",
-    3 => "filename lacks 'name'",
+    3 => "filnam lacks mandatory 'name' specificaton",
     4 => "filnam in use - set '; protect=false' to overrule overwrite protection",
     5 => "incorrect DataType (Real type mandatory for image HDUs)",
     6 => "FITS format requires integer number of blocks (of 2880 bytes)",

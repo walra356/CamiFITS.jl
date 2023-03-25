@@ -16,7 +16,7 @@ function _append_blanks!(records::Array{String,1})
 
     nrec = length(records)
 
-    nrec > 0 || Base.throw(FITSError(msgFITS(10))) # "END keyword not present
+    nrec > 0 || Base.throw(FITSError(msgError(10))) # "END keyword not present
 
     remainder = nrec % 36
     nblanks = 36 - remainder

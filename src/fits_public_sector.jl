@@ -40,33 +40,33 @@ julia> rm(filnam); f = nothing
 """
 function fits_info(hdu::FITS_HDU)
 
-  typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
+    typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
-  if isnothing(hdu.dataobject.data)
-    strDataType = "nothing"
-    strDatasize = "0"
-  else
-    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
-    strDatasize = Base.string(Base.size(hdu.dataobject.data))
-  end
+    if isnothing(hdu.dataobject.data)
+      strDataType = "nothing"
+      strDatasize = "0"
+    else
+      strDataType = Base.string(Base.eltype(hdu.dataobject.data))
+      strDatasize = Base.string(Base.size(hdu.dataobject.data))
+    end
 
-  info = [
-    "\r\nFile: " * hdu.filnam,
-    "hdu: " * Base.string(hdu.hduindex),
-    "hdutype: " * hdu.dataobject.hdutype,
-    "DataType: " * strDataType,
-    "Datasize: " * strDatasize,
-    "\r\nMetainformation:"
-  ]
+    info = [
+      "\r\nFile: " * hdu.filnam,
+      "hdu: " * Base.string(hdu.hduindex),
+      "hdutype: " * hdu.dataobject.hdutype,
+      "DataType: " * strDataType,
+      "Datasize: " * strDatasize,
+      "\r\nMetainformation:"
+    ]
 
-  records = hdu.header.records
-  records = _rm_blanks(records)         # remove blank records
+    records = hdu.header.records
+    records = _rm_blanks(records)         # remove blank records
 
-  Base.append!(info, records)
+    Base.append!(info, records)
 
-  println(Base.join(info .* "\r\n"))
+    println(Base.join(info .* "\r\n"))
 
-  return hdu.dataobject.data
+    return hdu.dataobject.data
 
 end
 
@@ -146,21 +146,21 @@ julia> rm(filnam); f = nothing
 """
 function fits_create(filnam::String, data=nothing; protect=true, msg=true)
 
-  err = CamiFITS.err_FITS_name(filnam; protect)
-  err > 1 && msg && Base.throw(FITSError(msgFITS(err)))
+    err = _err_FITS_name(filnam; protect)
+    err > 1 && msg && Base.throw(FITSError(msgError(err)))
 
-  nhdu = 1
-  hdutype = "PRIMARY"
+    nhdu = 1
+    hdutype = "PRIMARY"
 
-  FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
-  FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
+    FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
+    FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
 
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-  _fits_save(FITS)
+    _fits_save(FITS)
 
-  return FITS
+    return FITS
 
 end
 
@@ -202,16 +202,16 @@ julia> rm(filnam); f = nothing
 """
 function fits_read(filnam::String)
 
-  o = _fits_read_IO(filnam)
+    o = _fits_read_IO(filnam)
 
-  nhdu = _hdu_count(o)
+    nhdu = _hdu_count(o)
 
-  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
+    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+    FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-  return FITS
+    return FITS
 
 end
 
@@ -252,29 +252,27 @@ rm(strExample); f = data = a = b = c = d = e = nothing
 """
 function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 
-  hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
-  hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
-  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("strError: unknown HDU type")
+    hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
+    hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
+    hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("strError: unknown HDU type")
 
-  o = _fits_read_IO(filnam)
+    o = _fits_read_IO(filnam)
 
-  nhdu = _hdu_count(o)
+    nhdu = _hdu_count(o)
 
-  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
+    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+    FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-  nhdu = nhdu + 1
+    nhdu = nhdu + 1
 
-  Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
-  Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
+    Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
+    Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
+    _fits_save(FITS)
 
-
-  _fits_save(FITS)
-
-  return FITS
+    return FITS
 
 end
 
@@ -302,23 +300,20 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
 """
 function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
 
-  err = CamiFITS.err_FITS_name(filnamA; protect)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+    # err = CamiFITS._err_FITS_name(filnamA; protect)
+    # err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
 
-  o = _fits_read_IO(filnamA)
-  f = cast_FITS_name(filnamA)
+    o = _fits_read_IO(filnamA)
+    f = cast_FITS_name(filnamA)
 
-  filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
+    filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
 
-  err = CamiFITS.err_FITS_name(filnamB; protect)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+    err = CamiFITS._err_FITS_name(filnamB; protect)
+    err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
 
-  # CamiFITS.isvalid_FITS_name(filnamB) || error()
-  # _isavailable(filnamB, protect) || error("strError: '$filnamB' in use (set ';protect=false' to lift overwrite protection)")
+    _fits_write_IO(o, filnamB)
 
-  _fits_write_IO(o, filnamB)
-
-  return println("'$filnamA' was saved as '$filnamB'")
+    return println("'$filnamA' was saved as '$filnamB'")
 
 end
 
@@ -341,67 +336,67 @@ fits_combine("T01.fits", "T22.fits")
 """
 function fits_combine(filnamA::String, filnamB::String; protect=true)
 
-  err = CamiFITS.err_FITS_name(filnamA; protect)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+    err = CamiFITS._err_FITS_name(filnamA; protect)
+    err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
 
-  err = CamiFITS.err_FITS_name(filnamB; protect)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+    err = CamiFITS._err_FITS_name(filnamB; protect)
+    err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
 
-  filnamA = uppercase(filnamA)
-  filnamB = uppercase(filnamB)
+    filnamA = uppercase(filnamA)
+    filnamB = uppercase(filnamB)
 
-  nam = cast_FITS_name(filnamA)
-  strPre = nam.prefix
-  strNum = nam.numerator
-  strExt = nam.extension
-  valNum = parse(Int, strNum)
-  numLeadingZeros = length(strNum) - length(string(valNum))
+    nam = cast_FITS_name(filnamA)
+    strPre = nam.prefix
+    strNum = nam.numerator
+    strExt = nam.extension
+    valNum = parse(Int, strNum)
+    numLeadingZeros = length(strNum) - length(string(valNum))
 
-  nam2 = cast_FITS_name(filnamB)
-  strPre2 = nam2.prefix
-  strNum2 = nam2.numerator
-  strExt2 = nam2.extension
-  valNum2 = parse(Int, strNum2)
-  numLeadingZeros2 = length(strNum2) - length(string(valNum2))
+    nam2 = cast_FITS_name(filnamB)
+    strPre2 = nam2.prefix
+    strNum2 = nam2.numerator
+    strExt2 = nam2.extension
+    valNum2 = parse(Int, strNum2)
+    numLeadingZeros2 = length(strNum2) - length(string(valNum2))
 
-  if strPre ≠ strPre2
-    error(strPre * " ≠ " * strPre2 * " (prefixes must be identical)")
-  elseif strExt ≠ strExt2
-    error(strExt * " ≠ " * strExt2 * " (file extensions must be identical)")
-  elseif uppercase(strExt) ≠ ".FITS"
-    error("file extension must be '.fits'")
-  end
-
-  numFiles = 1 + valNum2 - valNum
-  f = fits_read(filnamA)
-  dataA = f[1].dataobject.data  # read an image from disk
-  t = typeof(f[1].dataobject.data[1, 1, 1])
-  s = size(f[1].dataobject.data)
-
-  dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
-
-  itr = valNum:valNum2
-  filnamNext = filnamA
-  for i ∈ itr
-    l = length(filnamNext)
-    filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
-    if l < length(filnamNext)
-      numLeadingZeros = numLeadingZeros - 1
-      filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
+    if strPre ≠ strPre2
+      error(strPre * " ≠ " * strPre2 * " (prefixes must be identical)")
+    elseif strExt ≠ strExt2
+      error(strExt * " ≠ " * strExt2 * " (file extensions must be identical)")
+    elseif uppercase(strExt) ≠ ".FITS"
+      error("file extension must be '.fits'")
     end
-    f = fits_read(filnamNext)
-    dataNext = f[1].dataobject.data                # read an image from disk
-    dataStack[:, :, i] = dataNext[:, :, 1]
-  end
 
-  filnamOut = strPre * strNum * "-" * strPre * strNum2 * strExt
+    numFiles = 1 + valNum2 - valNum
+    f = fits_read(filnamA)
+    dataA = f[1].dataobject.data  # read an image from disk
+    t = typeof(f[1].dataobject.data[1, 1, 1])
+    s = size(f[1].dataobject.data)
 
-  err = CamiFITS.err_FITS_name(filnamOut; protect)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+    dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
 
-  fits_create(filnamOut, dataStack; protect)
+    itr = valNum:valNum2
+    filnamNext = filnamA
+    for i ∈ itr
+      l = length(filnamNext)
+      filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
+      if l < length(filnamNext)
+        numLeadingZeros = numLeadingZeros - 1
+        filnamNext = strPre * "0"^numLeadingZeros * string(i) * ".fits"
+      end
+      f = fits_read(filnamNext)
+      dataNext = f[1].dataobject.data                # read an image from disk
+      dataStack[:, :, i] = dataNext[:, :, 1]
+    end
 
-  return println("'$filnamOut': file created")
+    filnamOut = strPre * strNum * "-" * strPre * strNum2 * strExt
+
+    err = CamiFITS._err_FITS_name(filnamOut; protect)
+    err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
+
+    fits_create(filnamOut, dataStack; protect)
+
+    return println("'$filnamOut': file created")
 
 end
 
@@ -441,35 +436,35 @@ fits_info(f[1])
 """
 function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-  err = CamiFITS.err_FITS_name(filnam; protect=false)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+    err = CamiFITS._err_FITS_name(filnam; protect=false)
+    err > 1 && Base.throw(FITSError(msgError(err)))
 
-  o = _fits_read_IO(filnam)
+    o = _fits_read_IO(filnam)
 
-  nhdu = _hdu_count(o)
+    nhdu = _hdu_count(o)
 
-  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
+    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
+    FITS_data = [_read_data(o, i) for i = 1:nhdu]
 
-  key = _format_key(key)
+    key = _format_key(key)
 
-  h = FITS_headers[hduindex]
-  Base.get(h.maps, key, 0) > 0 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(7)))
-  # 7 - HDU key in use (use different name or edit key)
+    h = FITS_headers[hduindex]
+    Base.get(h.maps, key, 0) > 0 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(7)))
+    # 7 - HDU key in use (use different name or edit key)
 
-  newrecords = _fits_new_records(key, val, com)
+    newrecords = _fits_new_records(key, val, com)
 
-  Base.pop!(h.records)
-  [Base.push!(h.records, newrecords[i]) for i ∈ eachindex(newrecords)]
-  Base.push!(h.records, "END" * Base.repeat(" ", 77))
+    Base.pop!(h.records)
+    [Base.push!(h.records, newrecords[i]) for i ∈ eachindex(newrecords)]
+    Base.push!(h.records, "END" * Base.repeat(" ", 77))
 
-  FITS_headers[hduindex] = _cast_header(h.records, hduindex)
+    FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
-  _fits_save(FITS)
+    _fits_save(FITS)
 
-  return FITS
+    return FITS
 
 end
 
@@ -511,8 +506,8 @@ fits_info(f[1])
 """
 function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-  err = CamiFITS.err_FITS_name(filnam; protect=false)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+  err = CamiFITS._err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
 
   o = _fits_read_IO(filnam)
 
@@ -577,8 +572,8 @@ fits_delete_key(filnam, 1, "NAXIS")
 """
 function fits_delete_key(filnam::String, hduindex::Int, key::String)
 
-  err = CamiFITS.err_FITS_name(filnam; protect=false)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+  err = CamiFITS._err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
 
   o = _fits_read_IO(filnam)
 
@@ -646,8 +641,8 @@ fits_info(f[1])
 """
 function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 
-  err = CamiFITS.err_FITS_name(filnam; protect=false)
-  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgFITS(err)))
+  err = CamiFITS._err_FITS_name(filnam; protect=false)
+  err > 1 && Base.throw(CamiFITS.FITSError(CamiFITS.msgError(err)))
 
   o = _fits_read_IO(filnam)
 

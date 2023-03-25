@@ -5,35 +5,29 @@
 #                          Jook Walraven 22-03-2023
 # ------------------------------------------------------------------------------
 
-
-
-function test_fits_format(filnam::String; msg=true)
-
-    o = Bool[]
-
-    push!(o, _passed_filnam_test(filnam::String))
-    push!(o, _passed_block_test(filnam::String))
-
-    hdu = fits_read(filnam)
-
-    append!(o, [_passed_record_count(hdu[i]) for i ∈ eachindex(hdu)])
-    append!(o, [_passed_ASCII_test(hdu[i]) for i ∈ eachindex(hdu)])
-    append!(o, [_passed_keyword_test(hdu[i]) for i ∈ eachindex(hdu)])
-
-    return o
-
-end
-
 # ------------------------------------------------------------------------------
 #                      fits_verifier(filnam; msg=true)
+#
+# - to verrify FITS format of existing file
 # ------------------------------------------------------------------------------
 
-function fits_verifier(filnam::String; protect=true, msg=true)
+function fits_verifier(filnam::String; msg=true)
+
+    println("fits_verifier: " * filnam)
+
+    isfile(filnam) || return println("file not found")
 
     passed = Bool[]
 
-    push!(passed, _filnam_test(filnam; protect, msg))
+    push!(passed, _filnam_test(filnam; protect=false, msg))
     push!(passed, _block_test(filnam; msg))
+
+    hdu = fits_read(filnam)
+
+    for i ∈ eachindex(hdu)
+        println("HDU-$i:")
+        append!(passed, _record_count(hdu[i]; msg))
+    end
 
     return passed
 
@@ -45,39 +39,18 @@ end
 
 function _filnam_test(filnam::String; protect=false, msg=true)
 
-    nl = Base.length(filnam)      # nl: length of file name including extension
-    ne = Base.findlast('.', filnam)              # ne: first digit of extension
-
-    if Base.Filesystem.isfile(filnam) & protect
-        err = 4  # filname in use (set ';protect=false' to lift protection)
-    else
-        if Base.iszero(nl)
-            err = 1  # file not found
-        elseif Base.isnothing(ne)
-            err = 2  # filnam lacks mandatory '.fits' extension
-        elseif Base.isone(ne)
-            err = 3  # filnam lacks mandatory filnam
-        else
-            strExt = Base.rstrip(filnam[ne:nl])
-            strExt = Base.Unicode.lowercase(strExt)
-            if strExt ≠ ".fits"
-                err = 2  # filnam lacks mandatory '.fits' extension
-            else
-                err = 0  # no error
-            end
-        end
-    end
+    err = _err_FITS_name(filnam::String; protect)
 
     F = cast_FITS_test(1, err)
 
     if msg
-        str = F.passed ? "Passed " : "Failed: "
-        str *= F.name * ": "
+        str = F.passed ? "Passed " : "Failed "
+        str *= F.name * ":" * repeat(' ', 20 - length(F.name))
         str *= err == 0 ? F.msgpass :
-            err == 1 ? F.msgfail :
-            err == 2 ? F.msgwarn :
-            err == 3 ? F.msgwarn :
-            err == 4 ? F.msghint : "err $(err) not found"
+               err == 1 ? F.msgfail :
+               err == 2 ? F.msgwarn :
+               err == 3 ? F.msgwarn :
+               err == 4 ? F.msghint : "err $(err) not found"
         println(str)
     end
 
@@ -98,12 +71,42 @@ function _block_test(filnam::String; msg=true)
     remain = nbytes % 2880                      # remainder (incomplete block)
 
     err = remain > 0 ? 1 : 0
-      
+
     F = cast_FITS_test(2, err)
 
     if msg
-        str = F.passed ? "Passed " : "Failed: "
-        str *= F.name * ": "
+        str = F.passed ? "Passed " : "Failed "
+        str *= F.name * ":" * repeat(' ', 20 - length(F.name))
+        str *= (err == 0 ? F.msgpass : F.msgfail)
+        println(str)
+    end
+
+    return F.passed
+
+end
+
+# ------------------------------------------------------------------------------
+#                        test 3: _record_count(hdu)
+# ------------------------------------------------------------------------------
+
+function _record_count(hdu::FITS_HDU; msg=true)
+
+    typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
+
+    records = hdu.header.records
+    hduindex = hdu.header.hduindex
+
+    nrec = length(records)
+    nblock = nrec ÷ 36
+    remain = nrec % 36
+
+    err = remain > 0 ? 1 : 0
+
+    F = cast_FITS_test(3, err)
+
+    if msg
+        str = F.passed ? "Passed " : "Failed "
+        str *= F.name * ":" * repeat(' ', 20 - length(F.name))
         str *= (err == 0 ? F.msgpass : F.msgfail)
         println(str)
     end
@@ -114,22 +117,19 @@ end
 
 
 
-
-
-
 function _passed_filnam_test(filnam::String)
 
-    err = err_FITS_name(filnam)
+    err = _err_FITS_name(filnam)
 
     if err === 0
         str = "$(filnam) - passed name test:    "
         str *= "file exists, has valid name and may be overwritten."
     elseif err === 1
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgError(err)
     elseif err === 2
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgError(err)
     elseif err === 3
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgFITS(err)
+        str = "$(filnam) - failed name test:    " * CamiFITS.msgError(err)
     elseif err === 4
         str = "$(filnam) - passed name test:    "
         str *= "file exists and has valid name "
@@ -157,7 +157,7 @@ function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
 
     if remain > 0
         err = 6 # FITS format requires integer number of blocks (of 2880 bytes)
-        str = "$(filnam) - failed block test:    " * CamiFITS.msgFITS(err)
+        str = "$(filnam) - failed block test:    " * CamiFITS.msgError(err)
     else
         err = 0
         str = "$(filnam) - passed block test:    "
@@ -189,7 +189,7 @@ function _passed_record_count(hdu::FITS_HDU)
     if remain > 0
         err = 8 # header shall consist of integer number of blocks (of 36 records)
         str = "HDU$(hduindex) - header failed block test:    "
-        str *= msgFITS(err)
+        str *= msgError(err)
         str *= " - nrec = $(nrec), nblock = $(nblock), remainder = $(remain)"
     else
         err = 0
@@ -223,7 +223,7 @@ function _passed_ASCII_test(hdu::FITS_HDU)
     else
         err = 9 # header blocks shall contain only the restricted set of ASCII text characters, decimal 32 through 126
         str = "HDU$(hduindex) - header failed ASCII test:    "
-        str *= msgFITS(err)
+        str *= msgError(err)
     end
 
     println(str)
@@ -274,7 +274,7 @@ function _passed_keyword_test(hdu::FITS_HDU)
     else
         err = 11 # mandatory keyword not present or out of order
         str = "HDU$(hduindex) - header failed keyword test:    "
-        str *= msgFITS(err)
+        str *= msgError(err)
     end
 
     println(str)

@@ -33,7 +33,6 @@ end
 #                            FITS_name
 # ------------------------------------------------------------------------------
 
-# ..............................................................................
 @doc raw"""
     FITS_name
 
@@ -55,68 +54,9 @@ struct FITS_name
 end
 
 # ------------------------------------------------------------------------------
-#                  err_FITS_name(filnam::String; protect=true)
-# ------------------------------------------------------------------------------
-
-function err_FITS_name(filnam::String; protect=true)
-
-    nl = Base.length(filnam)      # nl: length of file name including extension
-    ne = Base.findlast('.', filnam)              # ne: first digit of extension
-
-    if Base.Filesystem.isfile(filnam) & protect
-        err = 4  # filname in use (set ';protect=false' to overrule overwrite protection)
-    else
-        if Base.iszero(nl)
-            err = 1  # file not found
-        elseif Base.isnothing(ne)
-            err = 2  # filnam lacks mandatory '.fits' extension
-        elseif Base.isone(ne)
-            err = 3  # filnam lacks mandatory filnam
-        else
-            strExt = Base.rstrip(filnam[ne:nl])
-            strExt = Base.Unicode.lowercase(strExt)
-            if strExt ≠ ".fits"
-                err = 2  # filnam lacks mandatory '.fits' extension
-            else
-                err = 0  # no error
-            end
-        end
-    end
-
-    return err
-
-end
-
-@doc raw"""
-    isvalid_FITS_name(filnam::String; msg=true)::Bool
-
-Validity test of fits filnam.
-#### Examples:
-```
-julia> isvalid_FITS_name("example.fits")
-true
-
-julia> isvalid_FITS_name("example")
-Error: filnam lacks mandatory '.fits' extension
-false
-```
-"""
-function isvalid_FITS_name(filnam::String; msg=true)
-
-    err = err_FITS_name(filnam)
-    str = get(dictError, err, nothing)
-
-    msg && !isnothing(str) && error("Error $(err): " * str)
-
-    return err > 0 ? false : true
-
-end
-
-# ------------------------------------------------------------------------------
 #                            cast_FITS_name(filnam)
 # ------------------------------------------------------------------------------
 
-# ..............................................................................
 """
     cast_FITS_name(str::String)
 
@@ -133,9 +73,6 @@ f.name, f.prefix, f.numerator, f.extension
 """
 function cast_FITS_name(filnam::String)
 
-    isvalid_FITS_name(filnam) || error("Error: '$(filnam)' not a valid FITS_name")
-    #isvalid_FITS_name(filnam; msg=false) || error("Error: '$(filnam)' not a valid FITS_name")
-
     nl = Base.length(filnam)      # nl: length of file name including extension
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
 
@@ -143,7 +80,7 @@ function cast_FITS_name(filnam::String)
     strExt = Base.rstrip(filnam[ne:nl])
     strExt = Base.Unicode.lowercase(strExt)
 
-    n = ne - 1                         # n: last digit of numerator (if existent)
+    n = ne - 1                       # n: last digit of numerator (if existent)
 
     if !isnothing(n)
         strNum = ""
@@ -195,7 +132,7 @@ function _cast_header(records::Array{String,1}, hduindex::Int)
 
     remainder = length(records) % 36
 
-    iszero(remainder) || Base.throw(FITSError(msgFITS(8)))
+    iszero(remainder) || Base.throw(FITSError(msgError(8)))
 
     recs = _rm_blanks(records)         # remove blank records to collect header records data (key, val, comment)
     nrec = length(recs)                # number of keys in header with given hduindex
@@ -205,7 +142,7 @@ function _cast_header(records::Array{String,1}, hduindex::Int)
 
     #pass = _passed_keyword_test(records, hduindex) 
 
-    #pass || Base.throw(FITSError(msgFITS(11))) 
+    #pass || Base.throw(FITSError(msgError(11))) 
 
     coms = [records[i][34:80] for i = 1:nrec]
     dict = [keys[i] => vals[i] for i = 1:nrec]
@@ -255,6 +192,37 @@ struct FITS_table
 
 end
 
+
+# ------------------------------------------------------------------------------
+#                         FITSError <: Exception
+# ------------------------------------------------------------------------------
+
+struct FITSError <: Exception
+    msg::String
+end
+
+# ------------------------------------------------------------------------------
+#                 Base.showerror(io::IO, err::FITSError)
+# ------------------------------------------------------------------------------
+
+function Base.showerror(io::IO, err::FITSError)
+    print(io, err.msg)
+end
+
+# ------------------------------------------------------------------------------
+#                             strErr(err::Int)
+# ------------------------------------------------------------------------------
+
+function msgError(err::Int)
+
+    str = "FITSError: $(err) - "
+    str *= Base.get!(dictError, err, "not found")
+
+    return str
+
+end
+
+
 # ------------------------------------------------------------------------------
 #                             FITS_test 
 # ------------------------------------------------------------------------------
@@ -268,7 +236,6 @@ mutable struct FITS_test
     msgfail::String
     msgwarn::String
     msghint::String
-    msgerror::String
 end
 
 # ------------------------------------------------------------------------------
@@ -279,15 +246,14 @@ function cast_FITS_test(index::Int, err)
 
     passed = err == 0 ? true : false
 
-    name = get!(dictTest, index, "testname not found")
-    p = get!(dictPass, index, "pass message not found")
-    f = get!(dictFail, index, "error message not found")
-    w = get!(dictWarn, index, "warning not found")
-    h = get!(dictHint, index, "warning not found")
-    e = get!(dictError, index, "error not found")
+    name = get(dictTest, index, "testname not found")
+    p = Base.get(dictPass, index, "")
+    f = "FITSError: $(err) - " * Base.get(dictFail, index, "")
+    w = "FITSWarning: $(index) - " * Base.get(dictWarn, index, "")
+    h = "FITSError: $(err) - " * Base.get(dictHint, index, "")
 
-    FT = FITS_test(index, err, name, passed, p, f, w, h, e)
+    F = FITS_test(index, err, name, passed, p, f, w, h)
 
-    return FT
+    return F
 
 end

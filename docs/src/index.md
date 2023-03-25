@@ -152,11 +152,6 @@ FITS_data
 FITS_table
 FITS_name
 ```
-#### Type tests
-
-```@docs
-isvalid_FITS_name(filnam::String; msg=true)
-```
 #### Type casting
 
 ```@docs

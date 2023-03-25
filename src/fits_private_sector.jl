@@ -1,10 +1,44 @@
 # SPDX-License-Identifier: MIT
 
-# ............................................ FITS private sector ................................................................
+# ------------------------------------------------------------------------------
+#                          fits_private_sector.jl
+#                         Jook Walraven 21-03-2023
+# ------------------------------------------------------------------------------
 
 using Dates
 
+# ------------------------------------------------------------------------------
+#                  _err_FITS_name(filnam::String; protect=true)
+# ------------------------------------------------------------------------------
 
+function _err_FITS_name(filnam::String; protect=true)
+
+    nl = Base.length(filnam)      # nl: length of file name including extension
+    ne = Base.findlast('.', filnam)              # ne: first digit of extension
+
+    if Base.Filesystem.isfile(filnam) & protect
+        err = 4  # filname in use 
+    else         # (set ';protect=false' to overrule overwrite protection)
+        if Base.iszero(nl)
+            err = 1 # 
+        elseif Base.isnothing(ne)
+            err = 2  # filnam lacks mandatory '.fits' extension
+        elseif Base.isone(ne)
+            err = 3  # filnam lacks mandatory filnam
+        else
+            strExt = Base.rstrip(filnam[ne:nl])
+            strExt = Base.Unicode.lowercase(strExt)
+            if strExt ≠ ".fits"
+                err = 2  # filnam lacks mandatory '.fits' extension
+            else
+                err = 0  # no error
+            end
+        end
+    end
+
+    return err
+
+end
 
 # .................................. cast data into FITS_data objects ....................................
 
@@ -225,12 +259,6 @@ function _hdu_count(o::IO)
     h = _header_pointers(o::IO)                 # h: start-of-header pointers
 
     return length(h)                            # number of HDUs
-
-end
-
-function _isavailable(filnam::String, protect::Bool)
-
-     return (!Base.Filesystem.isfile(filnam) | !protect)
 
 end
 

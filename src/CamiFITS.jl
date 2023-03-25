@@ -15,11 +15,8 @@ export errFITS
 
 export dictDefinedTerms
 export terminology
-export _isavailable
 
-export err_FITS_name
 export test_FITS_name
-export test_fits_format
 
 export test_fits_create
 export test_fits_extend
@@ -41,7 +38,6 @@ export cast_FITS_test
 export cast_FITS_name
 
 export parse_FITS_TABLE
-export isvalid_FITS_name
 
 #export force_create
 export fits_create
@@ -56,6 +52,7 @@ export fits_edit_key
 export fits_delete_key
 export fits_rename_key
 export fits_verifier
+export name_verifier
 
 #export plot_matrices
 #export plot!

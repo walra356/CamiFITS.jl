@@ -20,7 +20,7 @@ function _fits_read_IO(filnam::String)
     nblock = nbytes ÷ 2880                      # number of blocks 
     remain = nbytes % 2880                      # remainder (incomplete block)
 
-    remain > 0 && Base.throw(FITSError(msgFITS(6))) 
+    remain > 0 && Base.throw(FITSError(msgError(6))) 
 
     return o
 
@@ -88,7 +88,7 @@ function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data us
 
     dicts = FITS_header.dict
     ndims = Base.get(dicts, "NAXIS", 0)
-    
+
     if ndims > 0
         dims = Core.tuple([Base.get(dicts, "NAXIS$n", 0) for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
         ndata = Base.prod(dims)                                                     # number of data points
