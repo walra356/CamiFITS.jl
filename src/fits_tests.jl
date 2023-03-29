@@ -152,6 +152,25 @@ function test_fits_create()
 
 end
 
+
+function test_fits1_create()
+
+    filnam = "minimal.fits"
+    f = fits1_create(filnam; protect=false)
+
+    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    b = isnothing(f.hdu[1].dataobject.data)
+    c = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    d = f.hdu[1].header.key[2].val == 0
+
+    rm(filnam)
+
+    o = isnothing(findfirst(.![a, b, c, d])) ? true : false
+
+    return o
+
+end
+
 function test_fits_extend()
 
     filnam = "test_example.fits"
@@ -243,12 +262,16 @@ function test_fits_delete_key()
 
     test1 = i == 5
 
+    # println(test1)
+
     fits_delete_key(filnam, 1, "KEYNEW1")
 
     f = fits_read(filnam)
     i = get(f[1].header.maps, "KEYNEW1", 0)
 
     test2 = i == 0
+
+    # println(test2)
 
     test = .![test1, test2]
 

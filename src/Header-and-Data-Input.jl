@@ -26,7 +26,7 @@ function _append_blanks!(records::Array{String,1})
         append!(records, blanks)
     end
 
-    return nothing
+    return records
 
 end
 

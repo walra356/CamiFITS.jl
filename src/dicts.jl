@@ -15,7 +15,7 @@ dictTest = Dict(
 # ------------------------------------------------------------------------------
 
 dictPass = Dict(
-    1 => "file exists in conformance to the CamiFITS naming convention.",
+    1 => "file exists in conformance with the CamiFITS naming convention.",
     2 => "integer number of blocks (of 2880 bytes).",
     3 => "header consists of integer number of blocks (of 36 records)"
 )

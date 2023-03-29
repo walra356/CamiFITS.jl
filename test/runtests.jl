@@ -11,15 +11,16 @@ using Test
     @test step125.([5, 10, 21.3, 50, 100.1]) == [1, 2, 5, 10, 20]
 
     @test test_fits_create()
+    @test test_fits1_create()
     @test test_fits_extend()
     @test test_fits_read()
 
     @test test_FITS_name([])
 
-    # @test test_fits_add_key()
-    # @test test_fits_edit_key()
-    # @test test_fits_delete_key()
-    # @test test_fits_rename_key()
+    @test test_fits_add_key()
+    #@test test_fits_edit_key()
+    #@test test_fits_delete_key()
+    @test test_fits_rename_key()
 
     @test terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."
     @test terminology("s"; test=true)

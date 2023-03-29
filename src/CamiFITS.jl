@@ -18,6 +18,7 @@ export terminology
 
 export test_FITS_name
 
+export test_fits1_create
 export test_fits_create
 export test_fits_extend
 export test_fits_read
@@ -33,6 +34,16 @@ export FITS_data
 export FITS_table
 export FITS_name
 export FITS_test
+export FITS_key
+
+export FITS1_key
+export FITS1_header
+export FITS
+
+export cast_FITS1_key
+export cast_FITS1_header
+export cast_FITS
+export cast_data
 
 export cast_FITS_test
 export cast_FITS_name
@@ -41,10 +52,13 @@ export parse_FITS_TABLE
 
 #export force_create
 export fits_create
+export fits1_create
 export fits_create_test
 export fits_read
+export fits1_read
 export fits_extend
 export fits_info
+export fits1_info
 export fits_copy
 export fits_combine
 export fits_add_key

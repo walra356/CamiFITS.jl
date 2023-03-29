@@ -125,11 +125,11 @@ function _passed_filnam_test(filnam::String)
         str = "$(filnam) - passed name test:    "
         str *= "file exists, has valid name and may be overwritten."
     elseif err === 1
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgError(err)
+        str = "$(filnam) - failed name test:    " * msgError(err)
     elseif err === 2
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgError(err)
+        str = "$(filnam) - failed name test:    " * msgError(err)
     elseif err === 3
-        str = "$(filnam) - failed name test:    " * CamiFITS.msgError(err)
+        str = "$(filnam) - failed name test:    " * msgError(err)
     elseif err === 4
         str = "$(filnam) - passed name test:    "
         str *= "file exists and has valid name "
@@ -157,7 +157,7 @@ function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
 
     if remain > 0
         err = 6 # FITS format requires integer number of blocks (of 2880 bytes)
-        str = "$(filnam) - failed block test:    " * CamiFITS.msgError(err)
+        str = "$(filnam) - failed block test:    " * msgError(err)
     else
         err = 0
         str = "$(filnam) - passed block test:    "

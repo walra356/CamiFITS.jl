@@ -20,7 +20,7 @@ function _fits_read_IO(filnam::String)
     nblock = nbytes ÷ 2880                      # number of blocks 
     remain = nbytes % 2880                      # remainder (incomplete block)
 
-    remain > 0 && Base.throw(FITSError(msgError(6))) 
+    remain > 0 && Base.throw(FITSError(msgError(6)))
 
     return o
 
@@ -51,6 +51,27 @@ function _read_header(o::IO, hduindex::Int)
     FITS_header = _cast_header(records, hduindex)
 
     return FITS_header
+
+end
+
+function _read1_header(o::IO, hduindex::Int)
+
+    ptrhdu = _hdu_pointers(o)
+    ptrdat = _data_pointers(o)
+
+    Base.seekstart(o)
+    Base.seek(o, ptrhdu[hduindex])
+
+    itr = (ptrhdu[hduindex] ÷ 80 + 1) : (ptrdat[hduindex] ÷ 80)
+
+    records::Array{String,1} = []
+
+    for i = itr
+        rec = String(Base.read(o, 80))
+        Base.push!(records, rec)
+    end
+
+    return cast_FITS1_header(records, hduindex)
 
 end
 
