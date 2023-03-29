@@ -39,9 +39,10 @@ export FITS_name
 export FITS_test
 export FITS_key
 
-export FITS1_key
-export FITS1_header
 export FITS
+export FITS1_HDU
+export FITS1_header
+export FITS1_key
 
 export cast_FITS1_key
 export cast_FITS1_header
