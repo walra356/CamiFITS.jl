@@ -375,8 +375,8 @@ function fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
 
   hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
   hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
-  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : 
-              error("strError: unknown HDU type")
+  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) :
+  error("strError: unknown HDU type")
 
   o = _fits_read_IO(filnam)
 
@@ -848,7 +848,33 @@ parse_FITS_TABLE(f[2])
    ["a                   ", "bb                  ", "ccc                 ", "dddd                ", "ABCeeaeeEEEEEEEEEEEE"]
 ```
 """
-function parse_FITS_TABLE(hdu::FITS_HDU)
+function parse_FITS_TABLE11111(hdu::FITS_HDU)
+
+  dict = hdu.header.dict
+  thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])
+
+  thdu == "TABLE" || return error("Error: $thdu is not an ASCII TABLE HDU")
+
+  ncols = Base.get(dict, "TFIELDS", 0)
+  nrows = Base.get(dict, "NAXIS2", 0)
+  tbcol = [Base.get(dict, "TBCOL$n", 0) for n = 1:ncols]
+  tform = [Base.get(dict, "TFORM$n", 0) for n = 1:ncols]
+  ttype = [cast_FORTRAN_format(tform[n]).Type for n = 1:ncols]
+  tchar = [cast_FORTRAN_format(tform[n]).TypeChar for n = 1:ncols]
+  width = [cast_FORTRAN_format(tform[n]).width for n = 1:ncols]
+  itr = [(tbcol[k]:tbcol[k]+width[k]-1) for k = 1:ncols]
+
+  data = hdu.dataobject.data
+  data = [[data[i][itr[k]] for i = 1:nrows] for k = 1:ncols]
+  data = [tchar[k] == 'D' ? Base.join.(Base.replace!.(Base.collect.(data[k]), 'D' => 'E')) : data[k] for k = 1:ncols]
+  Type = [ttype[k] == "Aw" ? (width[k] == 1 ? Char : String) : ttype[k] == "Iw" ? Int : Float64 for k = 1:ncols]
+  data = [ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
+
+  return data
+
+end
+
+function parse_FITS_TABLE(hdu::FITS1_HDU)
 
   dict = hdu.header.dict
   thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])

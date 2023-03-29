@@ -146,8 +146,6 @@ terminology(term::String; test=false)
 #### Types
 
 ```@docs
-# FITS_HDU{T,V}
-# FITS_header
 FITS1_HDU
 FITS1_header
 FITS_data
@@ -163,7 +161,6 @@ cast_FITS_name(filnam::String)
 ### FITS - HDU Methods
 
 ```@docs
-# fits_info(hdu::FITS_HDU)
 fits1_info(hdu::FITS1_HDU)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```

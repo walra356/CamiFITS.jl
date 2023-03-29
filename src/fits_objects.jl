@@ -89,6 +89,9 @@ end
 #                     cast_FITS1_key(record, index)
 # ------------------------------------------------------------------------------
 
+# keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
+# vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : _fits_parse(records[i][11:31]) for i = 1:nrec]
+
 function cast_FITS1_key(record::String, recordindex::Int)
 
     key = Base.strip(record[1:8])
@@ -111,13 +114,15 @@ Object to hold the header information of a [`FITS_HDU`](@ref).
 The fields are:
 * `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
 * `.record`:  the array of 'records' (`::Vector{FITS1_record}`)
-
+* `.key`: the array of 'key' (`::Vector{FITS1_key}`)
+* `.dict`:  Dictionary `keyword => value` (`::Dict{String, Any}`)
 """
 struct FITS1_header
 
     hduindex::Int
     record::Vector{String}
     key::Vector{FITS1_key}
+    dict::Dict{String, Any}
 
 end
 
@@ -131,9 +136,42 @@ function cast_FITS1_header(record::Vector{String}, hduindex::Int)
 
     iszero(remainder) || Base.throw(FITSError(msgError(8)))
     #                    FITSError 8: fails mandatory integer number of blocks
+
     key = [cast_FITS1_key(record[i], i) for i ∈ eachindex(record)]
 
-    return FITS1_header(hduindex, record, key)
+
+    # println("key[1].val = $(key[1].val)")
+    # println(typeof(key[1].val))
+    dict = Dict(key[i].keyword => key[i].val for i ∈ eachindex(record))
+    # println("dict = $(dict)")
+
+    return FITS1_header(hduindex, record, key, dict)
+
+end
+
+# ------------------------------------------------------------------------------
+
+function _cast_header(records::Array{String,1}, hduindex::Int)
+
+    remainder = length(records) % 36
+
+    iszero(remainder) || Base.throw(FITSError(msgError(8)))
+
+    recs = _rm_blanks(records)         # remove blank records to collect header records data (key, val, comment)
+    nrec = length(recs)                # number of keys in header with given hduindex
+
+    keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
+    vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : _fits_parse(records[i][11:31]) for i = 1:nrec]
+
+    #pass = _passed_keyword_test(records, hduindex) 
+
+    #pass || Base.throw(FITSError(msgError(11))) 
+
+    coms = [records[i][34:80] for i = 1:nrec]
+    dict = [keys[i] => vals[i] for i = 1:nrec]
+    maps = [keys[i] => i for i = 1:nrec]
+
+    return FITS_header(hduindex, records, keys, vals, coms, Dict(dict), Dict(maps))
 
 end
 
@@ -154,8 +192,8 @@ struct FITS_HDU{T,V}
 
     filnam::String
     hduindex::Int
-    header::T        #FITS_header
-    dataobject::V    #FITS_data
+    header::T        # FITS_header
+    dataobject::V    # FITS_data
 
 end
 
@@ -176,8 +214,8 @@ struct FITS1_HDU
 
     filnam::String
     hduindex::Int
-    header::FITS1_header     #FITS_header
-    dataobject::FITS_data    #FITS_data
+    header::FITS1_header     # FITS_header
+    dataobject::FITS_data    # FITS_data
 
 end
 
@@ -319,31 +357,7 @@ struct FITS_header
 
 end
 
-# ........................................... cast records into a FITS_header object .................................
 
-function _cast_header(records::Array{String,1}, hduindex::Int)
-
-    remainder = length(records) % 36
-
-    iszero(remainder) || Base.throw(FITSError(msgError(8)))
-
-    recs = _rm_blanks(records)         # remove blank records to collect header records data (key, val, comment)
-    nrec = length(recs)                # number of keys in header with given hduindex
-
-    keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
-    vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : _fits_parse(records[i][11:31]) for i = 1:nrec]
-
-    #pass = _passed_keyword_test(records, hduindex) 
-
-    #pass || Base.throw(FITSError(msgError(11))) 
-
-    coms = [records[i][34:80] for i = 1:nrec]
-    dict = [keys[i] => vals[i] for i = 1:nrec]
-    maps = [keys[i] => i for i = 1:nrec]
-
-    return FITS_header(hduindex, records, keys, vals, coms, Dict(dict), Dict(maps))
-
-end
 
 
 # ------------------------------------------------------------------------------

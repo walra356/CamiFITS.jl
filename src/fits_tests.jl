@@ -227,7 +227,8 @@ function test_fits1_extend()
     b = f.hdu[1].dataobject.data[1] == 0x0000043e
     c = f.hdu[2].header.key[1].keyword == "XTENSION"
     d = f.hdu[2].dataobject.data[1] == strExample
-    e = f.hdu[2].header.key[3].val == 2
+    # e = f.hdu[2].header.key[3].val == 2
+    e = get(Dict(f.hdu[2].header.dict), "NAXIS", 0) == 2
 
     rm(filnam)
     #println(f[1].dataobject.data[1])
