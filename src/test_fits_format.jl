@@ -22,11 +22,11 @@ function fits_verifier(filnam::String; msg=true)
     push!(passed, _filnam_test(filnam; protect=false, msg))
     push!(passed, _block_test(filnam; msg))
 
-    hdu = fits_read(filnam)
+    f = fits1_read(filnam)
 
-    for i ∈ eachindex(hdu)
+    for i ∈ eachindex(f.hdu)
         println("HDU-$i:")
-        append!(passed, _record_count(hdu[i]; msg))
+        append!(passed, _record_count(f.hdu[i]; msg))
     end
 
     return passed
@@ -89,11 +89,11 @@ end
 #                        test 3: _record_count(hdu)
 # ------------------------------------------------------------------------------
 
-function _record_count(hdu::FITS_HDU; msg=true)
+function _record_count(hdu::FITS1_HDU; msg=true)
 
-    typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
 
-    records = hdu.header.records
+    records = hdu.header.record
     hduindex = hdu.header.hduindex
 
     nrec = length(records)

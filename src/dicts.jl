@@ -27,7 +27,7 @@ dictPass = Dict(
 dictFail = Dict(
     1 => "file not found.",
     2 => "not integer number of blocks (of 2880 bytes).",
-    3 => "header does not consist of integer number of blocks (of 36 records)"
+    3 => "header does not consist of integer number of 36-record blocks"
 )
 
 # ------------------------------------------------------------------------------

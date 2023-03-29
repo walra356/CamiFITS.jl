@@ -146,8 +146,10 @@ terminology(term::String; test=false)
 #### Types
 
 ```@docs
-FITS_HDU{T,V}
-FITS_header
+# FITS_HDU{T,V}
+# FITS_header
+FITS1_HDU
+FITS1_header
 FITS_data
 FITS_table
 FITS_name
@@ -161,7 +163,8 @@ cast_FITS_name(filnam::String)
 ### FITS - HDU Methods
 
 ```@docs
-fits_info(hdu::FITS_HDU)
+# fits_info(hdu::FITS_HDU)
+fits1_info(hdu::FITS1_HDU)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```
 
@@ -170,9 +173,11 @@ parse_FITS_TABLE(hdu::FITS_HDU)
 ```@docs
 fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 fits_copy(filnamA::String, filnamB::String=" "; protect=true)
-fits_create(filnam::String, data=nothing; protect=true, msg=true)
+# fits_create(filnam::String, data=nothing; protect=true, msg=true)
 fits_extend(filnam::String, data_extend, hdutype="IMAGE")
-fits_read(filnam::String)
+# fits_read(filnam::String)
+fits1_read(filnam::String)
+fits1_create(filnam::String, data=nothing; protect=true, msg=true)
 ```
 
 ### FITS - Key Methods
