@@ -204,6 +204,41 @@ function test_fits_extend()
 
 end
 
+
+function test_fits1_extend()
+
+    filnam = "test_example.fits"
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    fits1_create(filnam, data; protect=false)
+
+    f = fits_read(filnam)
+    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
+    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
+    c = [1.23, 2.12, 3.0, 4.0, 5.0]
+    d = ['a', 'b', 'c', 'd', 'e']
+    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
+    data = [a, b, c, d, e]
+
+    f = fits1_extend(filnam, data, "TABLE")
+
+    f = fits1_read(filnam)
+    strExample = "1.0e-6 1086 1.23 a a                    "
+    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    b = f.hdu[1].dataobject.data[1] == 0x0000043e
+    c = f.hdu[2].header.key[1].keyword == "XTENSION"
+    d = f.hdu[2].dataobject.data[1] == strExample
+    e = f.hdu[2].header.key[3].val == 2
+
+    rm(filnam)
+    #println(f[1].dataobject.data[1])
+    # println([a, b, c, d, e])
+
+    o = isnothing(findfirst(.![a, b, c, d, e])) ? true : false
+
+    return o
+
+end
+
 function test_fits_read()
 
     filnam = "minimal.fits"
@@ -218,6 +253,25 @@ function test_fits_read()
     rm(filnam)
 
     o = isnothing(findfirst(.![a, b, c, d])) ? true : false
+
+    return o
+
+end
+
+
+function test_fits1_read()
+
+    filnam = "minimal.fits"
+    fits1_create(filnam; protect=false)
+
+    f = fits1_read(filnam)
+    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    b = isnothing(f.hdu[1].dataobject.data)
+    c = f.hdu[1].header.key[2].val == 0
+
+    rm(filnam)
+
+    o = isnothing(findfirst(.![a, b, c])) ? true : false
 
     return o
 

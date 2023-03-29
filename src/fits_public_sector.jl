@@ -238,11 +238,11 @@ function fits1_create(filnam::String, data=nothing; protect=true, msg=true)
   rec = cast_FITS1_header(_PRIMARY_input(dat), hduindex)
   hdu = cast_FITS1_HDU(filnam, hduindex, rec, dat)
 
-  fits = cast_FITS(filnam, [hdu])
+  f = cast_FITS(filnam, [hdu])
 
-  _fits1_save(fits)
+  _fits1_save(f)
 
-  return fits
+  return f
 
 end
 
@@ -305,31 +305,9 @@ function fits1_read(filnam::String)
 
   rec = [_read1_header(o::IO, i) for i = 1:nhdu]
   dat = [_read_data(o, i) for i = 1:nhdu]
-
-  # println("rec[1] = $(rec[1])")
-  # println("dat[1] = $(dat[1])")
   hdu = [cast_FITS1_HDU(filnam, i, rec[i], dat[i]) for i = 1:nhdu]
 
-  # println("hdu[1] = $(hdu[1])")
-
   return cast_FITS(filnam, hdu)
-
-end
-
-function fits2_read(filnam::String)
-
-  o = _fits_read_IO(filnam)
-
-  nhdu = _hdu_count(o)
-
-  records = [_read1_header(o::IO, i) for i = 1:nhdu]
-
-  FITS_headers = [cast_FITS1_header(records, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
-
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-  return FITS
 
 end
 
@@ -391,6 +369,34 @@ function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
   _fits_save(FITS)
 
   return FITS
+
+end
+function fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
+
+  hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
+  hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
+  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : 
+              error("strError: unknown HDU type")
+
+  o = _fits_read_IO(filnam)
+
+  nhdu = _hdu_count(o)
+
+  rec = [_read1_header(o::IO, i) for i = 1:nhdu]
+  dat = [_read_data(o, i) for i = 1:nhdu]
+
+  Base.push!(rec, cast_FITS1_header(records, nhdu))              # update FITS_header object
+  Base.push!(dat, cast_FITS_data(nhdu, hdutype, data))             # update FITS_data object
+
+  nhdu += +1
+
+  hdu = [cast_FITS1_HDU(filnam, i, rec[i], dat[i]) for i = 1:nhdu]
+
+  f = cast_FITS(filnam, hdu)
+
+  _fits1_save(f)
+
+  return f
 
 end
 

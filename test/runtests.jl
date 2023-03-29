@@ -12,8 +12,8 @@ using Test
 
     @test test_fits_create()
     @test test_fits1_create()
-    @test test_fits_extend()
-    @test test_fits_read()
+    @test test_fits1_read()
+    @test test_fits1_extend()
 
     @test test_FITS_name([])
 

@@ -14,18 +14,18 @@ function _fits_save(FITS)
     return _fits_write_IO(o, FITS[1].filnam)          # same filnam in all HDUs                
 
 end
-function _fits1_save(fits::FITS)
+function _fits1_save(f::FITS)
 
     o = IOBuffer()
 
-    for i ∈ eachindex(fits.hdu)
-        a = _write1_header(fits.hdu[i])
+    for i ∈ eachindex(f.hdu)
+        a = _write1_header(f.hdu[i])
         Base.write(o, Array{UInt8,1}(a.data))
-        b = _write1_data(fits.hdu[i])
+        b = _write1_data(f.hdu[i])
         b.size > 0 && Base.write(o, Array{UInt8,1}(b.data))
     end
 
-    return _fits_write_IO(o, fits.filnam)
+    return _fits_write_IO(o, f.filnam)
 
 end
 
