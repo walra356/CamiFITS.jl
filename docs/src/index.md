@@ -4,7 +4,7 @@ FITS stands for *Flexible Image Transport System*. This is an open standard orig
 
 CamiFITS offers the *basic FITS functionality* for scientific users not requiring celestal coordinates. Optional *Conforming Extentions* are under development. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-03-29:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
+*Disclaimer 2023-03-30:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
 
 # Table of contents
 
@@ -23,9 +23,9 @@ julia> using CamiFITS
 # Manual
 ### Introduction
 
-A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block preceeded by [`FITS_header`](@ref) records of metainformation.
+A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing [`FITS_data`](@ref) blocks preceeded by metainformation in the form of [`FITS_header`](@ref) blocks.
 
-We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .fits file is called the *PRIMARY* HDU.
+We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .fits file is called the *PRIMARY HDU*.
 
 Let "example.fits" be an *existing* FITS file. By the commands 
 
@@ -38,7 +38,7 @@ julia> f = fits_read(filnam);
 we asign the [`FITS`](@ref) object from `filnam` to the variable `f`. 
 
 The fields of `f`, f.hdu[1], f.hdu[2], ... correspond to the 
-[`FITS_HDU`](@ref) objects, with f.[1] representing the *PRIMARY* HDU. 
+[`FITS_HDU`](@ref) objects, with f.hdu[1] representing the *PRIMARY HDU*. 
 
 The formal terminology of the FITS standard can be consulted using 
 [`terminology`](@ref): 
