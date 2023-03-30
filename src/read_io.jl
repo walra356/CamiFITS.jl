@@ -64,14 +64,14 @@ function _read1_header(o::IO, hduindex::Int)
 
     itr = (ptrhdu[hduindex] ÷ 80 + 1) : (ptrdat[hduindex] ÷ 80)
 
-    records::Array{String,1} = []
+    record::Array{String,1} = []
 
     for i = itr
         rec = String(Base.read(o, 80))
-        Base.push!(records, rec)
+        Base.push!(record, rec)
     end
 
-    return cast_FITS1_header(records, hduindex)
+    return cast_FITS1_header(record, hduindex)
 
 end
 

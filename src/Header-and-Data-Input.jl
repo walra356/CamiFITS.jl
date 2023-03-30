@@ -45,14 +45,19 @@ function _PRIMARY_input(dataobject::FITS_data)
     r::Array{String,1} = []
 
     E = Base.eltype(dataobject.data)
-    nbyte = E ≠ Any ? sizeof(E) : 0
+    nbyte = E ≠ Any ? sizeof(E) : 8
     nbits = 8 * nbyte
     bitpix = E <: AbstractFloat ? -abs(nbits) : nbits
     bitpix = Base.lpad(bitpix, 20)
-    dims = isnothing(dataobject.data) ? 0 : Base.size(dataobject.data)
-    ndims = isnothing(dataobject.data) ? 0 : Base.length(dims)
+    #dims = isnothing(dataobject.data) ? 0 : Base.size(dataobject.data)
+    #ndims = isnothing(dataobject.data) ? 0 : Base.length(dims)
+
+    dims = Base.size(dataobject.data)
+    #ndims = dims == (0,) ? 1 : Base.length(dims)
+    ndims = Base.length(dims)
     naxis = Base.lpad(ndims, 20)
-    dims = ndims > 0 ? [Base.lpad(dims[i], 20) for i = 1:ndims] : 0
+    # dims = ndims > 0 ? [Base.lpad(dims[i], 20) for i = 1:ndims] : 0
+    dims = [Base.lpad(dims[i], 20) for i = 1:ndims]
     bzero = Base.lpad(string(_fits_bzero(E)), 20)
 
     incl = ndims > 0 ? true : false

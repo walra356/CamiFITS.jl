@@ -4,7 +4,7 @@ FITS stands for *Flexible Image Transport System*. This is an open standard orig
 
 CamiFITS offers the *basic FITS functionality* for scientific users not requiring celestal coordinates. Optional *Conforming Extentions* are under development. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-03-21:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
+*Disclaimer 2023-03-29:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
 
 # Table of contents
 
@@ -35,11 +35,13 @@ julia> filnam = "example.fits"
 
 julia> f = fits_read(filnam);
 ```
-we asign the collection of [`FITS_HDU`](@ref) objects from `filnam` to the variable `f`. 
+we asign the [`FITS`](@ref) object from `filnam` to the variable `f`. 
 
-The elements of `f`, f[1], f[2], ... correspond to the HDUs, with f[1] representing the *PRIMARY* HDU. 
+The fields of `f`, f.hdu[1], f.hdu[2], ... correspond to the 
+[`FITS_HDU`](@ref) objects, with f.[1] representing the *PRIMARY* HDU. 
 
-The formal terminology of the FITS standard can be consulted using [`terminology`](@ref): 
+The formal terminology of the FITS standard can be consulted using 
+[`terminology`](@ref): 
 ```
 julia> terminology("primary hdu")
 Primary HDU:
@@ -57,7 +59,7 @@ julia> filnam = "minimal.fits"
 
 julia> f = fits_create(filnam; protect=false);
 
-julia> fits_info(f[1])
+julia> fits_info(f.hdu[1])
 
 File: minimal.fits
 hdu: 1

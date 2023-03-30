@@ -122,10 +122,11 @@ function fits1_info(hdu::FITS1_HDU)
     "\r\nMetainformation:"
   ]
 
-  records = hdu.header.record
-  records = _rm_blanks(records)         # remove blank records
+  record = hdu.header.record
+  
+  _rm_blanks!(record)         # remove blank records
 
-  Base.append!(info, records)
+  Base.append!(info, record)
 
   println(Base.join(info .* "\r\n"))
 
@@ -226,13 +227,17 @@ function fits_create(filnam::String, data=nothing; protect=true, msg=true)
   return FITS
 
 end
-function fits1_create(filnam::String, data=nothing; protect=true, msg=true)
+function fits1_create(filnam::String, data=[]; protect=true, msg=true)
 
   err = _err_FITS_name(filnam; protect)
   err > 1 && msg && Base.throw(FITSError(msgError(err)))
 
   hduindex = 1
   hdutype = "PRIMARY"
+
+  
+
+  # data = isnothing(data) ? Any[] : data
 
   dat = cast_FITS_data(hduindex, hdutype, data)
   rec = cast_FITS1_header(_PRIMARY_input(dat), hduindex)

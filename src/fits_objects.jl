@@ -115,14 +115,14 @@ The fields are:
 * `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
 * `.record`:  the array of 'records' (`::Vector{FITS1_record}`)
 * `.key`: the array of 'key' (`::Vector{FITS1_key}`)
-* `.dict`:  Dictionary `keyword => value` (`::Dict{String, Any}`)
+* `.map`:  Dictionary `keyword => keyindex` (`::Dict{String, Int}`)
 """
 struct FITS1_header
 
     hduindex::Int
     record::Vector{String}
     key::Vector{FITS1_key}
-    dict::Dict{String, Any}
+    map::Dict{String, Int}
 
 end
 
@@ -142,10 +142,10 @@ function cast_FITS1_header(record::Vector{String}, hduindex::Int)
 
     # println("key[1].val = $(key[1].val)")
     # println(typeof(key[1].val))
-    dict = Dict(key[i].keyword => key[i].val for i ∈ eachindex(record))
+    map = Dict(key[i].keyword => i for i ∈ eachindex(record))
     # println("dict = $(dict)")
 
-    return FITS1_header(hduindex, record, key, dict)
+    return FITS1_header(hduindex, record, key, map)
 
 end
 

@@ -13,7 +13,7 @@ function test_FITS_name(o=[])
 
     let filnam = "kanweg.fits"
 
-        fits_create(filnam; protect=false)
+        fits1_create(filnam; protect=false)
 
         text = filnam * " is an existing file"
         err1 = _err_FITS_name(filnam)
@@ -41,7 +41,7 @@ function test_FITS_name(o=[])
 
     let filnam = "kanweg"
 
-        fits_create(filnam; protect=false, msg=false)
+        fits1_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
         err1 = _err_FITS_name(filnam)
@@ -69,7 +69,7 @@ function test_FITS_name(o=[])
 
     let filnam = "kanweg.fit"
 
-        fits_create(filnam; protect=false, msg=false)
+        fits1_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
         err1 = _err_FITS_name(filnam)
@@ -98,7 +98,7 @@ function test_FITS_name(o=[])
 
     let filnam = ".fits"
 
-        fits_create(filnam; protect=false, msg=false)
+        fits1_create(filnam; protect=false, msg=false)
 
         text = filnam * " is an existing file"
         err1 = _err_FITS_name(filnam)
@@ -159,13 +159,15 @@ function test_fits1_create()
     f = fits1_create(filnam; protect=false)
 
     a = f.hdu[1].header.key[1].keyword == "SIMPLE"
-    b = isnothing(f.hdu[1].dataobject.data)
+    b = f.hdu[1].dataobject.data == []
     c = f.hdu[1].header.key[1].keyword == "SIMPLE"
-    d = f.hdu[1].header.key[2].val == 0
+    d = f.hdu[1].header.key[4].val == 0
 
     rm(filnam)
 
     o = isnothing(findfirst(.![a, b, c, d])) ? true : false
+
+    o || println([a, b, c, d])
 
     return o
 
@@ -192,7 +194,7 @@ function test_fits_extend()
     b = f[1].dataobject.data[1] == 0x0000043e
     c = f[2].header.keys[1] == "XTENSION"
     d = f[2].dataobject.data[1] == "1.0e-6 1086 1.23 a a                    "
-    e = get(Dict(f[2].header.dict), "NAXIS", 0) == 2
+    e = get(Dict(f[2].header.map), "NAXIS", 0) == 3
 
     rm(filnam)
     #println(f[1].dataobject.data[1])
@@ -228,13 +230,16 @@ function test_fits1_extend()
     c = f.hdu[2].header.key[1].keyword == "XTENSION"
     d = f.hdu[2].dataobject.data[1] == strExample
     # e = f.hdu[2].header.key[3].val == 2
-    e = get(Dict(f.hdu[2].header.dict), "NAXIS", 0) == 2
+    e = get(Dict(f.hdu[2].header.map), "NAXIS", 0) == 3
 
     rm(filnam)
     #println(f[1].dataobject.data[1])
     # println([a, b, c, d, e])
 
     o = isnothing(findfirst(.![a, b, c, d, e])) ? true : false
+
+
+    o || println([a, b, c, d, e])
 
     return o
 
@@ -248,8 +253,8 @@ function test_fits_read()
     f = fits_read(filnam)
     a = f[1].header.keys[1] == "SIMPLE"
     b = isnothing(f[1].dataobject.data)
-    c = get(Dict(f[1].header.dict), "SIMPLE", 0)
-    d = get(Dict(f[1].header.dict), "NAXIS", 0) == 0
+    c = get(Dict(f[1].header.map), "SIMPLE", 0) == 1
+    d = get(Dict(f[1].header.map), "NAXIS", 0) == 3
 
     rm(filnam)
 
@@ -267,12 +272,14 @@ function test_fits1_read()
 
     f = fits1_read(filnam)
     a = f.hdu[1].header.key[1].keyword == "SIMPLE"
-    b = isnothing(f.hdu[1].dataobject.data)
-    c = f.hdu[1].header.key[2].val == 0
+    b = f.hdu[1].dataobject.data == []
+    c = f.hdu[1].header.key[4].val == 0
 
     rm(filnam)
 
     o = isnothing(findfirst(.![a, b, c])) ? true : false
+
+    o || println([a, b, c])
 
     return o
 
@@ -360,12 +367,12 @@ end
 function test_fits_add_key()
 
     filnam = "minimal.fits"
-    fits_create(filnam; protect=false)
+    fits1_create(filnam; protect=false)
     fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
 
-    f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
-    r = f[1].header.records
+    f = fits1_read(filnam)
+    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
+    r = f.hdu[1].header.record[i]
 
     test = r[i] == "KEYNEW1 =                    T / FITS dataset may contain extension             "
 
