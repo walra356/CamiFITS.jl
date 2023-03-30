@@ -58,8 +58,13 @@ julia> filnam = "minimal.fits"
 "minimal.fits"
 
 julia> f = fits_create(filnam; protect=false);
+```
+When dealing with a single [`FITS`](@ref) object it is practical to
+redefine `f` to represent the `.hdu` object
+```
+julia> f = f.hdu
 
-julia> fits_info(f.hdu[1])
+julia> fits_info(f[1])
 
 File: minimal.fits
 hdu: 1
