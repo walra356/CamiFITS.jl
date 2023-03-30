@@ -37,20 +37,23 @@ julia> f = fits_read(filnam);
 ```
 we asign the [`FITS`](@ref) object from `filnam` to the variable `f`. 
 
-The fields of `f`, f.hdu[1], f.hdu[2], ... correspond to the 
-[`FITS_HDU`](@ref) objects, with f.hdu[1] representing the *PRIMARY HDU*. 
+The fields of `f`, `f.hdu[1]`, `f.hdu[2]`, ... correspond to the 
+[`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
+represented by `f.hdu[1]`. When dealing with a single [`FITS`](@ref) object it 
+is often practical to redefine `f = f.hdu` to represent the 
+[`FITS_HDU`](@ref) object.
 
 The formal terminology of the FITS standard can be consulted using 
 [`terminology`](@ref): 
 ```
-julia> terminology("primary hdu")
-Primary HDU:
-The first HDU in a FITS file.
+julia> terminology("HDU")
+HDU:
+Header and Data Unit. A data structure consisting of a header and the data the header describes. 
+Note that an HDU may consist entirely of a header with no data blocks.
 ```
 
-FITS files can be created using the command [`fits_create`](@ref).
-
 #### The simplest FITS file
+FITS files can be created using the command [`fits_create`](@ref).
 The minmal file conforming to the FITS standard consists of a single HDU 
 with an empty data field.
 ```
@@ -58,13 +61,8 @@ julia> filnam = "minimal.fits"
 "minimal.fits"
 
 julia> f = fits_create(filnam; protect=false);
-```
-When dealing with a single [`FITS`](@ref) object it is practical to
-redefine `f` to represent the `.hdu` object
-```
-julia> f = f.hdu
 
-julia> fits_info(f[1])
+julia> fits_info(f.hdu[1])
 
 File: minimal.fits
 hdu: 1
@@ -108,7 +106,9 @@ julia> fits_create(filnam, data; protect=false)
 
 julia> f = fits_read(filnam);
 
-julia> fits_info(f.hdu[1])
+julia> f = f.hdu;
+
+julia> fits_info(f[1])
 
 File: matrix.fits
 hdu: 1
@@ -138,13 +138,11 @@ END
 julia> rm(filnam); f = nothing
 ```
 The keywords `NAXIS1`, `NAXIS2` and `NAXIS3` represent the dimensions 
-of the data matrix in ``x``, ``y`` and ``z`` direction. 
+of the ``x, y`` data matrix stacked in the ``z`` direction. 
 
 The matrix elements are referred to as `pixels` and their bit size is 
 represented by the keyword `BITPIX`. In the above example the pixel value 
 is given by the matrix indices.
- 
-
 # API
 
 ### Terminology
