@@ -23,7 +23,7 @@ julia> using CamiFITS
 # Manual
 ### Introduction
 
-A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) block with metainformation.
+A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) of records with metainformation.
 
 We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .fits file is called the *PRIMARY HDU*.
 
