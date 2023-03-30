@@ -123,7 +123,7 @@ function fits1_info(hdu::FITS1_HDU)
   ]
 
   record = hdu.header.record
-  
+
   _rm_blanks!(record)         # remove blank records
 
   Base.append!(info, record)
@@ -150,17 +150,28 @@ Key:
 julia> filnam = "minimal.fits"
 "minimal.fits"
 
-julia> f = fits_create(filnam; protect=false);
+julia> f = fits1_create(filnam; protect=false);
 
-julia> f[1].dataobject.data
+julia> fits1_info(f.hdu[1])
 
-julia> f[1].header.keys
-5-element Vector{String}:
- "SIMPLE"
- "NAXIS"
- "EXTEND"
- "COMMENT"
- "END"
+File: minimal.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+BZERO   =                  0.0 / offset data range to that of unsigned integer  
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+Any[]
 
 julia> rm(filnam); f = nothing
 
@@ -235,7 +246,7 @@ function fits1_create(filnam::String, data=[]; protect=true, msg=true)
   hduindex = 1
   hdutype = "PRIMARY"
 
-  
+
 
   # data = isnothing(data) ? Any[] : data
 
