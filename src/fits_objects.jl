@@ -115,7 +115,7 @@ The fields are:
 * `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
 * `.record`:  the array of 'records' (`::Vector{FITS1_record}`)
 * `.key`: the array of 'key' (`::Vector{FITS1_key}`)
-* `.map`:  Dictionary `keyword => keyindex` (`::Dict{String, Int}`)
+* `.map`:  Dictionary `keyword => recordindex` (`::Dict{String, Int}`)
 """
 struct FITS1_header
 
