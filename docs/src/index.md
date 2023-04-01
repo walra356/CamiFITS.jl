@@ -41,7 +41,8 @@ The fields of `f`, `f.hdu[1]`, `f.hdu[2]`, ... correspond to the
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
 represented by `f.hdu[1]`. When dealing with a single [`FITS`](@ref) object it 
 is often practical to redefine `f = f.hdu` to represent the 
-[`FITS_HDU`](@ref) object.
+[`FITS_HDU`](@ref) object without explicit reference to principal [`FITS`](@ref)
+object.
 
 The formal terminology of the FITS standard can be consulted using 
 [`terminology`](@ref): 
@@ -54,7 +55,7 @@ Note that an HDU may consist entirely of a header with no data blocks.
 
 #### The simplest FITS file
 FITS files can be created using the command [`fits_create`](@ref).
-The minmal file conforming to the FITS standard consists of a single HDU 
+The minimal file conforming to the FITS standard consists of a single HDU 
 with an empty data field.
 ```
 julia> filnam = "minimal.fits"
@@ -180,11 +181,9 @@ parse_FITS_TABLE(hdu::FITS_HDU)
 ```@docs
 fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 fits_copy(filnamA::String, filnamB::String=" "; protect=true)
-# fits_create(filnam::String, data=nothing; protect=true, msg=true)
-fits_extend(filnam::String, data_extend, hdutype="IMAGE")
-# fits_read(filnam::String)
 fits1_read(filnam::String)
 fits1_create(filnam::String, data=nothing; protect=true, msg=true)
+fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
 ```
 
 ### FITS - Key Methods

@@ -145,7 +145,7 @@ function _passed_filnam_test(filnam::String)
 end
 
 
-function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
+function _passed_block_test(filnam::String) #_testIORead(filnam::String)
 
     o = IOBuffer()
 
@@ -173,9 +173,9 @@ function _passed_block_test(filnam::String) #_test_fits_read_IO(filnam::String)
 
 end
 
-function _passed_record_count(hdu::FITS_HDU)
+function _passed_record_count(hdu::FITS1_HDU)
 
-    typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
 
     records = hdu.header.records
     hduindex = hdu.header.hduindex
@@ -206,9 +206,9 @@ function _passed_record_count(hdu::FITS_HDU)
 
 end
 
-function _passed_ASCII_test(hdu::FITS_HDU)
+function _passed_ASCII_test(hdu::FITS1_HDU)
 
-    typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
 
     hduindex = hdu.header.hduindex
     records = hdu.header.records
@@ -234,9 +234,9 @@ function _passed_ASCII_test(hdu::FITS_HDU)
 
 end
 
-function _passed_keyword_test(hdu::FITS_HDU)
+function _passed_keyword_test(hdu::FITS1_HDU)
 
-    typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
 
     hduindex = hdu.header.hduindex
     records = hdu.header.records

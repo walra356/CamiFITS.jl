@@ -19,67 +19,6 @@ julia> filnam = "minimal.fits";
 
 julia> f = fits_create(filnam; protect=false);
 
-julia> fits_info(f[1])
-
-File: minimal.fits
-hdu: 1
-hdutype: PRIMARY
-DataType: nothing
-Datasize: 0
-
-Metainformation:
-SIMPLE  =                    T / file does conform to FITS standard
-NAXIS   =                    0 / number of data axes
-EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-END
-
-                                 # note the absence of the data block   
-julia> rm(filnam); f = nothing
-```
-"""
-function fits_info(hdu::FITS_HDU)
-
-  typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
-
-  if isnothing(hdu.dataobject.data)
-    strDataType = "nothing"
-    strDatasize = "0"
-  else
-    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
-    strDatasize = Base.string(Base.size(hdu.dataobject.data))
-  end
-
-  info = [
-    "\r\nFile: " * hdu.filnam,
-    "hdu: " * Base.string(hdu.hduindex),
-    "hdutype: " * hdu.dataobject.hdutype,
-    "DataType: " * strDataType,
-    "Datasize: " * strDatasize,
-    "\r\nMetainformation:"
-  ]
-
-  records = hdu.header.records
-  records = _rm_blanks(records)         # remove blank records
-
-  Base.append!(info, records)
-
-  println(Base.join(info .* "\r\n"))
-
-  return hdu.dataobject.data
-
-end
-
-@doc raw"""
-    fits_info(hdu::FITS_HDU)
-
-Print metafinformation and data of given `FITS_HDU`
-#### Example:
-```
-julia> filnam = "minimal.fits";
-
-julia> f = fits_create(filnam; protect=false);
-
 julia> h = f.hdu[1];
 
 julia> fits_info(h)
@@ -105,13 +44,8 @@ function fits1_info(hdu::FITS1_HDU)
 
   typeof(hdu) <: FITS1_HDU || error("FitsWarning: FITS_HDU not found")
 
-  if isnothing(hdu.dataobject.data)
-    strDataType = "nothing"
-    strDatasize = "0"
-  else
-    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
-    strDatasize = Base.string(Base.size(hdu.dataobject.data))
-  end
+  strDataType = Base.string(Base.eltype(hdu.dataobject.data))
+  strDatasize = Base.string(Base.size(hdu.dataobject.data))
 
   info = [
     "\r\nFile: " * hdu.filnam,
@@ -124,7 +58,7 @@ function fits1_info(hdu::FITS1_HDU)
 
   record = hdu.header.record
 
-  _rm_blanks!(record)         # remove blank records
+  _rm_blanks!(record)
 
   Base.append!(info, record)
 
@@ -219,26 +153,7 @@ END
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_create(filnam::String, data=nothing; protect=true, msg=true)
-
-  err = _err_FITS_name(filnam; protect)
-  err > 1 && msg && Base.throw(FITSError(msgError(err)))
-
-  nhdu = 1
-  hdutype = "PRIMARY"
-
-  FITS_data = [_cast_data(i, hdutype, data) for i = 1:nhdu]
-  FITS_headers = [_cast_header(_PRIMARY_input(FITS_data[i]), i) for i = 1:nhdu]
-
-
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-  _fits_save(FITS)
-
-  return FITS
-
-end
-function fits1_create(filnam::String, data=[]; protect=true, msg=true)
+function fits1_create(filnam::String, data=nothing; protect=true, msg=true)
 
   err = _err_FITS_name(filnam; protect)
   err > 1 && msg && Base.throw(FITSError(msgError(err)))
@@ -246,9 +161,7 @@ function fits1_create(filnam::String, data=[]; protect=true, msg=true)
   hduindex = 1
   hdutype = "PRIMARY"
 
-
-
-  # data = isnothing(data) ? Any[] : data
+  data = isnothing(data) ? Any[] : data
 
   dat = cast_FITS_data(hduindex, hdutype, data)
   rec = cast_FITS1_header(_PRIMARY_input(dat), hduindex)
@@ -298,28 +211,17 @@ END
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_read(filnam::String)
-
-  o = _fits_read_IO(filnam)
-
-  nhdu = _hdu_count(o)
-
-  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
-
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-  return FITS
-
-end
-
 function fits1_read(filnam::String)
 
-  o = _fits_read_IO(filnam)
+  o = IORead(filnam)
 
   nhdu = _hdu_count(o)
 
+  Base.seekstart(o)
+
   rec = [_read1_header(o::IO, i) for i = 1:nhdu]
+  Base.seekstart(o)
+
   dat = [_read_data(o, i) for i = 1:nhdu]
   hdu = [cast_FITS1_HDU(filnam, i, rec[i], dat[i]) for i = 1:nhdu]
 
@@ -328,29 +230,29 @@ function fits1_read(filnam::String)
 end
 
 # ------------------------------------------------------------------------------
-#           fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+#           fits1_extend(filnam::String, data_extend [, hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+    fits1_extend(filnam::String, data_extend [, hdutype="IMAGE"])
 
 Extend the FITS file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
 ```
 strExample = "test_example.fits"
 data = [0x0000043e, 0x0000040c, 0x0000041f]
-fits_create(strExample, data; protect=false)
+fits1_create(strExample, data; protect=false)
 
-f = fits_read(strExample)
+f = fits1_read(strExample)
 a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6]
 b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
 c = [1.23,2.12,3.,4.,5.]
 d = ['a','b','c','d','e']
 e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"]
 data = [a,b,c,d,e]
-fits_extend(strExample, data, "TABLE")
+fits1_extend(strExample, data, "TABLE")
 
-f = fits_read(strExample)
+f = fits1_read(strExample)
 f[2].dataobject.data
   5-element Vector{String}:
    "1.0e-6 1086 1.23 a a                    "
@@ -362,31 +264,6 @@ f[2].dataobject.data
 rm(strExample); f = data = a = b = c = d = e = nothing
 ```
 """
-function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
-
-  hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
-  hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
-  hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) : error("strError: unknown HDU type")
-
-  o = _fits_read_IO(filnam)
-
-  nhdu = _hdu_count(o)
-
-  FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-  FITS_data = [_read_data(o, i) for i = 1:nhdu]
-
-  nhdu = nhdu + 1
-
-  Base.push!(FITS_headers, _cast_header(records, nhdu))              # update FITS_header object
-  Base.push!(FITS_data, _cast_data(nhdu, hdutype, data))             # update FITS_data object
-
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-  _fits_save(FITS)
-
-  return FITS
-
-end
 function fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
 
   hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
@@ -394,15 +271,15 @@ function fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
   hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) :
   error("strError: unknown HDU type")
 
-  o = _fits_read_IO(filnam)
+  o = IORead(filnam)
 
   nhdu = _hdu_count(o)
 
   rec = [_read1_header(o::IO, i) for i = 1:nhdu]
   dat = [_read_data(o, i) for i = 1:nhdu]
 
-  Base.push!(rec, cast_FITS1_header(records, nhdu))              # update FITS_header object
-  Base.push!(dat, cast_FITS_data(nhdu, hdutype, data))             # update FITS_data object
+  Base.push!(rec, cast_FITS1_header(records, nhdu))  # update FITS_header object
+  Base.push!(dat, cast_FITS_data(nhdu, hdutype, data)) # update FITS_data object
 
   nhdu += +1
 
@@ -443,7 +320,7 @@ function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
   # err =_err_FITS_name(filnamA; protect)
   # err > 1 && Base.throw(FITSError(msgError(err)))
 
-  o = _fits_read_IO(filnamA)
+  o = IORead(filnamA)
   f = cast_FITS_name(filnamA)
 
   filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
@@ -579,7 +456,7 @@ function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com:
   err = _err_FITS_name(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
-  o = _fits_read_IO(filnam)
+  o = IORead(filnam)
 
   nhdu = _hdu_count(o)
 
@@ -651,7 +528,7 @@ function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com
   err = _err_FITS_name(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
-  o = _fits_read_IO(filnam)
+  o = IORead(filnam)
 
   nhdu = _hdu_count(o)
 
@@ -717,7 +594,7 @@ function fits_delete_key(filnam::String, hduindex::Int, key::String)
   err = _err_FITS_name(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
-  o = _fits_read_IO(filnam)
+  o = IORead(filnam)
 
   nhdu = _hdu_count(o)
 
@@ -789,7 +666,7 @@ function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::
   err = _err_FITS_name(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
-  o = _fits_read_IO(filnam)
+  o = IORead(filnam)
 
   nhdu = _hdu_count(o)
 
@@ -864,32 +741,6 @@ parse_FITS_TABLE(f[2])
    ["a                   ", "bb                  ", "ccc                 ", "dddd                ", "ABCeeaeeEEEEEEEEEEEE"]
 ```
 """
-function parse_FITS_TABLE11111(hdu::FITS_HDU)
-
-  dict = hdu.header.dict
-  thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])
-
-  thdu == "TABLE" || return error("Error: $thdu is not an ASCII TABLE HDU")
-
-  ncols = Base.get(dict, "TFIELDS", 0)
-  nrows = Base.get(dict, "NAXIS2", 0)
-  tbcol = [Base.get(dict, "TBCOL$n", 0) for n = 1:ncols]
-  tform = [Base.get(dict, "TFORM$n", 0) for n = 1:ncols]
-  ttype = [cast_FORTRAN_format(tform[n]).Type for n = 1:ncols]
-  tchar = [cast_FORTRAN_format(tform[n]).TypeChar for n = 1:ncols]
-  width = [cast_FORTRAN_format(tform[n]).width for n = 1:ncols]
-  itr = [(tbcol[k]:tbcol[k]+width[k]-1) for k = 1:ncols]
-
-  data = hdu.dataobject.data
-  data = [[data[i][itr[k]] for i = 1:nrows] for k = 1:ncols]
-  data = [tchar[k] == 'D' ? Base.join.(Base.replace!.(Base.collect.(data[k]), 'D' => 'E')) : data[k] for k = 1:ncols]
-  Type = [ttype[k] == "Aw" ? (width[k] == 1 ? Char : String) : ttype[k] == "Iw" ? Int : Float64 for k = 1:ncols]
-  data = [ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
-
-  return data
-
-end
-
 function parse_FITS_TABLE(hdu::FITS1_HDU)
 
   dict = hdu.header.dict

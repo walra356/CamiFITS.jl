@@ -6,13 +6,13 @@
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-#                     _fits_read_IO(filnam::String)
+#                     IORead(filnam::String)
 # 
 #   - read filnam from disc 
 #   - test for integral number of blocks of 2880 bytes/block
 # ------------------------------------------------------------------------------  
 
-function _fits_read_IO(filnam::String)
+function IORead(filnam::String)
 
     o = IOBuffer()
 
@@ -31,35 +31,13 @@ end
 #
 #   - reads non-blank records from header 
 #   - stop after "END" record is reached
-# ------------------------------------------------------------------------------  
-
-function _read_header(o::IO, hduindex::Int)
-
-    ptr = _hdu_pointers(o)
-
-    records::Array{String,1} = []
-    record = " "
-    Base.seek(o, ptr[hduindex])
-
-    while record ≠ "END" * Base.repeat(" ", 77)
-        record = String(Base.read(o, 80))
-        Base.push!(records, record)
-    end
-
-    _append_blanks!(records)
-
-    FITS_header = _cast_header(records, hduindex)
-
-    return FITS_header
-
-end
+# ------------------------------------------------------------------------------
 
 function _read1_header(o::IO, hduindex::Int)
 
     ptrhdu = _hdu_pointers(o)
     ptrdat = _data_pointers(o)
 
-    Base.seekstart(o)
     Base.seek(o, ptrhdu[hduindex])
 
     itr = (ptrhdu[hduindex] ÷ 80 + 1) : (ptrdat[hduindex] ÷ 80)
@@ -84,10 +62,9 @@ end
 
 function _read_data(o::IO, hduindex::Int)                   # read all data using header information
 
-    FITS_header = _read_header(o, hduindex)
+    h = _read1_header(o, hduindex) #  FITS1_header
 
-    dicts = FITS_header.dict
-    hdutype = Base.get(dicts, "XTENSION", "'PRIMARY '")
+    hdutype = h.key[1].keyword == "XTENSION" ? h.key[1].val : "'PRIMARY '"
     hdutype = Base.strip(hdutype[2:9])
 
     hdutype == "PRIMARY" && return _read_PRIMARY_data(o, hduindex)
@@ -101,27 +78,28 @@ end
 
 function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data using header information
 
-    ptr = _data_pointers(o)                                 # ptrd: start-of-data pointers
+    h = _read1_header(o, hduindex)            # FITS1_header object
 
-    FITS_header = _read_header(o, hduindex)
+    ptrdata = _data_pointers(o)
+    Base.seek(o, ptrdata[hduindex])
 
-    Base.seek(o, ptr[hduindex])
-
-    dicts = FITS_header.dict
-    ndims = Base.get(dicts, "NAXIS", 0)
+    i = get(h.map, "NAXIS", 0)
+    ndims = h.key[i].val
 
     if ndims > 0
-        dims = Core.tuple([Base.get(dicts, "NAXIS$n", 0) for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
+        dims = Core.tuple([h.key[i+n].val for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
         ndata = Base.prod(dims)                                                     # number of data points
-        nbits = Base.get(dicts, "BITPIX", 0)
-        bzero = Base.get(dicts, "BZERO", 0.0)                # default 0.0 by convention (also for unsigned Ints)
+        i = get(h.map, "BITPIX", 0)
+        nbits = h.key[i].val
+        i = get(h.map, "BZERO", 0)
+        bzero = h.key[i].val
         E = _fits_eltype(nbits, bzero)
         data = [Base.read(o, E) for n = 1:ndata]
         data = Base.ntoh.(data)                            # change from network to host ordering
         data = data .+ E(bzero)                            # offset from Int to UInt
         data = Base.reshape(data, dims)
     else
-        data = nothing
+        data = Any[]
     end
 
     return FITS_data = _cast_data(hduindex, "PRIMARY", data)
@@ -130,27 +108,29 @@ end
 
 function _read_IMAGE_data(o::IO, hduindex::Int)             # read all data using header information
 
-    ptr = _data_pointers(o)                                 # ptrd: start-of-data pointers
+    h = _read1_header(o, hduindex) # FITS1_header object
 
-    FITS_header = _read_header(o, hduindex)
+    ptrdata = _data_pointers(o)
+    Base.seek(o, ptrdata[hduindex])
 
-    Base.seek(o, ptr[hduindex])
-
-    dicts = FITS_header.dict
-    ndims = Base.get(dicts, "NAXIS", 0)
+    i = get(h.map, "NAXIS", 0)
+    ndims = h.key[i].val
 
     if ndims > 0
-        dims = Core.tuple([Base.get(dicts, "NAXIS$n", 0) for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
+
+        dims = Core.tuple([h.key[i+n].val for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
         ndata = Base.prod(dims)                                                     # number of data points
-        nbits = Base.get(dicts, "BITPIX", 0)
-        bzero = Base.get(dicts, "BZERO", 0.0)                # default 0.0 by convention (also for unsigned Ints)
+        i = get(h.map, "BITPIX", 0)
+        nbits = h.key[i].val
+        i = get(h.map, "NAXIS", 0)
+        bzero = h.key[i].val
         E = _fits_eltype(nbits, bzero)
         data = [Base.read(o, E) for n = 1:ndata]
         data = Base.ntoh.(data)                            # change from network to host ordering
         data = data .+ E(bzero)                            # offset from Int to UInt
         data = Base.reshape(data, dims)
     else
-        data = []
+        data = Any[]
     end
 
     return FITS_data = _cast_data(hduindex, "IMAGE", data)
@@ -161,11 +141,18 @@ function _read_TABLE_data(o::IO, hduindex::Int)
 
     ptr = _data_pointers(o)
 
-    FITS_header = _read_header(o, hduindex)
+    h = _read1_header(o, hduindex) # FITS1_header object
 
-    dicts = FITS_header.dict
-    lrecs = Base.get(dicts, "NAXIS1", 0)
-    nrecs = Base.get(dicts, "NAXIS2", 0)
+    Base.seek(o, ptr[hduindex])
+
+    i = get(h.map, "NAXIS1", 0)
+    lrecs = h.key[i].val
+    i = get(h.map, "NAXIS2", 0)
+    nrecs = h.key[i].val
+
+    # dicts = FITS_header.dict
+    # lrecs = Base.get(dicts, "NAXIS1", 0)
+    # nrecs = Base.get(dicts, "NAXIS2", 0)
 
     Base.seek(o, ptr[hduindex])
 

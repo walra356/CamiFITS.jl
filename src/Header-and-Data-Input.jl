@@ -49,8 +49,6 @@ function _PRIMARY_input(dataobject::FITS_data)
     nbits = 8 * nbyte
     bitpix = E <: AbstractFloat ? -abs(nbits) : nbits
     bitpix = Base.lpad(bitpix, 20)
-    #dims = isnothing(dataobject.data) ? 0 : Base.size(dataobject.data)
-    #ndims = isnothing(dataobject.data) ? 0 : Base.length(dims)
 
     dims = Base.size(dataobject.data)
     #ndims = dims == (0,) ? 1 : Base.length(dims)

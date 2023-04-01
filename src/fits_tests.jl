@@ -134,73 +134,67 @@ function test_FITS_name(o=[])
 
 end
 
-function test_fits_create()
-
-    filnam = "minimal.fits"
-    f = fits_create(filnam; protect=false)
-
-    a = f[1].header.keys[1] == "SIMPLE"
-    b = isnothing(f[1].dataobject.data)
-    c = get(Dict(f[1].header.dict), "SIMPLE", 0)
-    d = get(Dict(f[1].header.dict), "NAXIS", 0) == 0
-
-    rm(filnam)
-
-    o = isnothing(findfirst(.![a, b, c, d])) ? true : false
-
-    return o
-
-end
-
-
 function test_fits1_create()
 
     filnam = "minimal.fits"
-    f = fits1_create(filnam; protect=false)
 
+    f = fits1_create(filnam; protect=false)
     a = f.hdu[1].header.key[1].keyword == "SIMPLE"
-    b = f.hdu[1].dataobject.data == []
-    c = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    b = f.hdu[1].dataobject.data == Any[]
+    c = f.hdu[1].header.key[1].val == true
     d = f.hdu[1].header.key[4].val == 0
 
     rm(filnam)
 
-    o = isnothing(findfirst(.![a, b, c, d])) ? true : false
+    filnam = "kanweg.fits"
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    
+    f = fits1_create(filnam, data; protect=false)
+    p = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
+    r = f.hdu[1].header.key[1].val == true
+    s = f.hdu[1].header.key[4].val == 3
 
-    o || println([a, b, c, d])
+    rm(filnam)
+
+    o = isnothing(findfirst(.![a, b, c, d, p, q, r, s])) ? true : false
+ 
+    o || println([a, b, c, d, p, q, r, s])
 
     return o
 
 end
 
-function test_fits_extend()
+function test_fits1_read()
 
-    filnam = "test_example.fits"
-    data = [0x0000043e, 0x0000040c, 0x0000041f]
-    fits_create(filnam, data; protect=false)
+    filnam = "minimal.fits"
 
-    f = fits_read(filnam)
-    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
-    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
-    c = [1.23, 2.12, 3.0, 4.0, 5.0]
-    d = ['a', 'b', 'c', 'd', 'e']
-    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data = [a, b, c, d, e]
+    f = fits1_create(filnam; protect=false)
+    f = fits1_read(filnam)
 
-    fits_extend(filnam, data, "TABLE")
-
-    f = fits_read(filnam)
-    a = f[1].header.keys[1] == "SIMPLE"
-    b = f[1].dataobject.data[1] == 0x0000043e
-    c = f[2].header.keys[1] == "XTENSION"
-    d = f[2].dataobject.data[1] == "1.0e-6 1086 1.23 a a                    "
-    e = get(Dict(f[2].header.map), "NAXIS", 0) == 3
+    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    b = f.hdu[1].dataobject.data == Any[]
+    c = f.hdu[1].header.key[1].val == true
+    d = f.hdu[1].header.key[4].val == 0
 
     rm(filnam)
-    #println(f[1].dataobject.data[1])
-    # println([a, b, c, d, e])
 
-    o = isnothing(findfirst(.![a, b, c, d, e])) ? true : false
+    filnam = "kanweg.fits"
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+
+    f = fits1_create(filnam, data; protect=false)
+    f = fits1_read(filnam)
+    
+    p = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
+    r = f.hdu[1].header.key[1].val == true
+    s = f.hdu[1].header.key[4].val == 3
+
+    rm(filnam)
+
+    o = isnothing(findfirst(.![a, b, c, d, p, q, r, s])) ? true : false
+
+    o || println([a, b, c, d, p, q, r, s])
 
     return o
 
@@ -211,9 +205,9 @@ function test_fits1_extend()
 
     filnam = "test_example.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
-    fits1_create(filnam, data; protect=false)
+    f = fits1_create(filnam, data; protect=false)
 
-    f = fits_read(filnam)
+    f = fits1_read(filnam)
     a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
     b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
     c = [1.23, 2.12, 3.0, 4.0, 5.0]
@@ -226,60 +220,17 @@ function test_fits1_extend()
     f = fits1_read(filnam)
     strExample = "1.0e-6 1086 1.23 a a                    "
     a = f.hdu[1].header.key[1].keyword == "SIMPLE"
-    b = f.hdu[1].dataobject.data[1] == 0x0000043e
+    b = f.hdu[1].dataobject.data[1][1] == 0x0000043e
     c = f.hdu[2].header.key[1].keyword == "XTENSION"
     d = f.hdu[2].dataobject.data[1] == strExample
     # e = f.hdu[2].header.key[3].val == 2
     e = get(Dict(f.hdu[2].header.map), "NAXIS", 0) == 3
 
     rm(filnam)
-    #println(f[1].dataobject.data[1])
-    # println([a, b, c, d, e])
 
     o = isnothing(findfirst(.![a, b, c, d, e])) ? true : false
 
-
     o || println([a, b, c, d, e])
-
-    return o
-
-end
-
-function test_fits_read()
-
-    filnam = "minimal.fits"
-    fits_create(filnam; protect=false)
-
-    f = fits_read(filnam)
-    a = f[1].header.keys[1] == "SIMPLE"
-    b = isnothing(f[1].dataobject.data)
-    c = get(Dict(f[1].header.map), "SIMPLE", 0) == 1
-    d = get(Dict(f[1].header.map), "NAXIS", 0) == 3
-
-    rm(filnam)
-
-    o = isnothing(findfirst(.![a, b, c, d])) ? true : false
-
-    return o
-
-end
-
-
-function test_fits1_read()
-
-    filnam = "minimal.fits"
-    fits1_create(filnam; protect=false)
-
-    f = fits1_read(filnam)
-    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
-    b = f.hdu[1].dataobject.data == []
-    c = f.hdu[1].header.key[4].val == 0
-
-    rm(filnam)
-
-    o = isnothing(findfirst(.![a, b, c])) ? true : false
-
-    o || println([a, b, c])
 
     return o
 

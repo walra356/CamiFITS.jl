@@ -138,12 +138,7 @@ function cast_FITS1_header(record::Vector{String}, hduindex::Int)
     #                    FITSError 8: fails mandatory integer number of blocks
 
     key = [cast_FITS1_key(record[i], i) for i ∈ eachindex(record)]
-
-
-    # println("key[1].val = $(key[1].val)")
-    # println(typeof(key[1].val))
     map = Dict(key[i].keyword => i for i ∈ eachindex(record))
-    # println("dict = $(dict)")
 
     return FITS1_header(hduindex, record, key, map)
 
@@ -172,28 +167,6 @@ function _cast_header(records::Array{String,1}, hduindex::Int)
     maps = [keys[i] => i for i = 1:nrec]
 
     return FITS_header(hduindex, records, keys, vals, coms, Dict(dict), Dict(maps))
-
-end
-
-"""
-    FITS_HDU{T,V}
-
-Object to hold a single "Header and Data Unit" (HDU).
-
-The fields are
-* `.filnam`:  name of the corresponding FITS file (`::String`)
-* `.hduindex:`:  identifier (a file may contain more than one HDU) (`:Int`)
-* `.header`:  the header object where T=FITS_header (`::T`)
-* `.dataobject`:  the data object where V=FITS_data (`::V`)
-
-NB. An empty data block (`.dataobject = nothing`) conforms to the standard.
-"""
-struct FITS_HDU{T,V}
-
-    filnam::String
-    hduindex::Int
-    header::T        # FITS_header
-    dataobject::V    # FITS_data
 
 end
 
@@ -232,7 +205,6 @@ end
 # ------------------------------------------------------------------------------
 #                               FITS
 # ------------------------------------------------------------------------------
-
 
 @doc raw"""
     FITS

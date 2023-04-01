@@ -22,7 +22,6 @@ export test_fits1_create
 export test_fits1_read
 export test_fits1_extend
 
-export test_fits_create
 export test_fits_extend
 export test_fits_read
 
@@ -61,7 +60,6 @@ export fits1_create
 export fits_create_test
 export fits_read
 export fits1_read
-export fits_extend
 export fits1_extend
 export fits_info
 export fits1_info
