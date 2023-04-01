@@ -34,7 +34,7 @@ export FITS_data
 export FITS_table
 export FITS_name
 export FITS_test
-export FITS_key
+
 
 export FITS
 export FITS1_HDU
@@ -53,13 +53,11 @@ export cast_FITS_name
 export parse_FITS_TABLE
 
 #export force_create
-export fits_create
+
 export fits1_create
 export fits_create_test
-export fits_read
 export fits1_read
 export fits1_extend
-export fits_info
 export fits1_info
 export fits_copy
 export fits_combine
