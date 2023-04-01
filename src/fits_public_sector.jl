@@ -73,7 +73,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_create(filnam [, data [; protect=true]])
+    fits1_create(filnam [, data [; protect=true]])
 
 Create FITS file of given filnam [, optional data block [, default overwrite
 protection]] and return Array of HDUs.
@@ -176,11 +176,11 @@ function fits1_create(filnam::String, data=nothing; protect=true, msg=true)
 end
 
 # ------------------------------------------------------------------------------
-#                     fits_read(filnam::String)
+#                     fits1_read(filnam::String)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_read(filnam::String)
+    fits1_read(filnam::String)
 
 Read FITS file and return Array of `FITS1_HDU`s
 #### Example:
