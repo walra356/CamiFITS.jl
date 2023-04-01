@@ -58,7 +58,7 @@ dictError = Dict(0 => nothing,
     4 => "filnam in use - set '; protect=false' to overrule overwrite protection",
     5 => "incorrect DataType (Real type mandatory for image HDUs)",
     6 => "FITS format requires integer number of blocks (of 2880 bytes)",
-    7 => "key in use (use different name or edit key)",                          # _write_IMAGE_data(FITS_HDU)
+    7 => "key in use (use different name or edit key)",                          # _write_IMAGE_data(FITS1_HDU)
     8 => "header shall consist of integer number of blocks (of 36 records)",
     9 => "header blocks shall contain only the restricted set of ASCII text characters, decimal 32 through 126.",
     10 => "END keyword is not present.",

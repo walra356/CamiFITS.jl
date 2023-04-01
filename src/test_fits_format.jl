@@ -91,7 +91,7 @@ end
 
 function _record_count(hdu::FITS1_HDU; msg=true)
 
-    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS1_HDU not found")
 
     records = hdu.header.record
     hduindex = hdu.header.hduindex
@@ -175,7 +175,7 @@ end
 
 function _passed_record_count(hdu::FITS1_HDU)
 
-    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS1_HDU not found")
 
     records = hdu.header.records
     hduindex = hdu.header.hduindex
@@ -208,7 +208,7 @@ end
 
 function _passed_ASCII_test(hdu::FITS1_HDU)
 
-    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS1_HDU not found")
 
     hduindex = hdu.header.hduindex
     records = hdu.header.records
@@ -236,7 +236,7 @@ end
 
 function _passed_keyword_test(hdu::FITS1_HDU)
 
-    typeof(hdu) <: FITS1_HDU || error("Error: FITS_HDU not found")
+    typeof(hdu) <: FITS1_HDU || error("Error: FITS1_HDU not found")
 
     hduindex = hdu.header.hduindex
     records = hdu.header.records

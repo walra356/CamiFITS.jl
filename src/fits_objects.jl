@@ -47,7 +47,7 @@ end
 """
     FITS_table
 
-Object to hold the data of a `TABLE HDU` (a [`FITS_HDU`](@ref) for ASCII
+Object to hold the data of a `TABLE HDU` (a [`FITS1_HDU`](@ref) for ASCII
 tables). It contains the data in the form of records (rows) of ASCII strings.
 
 The fields are:
@@ -109,7 +109,7 @@ end
 @doc raw"""
     FITS1_header
 
-Object to hold the header information of a [`FITS_HDU`](@ref).
+Object to hold the header information of a [`FITS1_HDU`](@ref).
 
 The fields are:
 * `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
@@ -171,7 +171,7 @@ function _cast_header(records::Array{String,1}, hduindex::Int)
 end
 
 @doc raw"""
-    FITS_HDU
+    FITS1_HDU
 
 Object to hold a single "Header and Data Unit" (HDU).
 

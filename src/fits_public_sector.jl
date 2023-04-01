@@ -6,13 +6,13 @@
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-#                     fits_info(hdu::FITS_HDU)
+#                     fits_info(hdu::FITS1_HDU)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_info(hdu::FITS_HDU)
+    fits_info(hdu::FITS1_HDU)
 
-Print metafinformation and data of given `FITS_HDU`
+Print metafinformation and data of given `FITS1_HDU`
 #### Example:
 ```
 julia> filnam = "minimal.fits";
@@ -42,7 +42,7 @@ julia> rm(filnam); f = nothing
 """
 function fits1_info(hdu::FITS1_HDU)
 
-  typeof(hdu) <: FITS1_HDU || error("FitsWarning: FITS_HDU not found")
+  typeof(hdu) <: FITS1_HDU || error("FitsWarning: FITS1_HDU not found")
 
   strDataType = Base.string(Base.eltype(hdu.dataobject.data))
   strDatasize = Base.string(Base.size(hdu.dataobject.data))
@@ -182,7 +182,7 @@ end
 @doc raw"""
     fits_read(filnam::String)
 
-Read FITS file and return Array of `FITS_HDU`s
+Read FITS file and return Array of `FITS1_HDU`s
 #### Example:
 ```
 julia> filnam = "minimal.fits"
@@ -479,7 +479,7 @@ function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com:
 
   FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS1_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
   _fits_save(FITS)
 
@@ -553,7 +553,7 @@ function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com
 
   FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS1_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
   _fits_save(FITS)
 
@@ -568,7 +568,7 @@ end
 @doc raw"""
     fits_delete_key(filnam::String, hduindex::Int, key::String)
 
-Delete a header record of given `key`, `value` and `comment` to `FITS_HDU[hduindex]` of file with name  'filnam'
+Delete a header record of given `key`, `value` and `comment` to `FITS1_HDU[hduindex]` of file with name  'filnam'
 #### Examples:
 ```
 strExample="minimal.fits"
@@ -620,7 +620,7 @@ function fits_delete_key(filnam::String, hduindex::Int, key::String)
 
   FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS1_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
   return _fits_save(FITS)
 
@@ -686,7 +686,7 @@ function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::
 
   FITS_headers[hduindex] = _cast_header(h.records, hduindex)
 
-  FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
+  FITS = [FITS1_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
 
   _fits_save(FITS)
 
@@ -695,11 +695,11 @@ function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::
 end
 
 # ------------------------------------------------------------------------------
-#                    parse_FITS_TABLE(hdu::FITS_HDU)
+#                    parse_FITS_TABLE(hdu::FITS1_HDU)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    parse_FITS_TABLE(hdu::FITS_HDU)
+    parse_FITS_TABLE(hdu::FITS1_HDU)
 
 Parse `FITS_TABLE` (ASCII table) into a Vector of its columns for further
 processing by the user. Default formatting in ISO 2004 FORTRAN data format
