@@ -77,9 +77,9 @@ function _fits_new_records(key::String, val::Any, com::String)
 
 end
 
-function _fits_obsolete_records(h::FITS_header, recordindex::Int)
+function _fits_obsolete_records(h::FITS1_header, recordindex::Int)
 
-    n = recordindex
+    n = recordindex    # to be updated for change FITS to FITS1
 
     if typeof(h.values[n]) <: AbstractString
         while (h.comments[n][end-1:end] == "&'") | (h.keys[n+1] == "CONTINUE")
