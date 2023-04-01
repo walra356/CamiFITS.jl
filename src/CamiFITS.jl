@@ -30,8 +30,6 @@ export test_fits_edit_key
 export test_fits_delete_key
 export test_fits_rename_key
 
-export FITS_HDU
-export FITS_header
 export FITS_data
 export FITS_table
 export FITS_name

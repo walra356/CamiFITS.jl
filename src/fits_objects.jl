@@ -301,34 +301,6 @@ function cast_FITS_name(filnam::String)
 
 end
 
-# ........................................... FITS_header Object..........................................................
-
-@doc raw"""
-    FITS_header
-
-Object to hold the header information of a [`FITS_HDU`](@ref).
-
-The fields are:
-* `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
-* `.records`:  the header formated as an array of strings of 80 ASCII characters (`::Array{String,1}`)
-* `.keys`:  `keys[i]` - key corresponding to `records[i]` (record of index `i`)  (`::Array{String,1}`)
-* `.values`:  `value[i]` - corresponding to `records[i]`  (`::Array{Any,1}`)
-* `.comments`:  `comments[i]` - comment corresponding to `records[i]` (`::String`)
-* `.dict`:  Dictionary `key[i] => value[i]` (`::Dict{String,Any}`)
-* `.maps`:  Dictionary `key[i] => i` (`::Dict{String,Int}`)
-"""
-struct FITS_header
-
-    hduindex::Int
-    records::Array{String,1}
-    keys::Array{String,1}
-    values::Array{Any,1}
-    comments::Array{String,1}
-    dict::Dict{String,Any}
-    maps::Dict{String,Int}
-
-end
-
 
 
 
