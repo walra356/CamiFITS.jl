@@ -31,7 +31,7 @@ end
 #                          IOWrite_header(hdu)
 # ------------------------------------------------------------------------------
 
-function IOWrite_header(hdu::FITS1_HDU)
+function IOWrite_header(hdu::FITS_HDU)
 
     o = IOBuffer()
 
@@ -53,7 +53,7 @@ end
 #                          IOWrite_data(hdu)
 # ------------------------------------------------------------------------------
 
-function IOWrite_data(hdu::FITS1_HDU)
+function IOWrite_data(hdu::FITS_HDU)
 
     hdutype = hdu.dataobject.hdutype
 
@@ -66,7 +66,7 @@ function IOWrite_data(hdu::FITS1_HDU)
 
 end
 
-function IOWrite_IMAGE_data(hdu::FITS1_HDU)
+function IOWrite_IMAGE_data(hdu::FITS_HDU)
 
     o = IOBuffer()
 
@@ -93,7 +93,7 @@ function IOWrite_IMAGE_data(hdu::FITS1_HDU)
 
 end
 
-function IOWrite_TABLE_data(hdu::FITS1_HDU)
+function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     o = IOBuffer()
 

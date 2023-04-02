@@ -23,7 +23,7 @@ julia> using CamiFITS
 # Manual
 ### Introduction
 
-A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS1_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) of records with metainformation.
+A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) of records with metainformation.
 
 We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .fits file is called the *PRIMARY HDU*.
 
@@ -38,10 +38,10 @@ julia> f = fits_read(filnam);
 we asign the [`FITS`](@ref) object from `filnam` to the variable `f`. 
 
 The fields of `f`, `f.hdu[1]`, `f.hdu[2]`, ... correspond to the 
-[`FITS1_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
+[`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
 represented by `f.hdu[1]`. When dealing with a single [`FITS`](@ref) object it 
 is often practical to redefine `f = f.hdu` to represent the 
-[`FITS1_HDU`](@ref) object without explicit reference to principal [`FITS`](@ref)
+[`FITS_HDU`](@ref) object without explicit reference to principal [`FITS`](@ref)
 object.
 
 The formal terminology of the FITS standard can be consulted using 
@@ -157,8 +157,8 @@ terminology(term::String; test=false)
 #### Types
 
 ```@docs
-FITS1_HDU
-FITS1_header
+FITS_HDU
+FITS_header
 FITS_data
 FITS_table
 FITS_name
@@ -172,8 +172,8 @@ cast_FITS_name(filnam::String)
 ### FITS - HDU Methods
 
 ```@docs
-fits1_info(hdu::FITS1_HDU)
-parse_FITS_TABLE(hdu::FITS1_HDU)
+fits1_info(hdu::FITS_HDU)
+parse_FITS_TABLE(hdu::FITS_HDU)
 ```
 
 #### FITS - File Methods

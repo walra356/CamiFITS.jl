@@ -37,12 +37,12 @@ export FITS_test
 
 
 export FITS
-export FITS1_HDU
-export FITS1_header
-export FITS1_key
+export FITS_HDU
+export FITS_header
+export FITS_key
 
-export cast_FITS1_key
-export cast_FITS1_header
+export cast_FITS_key
+export cast_FITS_header
 export cast_FITS
 export cast_data
 export cast_FITS_data
