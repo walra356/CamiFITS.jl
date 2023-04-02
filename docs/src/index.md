@@ -25,7 +25,7 @@ julia> using CamiFITS
 
 A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) of records with metainformation.
 
-We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a .fits file is called the *PRIMARY HDU*.
+We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a `.fits` file is called the *PRIMARY HDU*.
 
 Let "example.fits" be an *existing* FITS file. By the commands 
 
@@ -35,7 +35,7 @@ julia> filnam = "example.fits"
 
 julia> f = fits_read(filnam);
 ```
-we asign the [`FITS`](@ref) object from `filnam` to the variable `f`. 
+we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dics) to the variable `f`. 
 
 The fields of `f`, `f.hdu[1]`, `f.hdu[2]`, ... correspond to the 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
@@ -44,7 +44,7 @@ is often practical to redefine `f = f.hdu` to represent the
 [`FITS_HDU`](@ref) object without explicit reference to principal [`FITS`](@ref)
 object.
 
-The formal terminology of the FITS standard can be consulted using 
+The formal terminology of the [[FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html)] can be consulted using 
 [`terminology`](@ref): 
 ```
 julia> terminology("HDU")
