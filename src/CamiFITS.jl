@@ -30,21 +30,19 @@ export test_fits_edit_key
 export test_fits_delete_key
 export test_fits_rename_key
 
-export FITS_data
-export FITS_table
 export FITS_name
 export FITS_test
-
 
 export FITS
 export FITS_HDU
 export FITS_header
-export FITS_key
+export FITS_card
+export FITS_data
+export FITS_table
 
-export cast_FITS_card
-export cast_FITS_header
 export cast_FITS
-export cast_data
+export cast_FITS_header
+export cast_FITS_card
 export cast_FITS_data
 
 export cast_FITS_test
