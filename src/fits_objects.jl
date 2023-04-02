@@ -127,7 +127,7 @@ julia> card = cast_FITS_card(record, 1);
 
 julia> card.keyword, card.val
 ("SIMPLE", true)
-````
+```
 """
 function cast_FITS_card(record::String, cardindex::Int)
 
