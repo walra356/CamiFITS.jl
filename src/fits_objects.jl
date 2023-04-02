@@ -28,14 +28,38 @@ struct FITS_data
 
 end
 
-# .................................. cast data into FITS_data objects ....................................
+# ------------------------------------------------------------------------------
+#                    cast_FITS_data(hduindex, hdutype, data)
+# ------------------------------------------------------------------------------
 
-function _cast_data(hduindex::Int, hdutype::String, data)
+@doc raw"""
+    cast_FITS_data(hduindex::Int, hdutype::String, data)
 
-    return FITS_data(hduindex, hdutype, data)
+Creates the [`FITS_data`](@ref) object for given `hduindex` constructed from 
+the `data` in accordance to the specified `hdutype` (`PRIMARY_HDU`, 
+`IMAGE_HDU`, `TABLE_HDU` and `BINARY_HDU`)
+#### Example:
+```
+julia> data = [11,21,31,12,22,23,13,23,33];
 
-end
+julia> data = reshape(data,(3,3,1))
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33 
 
+julia> dataobject = cast_FITS_data(3, "IMAGE", data)
+FITS_data(3, "IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
+
+julia> dataobject.data
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+```
+"""
 function cast_FITS_data(hduindex::Int, hdutype::String, data)
 
     return FITS_data(hduindex, hdutype, data)
@@ -58,44 +82,6 @@ struct FITS_table
 
     hduindex::Int
     rows::Array{String,1}
-
-end
-
-# ------------------------------------------------------------------------------
-#                               FITS_key
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    FITS_key
-
-Object to hold the key information of the [`FITS_header`](@ref) object.
-
-The fields are:
-* `.recordindex`:  identifier of the correspnding header record (`::Int`)
-* `.keyword`:  name of the corresponding header record (`::String`)
-* `.val`:  value  of the corresponding header record (`::Any`)
-* `.comment`:  comment on the corresponding header record (`::String`)
-"""
-struct FITS_key
-
-    recordindex::Int
-    keyword::String
-    val::Any
-    comment::String
-
-end
-
-# ------------------------------------------------------------------------------
-#                     cast_FITS_key(record, index)
-# ------------------------------------------------------------------------------
-
-function cast_FITS_key(record::String, recordindex::Int)
-
-    key = Base.strip(record[1:8])
-    val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
-    com = record[34:80]
-
-    return FITS_key(recordindex, key, val, com)
 
 end
 
@@ -128,6 +114,21 @@ end
 #                     cast_FITS_card(record, index)
 # ------------------------------------------------------------------------------
 
+@doc raw"""
+    cast_FITS_card(record::String, cardindex::Int)
+
+Creates the [`FITS_card`](@ref) object for `record` with index `cardindex`.
+#### Example:
+julia> record = "SIMPLE  =                    T / file does conform to FITS standard             ";
+
+julia> card = cast_FITS_card(record, 1);
+
+julia> card.keyword
+"SIMPLE"
+
+julia> card.val
+true
+"""
 function cast_FITS_card(record::String, cardindex::Int)
 
     key = Base.strip(record[1:8])

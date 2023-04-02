@@ -102,7 +102,7 @@ function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data us
         data = Any[]
     end
 
-    return FITS_data = _cast_data(hduindex, "PRIMARY", data)
+    return FITS_data = cast_FITS_data(hduindex, "PRIMARY", data)
 
 end
 
@@ -158,6 +158,6 @@ function _read_TABLE_data(o::IO, hduindex::Int)
 
     data = [String(Base.read(o, lrecs)) for i = 1:nrecs]
 
-    return FITS_data = _cast_data(hduindex, "TABLE", data)
+    return FITS_data = cast_FITS_data(hduindex, "TABLE", data)
 
 end

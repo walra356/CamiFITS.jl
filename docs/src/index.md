@@ -157,16 +157,18 @@ terminology(term::String; test=false)
 #### Types
 
 ```@docs
+FITS_name
+FITS
 FITS_HDU
 FITS_header
 FITS_data
 FITS_table
-FITS_name
 ```
 #### Type casting
 
 ```@docs
 cast_FITS_name(filnam::String)
+cast_FITS_card(record::String, cardindex::Int)
 ```
 
 ### FITS - HDU Methods

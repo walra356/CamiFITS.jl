@@ -41,7 +41,7 @@ export FITS_HDU
 export FITS_header
 export FITS_key
 
-export cast_FITS_key
+export cast_FITS_card
 export cast_FITS_header
 export cast_FITS
 export cast_data
