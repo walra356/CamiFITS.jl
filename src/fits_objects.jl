@@ -221,7 +221,7 @@ Object to hold a single 'FITS file'.
 
 The fields are
 * `.filnam`:  name of the corresponding 'FITS file' (`::String`)
-* `.hdu`:  array of [`FIT_HDU`](@ref)s (`::Vector{FITS_HDU}`)
+* `.hdu`:  array of [`FITS_HDU`](@ref)s (`::Vector{FITS_HDU}`)
 """
 struct FITS
 

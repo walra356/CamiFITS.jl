@@ -170,6 +170,7 @@ FITS_table
 ```@docs
 cast_FITS_name(filnam::String)
 cast_FITS_card(record::String, cardindex::Int)
+cast_FITS_data(hduindex::Int, hdutype::String, data)
 ```
 
 ### FITS - HDU Methods
