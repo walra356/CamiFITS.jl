@@ -44,7 +44,7 @@ is often practical to redefine `f = f.hdu` to represent the
 [`FITS_HDU`](@ref) object without explicit reference to principal [`FITS`](@ref)
 object.
 
-The formal terminology of the [[FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html)] can be consulted using 
+The formal terminology of the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html) can be consulted using 
 [`terminology`](@ref): 
 ```
 julia> terminology("HDU")
