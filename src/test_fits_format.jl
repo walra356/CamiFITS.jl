@@ -22,7 +22,7 @@ function fits_verifier(filnam::String; msg=true)
     push!(passed, _filnam_test(filnam; protect=false, msg))
     push!(passed, _block_test(filnam; msg))
 
-    f = fits1_read(filnam)
+    f = fits_read(filnam)
 
     for i ∈ eachindex(f.hdu)
         println("HDU-$i:")

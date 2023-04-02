@@ -1,6 +1,6 @@
 # .................................. save to file for FITS array ...................................................
 
-function _fits1_save(f::FITS)
+function _fits_save(f::FITS)
 
     o = IOBuffer()
 

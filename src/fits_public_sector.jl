@@ -40,7 +40,7 @@ END
 julia> rm(filnam); f = nothing
 ```
 """
-function fits1_info(hdu::FITS_HDU)
+function fits_info(hdu::FITS_HDU)
 
   typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
@@ -73,7 +73,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits1_create(filnam [, data [; protect=true]])
+    fits_create(filnam [, data [; protect=true]])
 
 Create FITS file of given filnam [, optional data block [, default overwrite
 protection]] and return Array of HDUs.
@@ -84,9 +84,9 @@ Key:
 julia> filnam = "minimal.fits"
 "minimal.fits"
 
-julia> f = fits1_create(filnam; protect=false);
+julia> f = fits_create(filnam; protect=false);
 
-julia> fits1_info(f.hdu[1])
+julia> fits_info(f.hdu[1])
 
 File: minimal.fits
 hdu: 1
@@ -153,7 +153,7 @@ END
 julia> rm(filnam); f = nothing
 ```
 """
-function fits1_create(filnam::String, data=nothing; protect=true, msg=true)
+function fits_create(filnam::String, data=nothing; protect=true, msg=true)
 
   err = _err_FITS_name(filnam; protect)
   err > 1 && msg && Base.throw(FITSError(msgError(err)))
@@ -169,18 +169,18 @@ function fits1_create(filnam::String, data=nothing; protect=true, msg=true)
 
   f = cast_FITS(filnam, [hdu])
 
-  _fits1_save(f)
+  _fits_save(f)
 
   return f
 
 end
 
 # ------------------------------------------------------------------------------
-#                     fits1_read(filnam::String)
+#                     fits_read(filnam::String)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits1_read(filnam::String)
+    fits_read(filnam::String)
 
 Read FITS file and return Array of `FITS_HDU`s
 #### Example:
@@ -211,7 +211,7 @@ END
 julia> rm(filnam); f = nothing
 ```
 """
-function fits1_read(filnam::String)
+function fits_read(filnam::String)
 
   o = IORead(filnam)
 
@@ -230,29 +230,29 @@ function fits1_read(filnam::String)
 end
 
 # ------------------------------------------------------------------------------
-#           fits1_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+#           fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits1_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+    fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
 
 Extend the FITS file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
 ```
 strExample = "test_example.fits"
 data = [0x0000043e, 0x0000040c, 0x0000041f]
-fits1_create(strExample, data; protect=false)
+fits_create(strExample, data; protect=false)
 
-f = fits1_read(strExample)
+f = fits_read(strExample)
 a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6]
 b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
 c = [1.23,2.12,3.,4.,5.]
 d = ['a','b','c','d','e']
 e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"]
 data = [a,b,c,d,e]
-fits1_extend(strExample, data, "TABLE")
+fits_extend(strExample, data, "TABLE")
 
-f = fits1_read(strExample)
+f = fits_read(strExample)
 f[2].dataobject.data
   5-element Vector{String}:
    "1.0e-6 1086 1.23 a a                    "
@@ -264,7 +264,7 @@ f[2].dataobject.data
 rm(strExample); f = data = a = b = c = d = e = nothing
 ```
 """
-function fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
+function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 
   hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
   hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
@@ -287,7 +287,7 @@ function fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
 
   f = cast_FITS(filnam, hdu)
 
-  _fits1_save(f)
+  _fits_save(f)
 
   return f
 

@@ -172,7 +172,7 @@ cast_FITS_name(filnam::String)
 ### FITS - HDU Methods
 
 ```@docs
-fits1_info(hdu::FITS_HDU)
+fits_info(hdu::FITS_HDU)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```
 
@@ -181,9 +181,9 @@ parse_FITS_TABLE(hdu::FITS_HDU)
 ```@docs
 fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 fits_copy(filnamA::String, filnamB::String=" "; protect=true)
-fits1_read(filnam::String)
-fits1_create(filnam::String, data=nothing; protect=true, msg=true)
-fits1_extend(filnam::String, data_extend, hdutype="IMAGE")
+fits_read(filnam::String)
+fits_create(filnam::String, data=nothing; protect=true, msg=true)
+fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 ```
 
 ### FITS - Key Methods
