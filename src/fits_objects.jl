@@ -89,9 +89,6 @@ end
 #                     cast_FITS_key(record, index)
 # ------------------------------------------------------------------------------
 
-# keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
-# vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : _fits_parse(records[i][11:31]) for i = 1:nrec]
-
 function cast_FITS_key(record::String, recordindex::Int)
 
     key = Base.strip(record[1:8])
@@ -99,6 +96,45 @@ function cast_FITS_key(record::String, recordindex::Int)
     com = record[34:80]
 
     return FITS_key(recordindex, key, val, com)
+
+end
+
+# ------------------------------------------------------------------------------
+#                               FITS_card
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    FITS_card
+
+Object to hold the card information of the [`FITS_header`](@ref) object.
+
+The fields are:
+* `.cardindex`:  identifier of the header record (`::Int`)
+* `.keyword`:  name of the corresponding header record (`::String`)
+* `.val`:  value  of the corresponding header record (`::Any`)
+* `.comment`:  comment on the corresponding header record (`::String`)
+"""
+struct FITS_card
+
+    cardindex::Int
+    record::String
+    keyword::String
+    val::Any
+    comment::String
+
+end
+
+# ------------------------------------------------------------------------------
+#                     cast_FITS_card(record, index)
+# ------------------------------------------------------------------------------
+
+function cast_FITS_card(record::String, cardindex::Int)
+
+    key = Base.strip(record[1:8])
+    val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
+    com = record[34:80]
+
+    return FITS_card(cardindex, record, key, val, com)
 
 end
 
@@ -113,16 +149,14 @@ Object to hold the header information of a [`FITS_HDU`](@ref).
 
 The fields are:
 * `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
-* `.record`:  the array of 'records' (`::Vector{FITS_record}`)
-* `.key`: the array of 'key' (`::Vector{FITS_key}`)
+* `.card`: the array of 'cards' (`::Vector{FITS_card}`)
 * `.map`:  Dictionary `keyword => recordindex` (`::Dict{String, Int}`)
 """
 struct FITS_header
 
     hduindex::Int
-    record::Vector{String}
-    key::Vector{FITS_key}
-    map::Dict{String, Int}
+    card::Vector{FITS_card}
+    map::Dict{String,Int}
 
 end
 
@@ -137,36 +171,10 @@ function cast_FITS_header(record::Vector{String}, hduindex::Int)
     iszero(remainder) || Base.throw(FITSError(msgError(8)))
     #                    FITSError 8: fails mandatory integer number of blocks
 
-    key = [cast_FITS_key(record[i], i) for i ∈ eachindex(record)]
-    map = Dict(key[i].keyword => i for i ∈ eachindex(record))
+    card = [cast_FITS_card(record[i], i) for i ∈ eachindex(record)]
+    map = Dict([Base.strip(record[i][1:8]) => i for i ∈ eachindex(record)])
 
-    return FITS_header(hduindex, record, key, map)
-
-end
-
-# ------------------------------------------------------------------------------
-
-function _cast_header(records::Array{String,1}, hduindex::Int)
-
-    remainder = length(records) % 36
-
-    iszero(remainder) || Base.throw(FITSError(msgError(8)))
-
-    recs = _rm_blanks(records)         # remove blank records to collect header records data (key, val, comment)
-    nrec = length(recs)                # number of keys in header with given hduindex
-
-    keys = [Base.strip(records[i][1:8]) for i = 1:nrec]
-    vals = [records[i][9:10] ≠ "= " ? records[i][11:31] : _fits_parse(records[i][11:31]) for i = 1:nrec]
-
-    #pass = _passed_keyword_test(records, hduindex) 
-
-    #pass || Base.throw(FITSError(msgError(11))) 
-
-    coms = [records[i][34:80] for i = 1:nrec]
-    dict = [keys[i] => vals[i] for i = 1:nrec]
-    maps = [keys[i] => i for i = 1:nrec]
-
-    return FITS_header(hduindex, records, keys, vals, coms, Dict(dict), Dict(maps))
+    return FITS_header(hduindex, card, map)
 
 end
 

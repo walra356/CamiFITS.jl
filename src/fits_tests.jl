@@ -139,10 +139,10 @@ function test_fits_create()
     filnam = "minimal.fits"
 
     f = fits_create(filnam; protect=false)
-    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    a = f.hdu[1].header.card[1].keyword == "SIMPLE"
     b = f.hdu[1].dataobject.data == Any[]
-    c = f.hdu[1].header.key[1].val == true
-    d = f.hdu[1].header.key[4].val == 0
+    c = f.hdu[1].header.card[1].val == true
+    d = f.hdu[1].header.card[4].val == 0
 
     rm(filnam)
 
@@ -150,10 +150,10 @@ function test_fits_create()
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     
     f = fits_create(filnam, data; protect=false)
-    p = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    p = f.hdu[1].header.card[1].keyword == "SIMPLE"
     q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
-    r = f.hdu[1].header.key[1].val == true
-    s = f.hdu[1].header.key[4].val == 3
+    r = f.hdu[1].header.card[1].val == true
+    s = f.hdu[1].header.card[4].val == 3
 
     rm(filnam)
 
@@ -172,10 +172,10 @@ function test_fits_read()
     f = fits_create(filnam; protect=false)
     f = fits_read(filnam)
 
-    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    a = f.hdu[1].header.card[1].keyword == "SIMPLE"
     b = f.hdu[1].dataobject.data == Any[]
-    c = f.hdu[1].header.key[1].val == true
-    d = f.hdu[1].header.key[4].val == 0
+    c = f.hdu[1].header.card[1].val == true
+    d = f.hdu[1].header.card[4].val == 0
 
     rm(filnam)
 
@@ -185,10 +185,10 @@ function test_fits_read()
     f = fits_create(filnam, data; protect=false)
     f = fits_read(filnam)
 
-    p = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    p = f.hdu[1].header.card[1].keyword == "SIMPLE"
     q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
-    r = f.hdu[1].header.key[1].val == true
-    s = f.hdu[1].header.key[4].val == 3
+    r = f.hdu[1].header.card[1].val == true
+    s = f.hdu[1].header.card[4].val == 3
 
     rm(filnam)
 
@@ -219,9 +219,9 @@ function test_fits_extend()
 
     f = fits_read(filnam)
     strExample = "1.0e-6 1086 1.23 a a                    "
-    a = f.hdu[1].header.key[1].keyword == "SIMPLE"
+    a = f.hdu[1].header.card[1].keyword == "SIMPLE"
     b = f.hdu[1].dataobject.data[1][1] == 0x0000043e
-    c = f.hdu[2].header.key[1].keyword == "XTENSION"
+    c = f.hdu[2].header.card[1].keyword == "XTENSION"
     d = f.hdu[2].dataobject.data[1] == strExample
     # e = f.hdu[2].header.key[3].val == 2
     e = get(Dict(f.hdu[2].header.map), "NAXIS", 0) == 3

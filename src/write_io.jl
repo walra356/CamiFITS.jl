@@ -37,11 +37,12 @@ function IOWrite_header(hdu::FITS_HDU)
 
     Base.seekstart(o)
 
-    records = hdu.header.record
-    recvals = join(records)
-    isascii = !convert(Bool, sum(.!(31 .< Int.(collect(recvals)) .< 127)))
+    records = [hdu.header.card[i].record for i ∈ eachindex(hdu.header.card)]
+    # records = header.card
+    header = join(records)
+    isascii = !convert(Bool, sum(.!(31 .< Int.(collect(header)) .< 127)))
     isascii || Base.throw(FITSError(msgError(9)))
-    nbytes = Base.write(o, Array{UInt8,1}(join(records)))
+    nbytes = Base.write(o, Array{UInt8,1}(header))
     remain = nbytes % 2880
     remain > 0 && Base.throw(FITSError(msgError(8)))
 
