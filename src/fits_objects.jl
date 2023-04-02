@@ -119,15 +119,14 @@ end
 
 Creates the [`FITS_card`](@ref) object for `record` with index `cardindex`.
 #### Example:
+```
 julia> record = "SIMPLE  =                    T / file does conform to FITS standard             ";
 
 julia> card = cast_FITS_card(record, 1);
 
-julia> card.keyword
-"SIMPLE"
-
-julia> card.val
-true
+julia> card.keyword, card.val
+("SIMPLE", true)
+````
 """
 function cast_FITS_card(record::String, cardindex::Int)
 

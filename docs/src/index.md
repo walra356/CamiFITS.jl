@@ -161,6 +161,7 @@ FITS_name
 FITS
 FITS_HDU
 FITS_header
+FITS_card
 FITS_data
 FITS_table
 ```
