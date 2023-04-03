@@ -14,12 +14,14 @@ using Test
     @test test_fits_read()
     @test test_fits_extend()
 
-    @test test_FITS_filnam([])
+    @test_throws FITSError fits_create("kanweg")
+    @test_throws FITSError fits_create("kanweg.fit")
+    @test_throws FITSError fits_create(" .fits")
 
-   # @test test_fits_add_key()
+    # @test test_fits_add_key()
     #@test test_fits_edit_key()
     #@test test_fits_delete_key()
-   # @test test_fits_rename_key()
+    # @test test_fits_rename_key()
 
     @test terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."
     @test terminology("s"; test=true)

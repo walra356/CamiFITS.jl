@@ -212,36 +212,6 @@ function cast_FITS_HDU(filnam::String, hduindex::Int, header::FITS_header, data:
 end
 
 # ------------------------------------------------------------------------------
-#                               FITS
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    FITS
-
-Object to hold a single 'FITS file'.
-
-The fields are
-* `.filnam`:  name of the corresponding 'FITS file' (`::String`)
-* `.hdu`:  array of [`FITS_HDU`](@ref)s (`::Vector{FITS_HDU}`)
-"""
-struct FITS
-
-    filnam::String
-    hdu::Vector{FITS_HDU}
-
-end
-
-# ------------------------------------------------------------------------------
-#                      cast_FITS(filnam, hdu)
-# ------------------------------------------------------------------------------
-
-function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
-
-    return FITS(filnam, hdu)
-
-end
-
-# ------------------------------------------------------------------------------
 #                            FITS_filnam
 # ------------------------------------------------------------------------------
 
@@ -256,8 +226,9 @@ The fields are:
 * `.numerator`:  for 'p#.fits' this is '#', a serial number (e.g., '3') or a range (e.g., '3-7') (`::String`)
 * `.extension`:  for 'p#.fits' this is '.fits' (`::String`)
 """
-struct FITS_filnam
+mutable struct FITS_filnam
 
+    filnam::String
     name::String
     prefix::String
     numerator::String
@@ -266,11 +237,11 @@ struct FITS_filnam
 end
 
 # ------------------------------------------------------------------------------
-#                            cast_FITS_filnam(filnam)
+#                      cast_FITS_filnam(filnam; protect=true))
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS_filnam(str::String)
+    cast_FITS_filnam(str::String; protect=true))
 
 Decompose the FITS filnam 'filnam.fits' into its name, prefix, numerator and extension.
 #### Examples:
@@ -285,12 +256,20 @@ f.name, f.prefix, f.numerator, f.extension
 """
 function cast_FITS_filnam(filnam::String)
 
+    filnam = Base.strip(filnam)
+
     nl = Base.length(filnam)      # nl: length of file name including extension
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
 
-    strNam = filnam[1:ne-1]
-    strExt = Base.rstrip(filnam[ne:nl])
+    !isnothing(ne) || Base.throw(FITSError(msgError(2)))
+    !isone(ne)     || Base.throw(FITSError(msgError(3)))
+
+    strExt = filnam[ne:nl]
     strExt = Base.Unicode.lowercase(strExt)
+
+    strExt == ".fits" || Base.throw(FITSError(msgError(2)))
+
+    strNam = filnam[1:ne-1]
 
     n = ne - 1                       # n: last digit of numerator (if existent)
 
@@ -306,10 +285,41 @@ function cast_FITS_filnam(filnam::String)
         strNum = " "
     end
 
-    return FITS_filnam(strNam, strPre, strNum, strExt)
+    return FITS_filnam(filnam, strNam, strPre, strNum, strExt)
 
 end
 
+# ------------------------------------------------------------------------------
+#                               FITS
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    FITS
+
+Object to hold a single 'FITS file'.
+
+The fields are
+* `.filnam`:  name of the corresponding 'FITS file' (`::String`)
+* `.hdu`:  array of [`FITS_HDU`](@ref)s (`::Vector{FITS_HDU}`)
+"""
+struct FITS
+
+    filnam::FITS_filnam
+    hdu::Vector{FITS_HDU}
+
+end
+
+# ------------------------------------------------------------------------------
+#                      cast_FITS(filnam, hdu)
+# ------------------------------------------------------------------------------
+
+function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
+
+    nam = cast_FITS_filnam(filnam)
+
+    return FITS(nam, hdu)
+
+end
 
 
 

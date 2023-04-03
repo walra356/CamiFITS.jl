@@ -153,10 +153,11 @@ END
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_create(filnam::String, data=nothing; protect=true, msg=true)
+function fits_create(filnam::String, data=nothing; protect=true)
 
-  err = _err_FITS_filnam(filnam; protect)
-  err > 1 && msg && Base.throw(FITSError(msgError(err)))
+  if Base.Filesystem.isfile(filnam) & protect 
+     Base.throw(FITSError(msgError(4)))
+  end
 
   hduindex = 1
   hdutype = "PRIMARY"
@@ -225,7 +226,9 @@ function fits_read(filnam::String)
   dat = [_read_data(o, i) for i = 1:nhdu]
   hdu = [cast_FITS_HDU(filnam, i, rec[i], dat[i]) for i = 1:nhdu]
 
-  return cast_FITS(filnam, hdu)
+  f = cast_FITS(filnam, hdu)
+
+  return f
 
 end
 

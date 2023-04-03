@@ -11,7 +11,7 @@ function _fits_save(f::FITS)
         o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data))
     end
 
-    return _fits_write_IO(o, f.filnam)
+    return _fits_write_IO(o, f.filnam.filnam)
 
 end
 
