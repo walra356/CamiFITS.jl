@@ -155,7 +155,7 @@ julia> rm(filnam); f = nothing
 """
 function fits_create(filnam::String, data=nothing; protect=true, msg=true)
 
-  err = _err_FITS_name(filnam; protect)
+  err = _err_FITS_filnam(filnam; protect)
   err > 1 && msg && Base.throw(FITSError(msgError(err)))
 
   hduindex = 1
@@ -317,15 +317,15 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
 """
 function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
 
-  # err =_err_FITS_name(filnamA; protect)
+  # err =_err_FITS_filnam(filnamA; protect)
   # err > 1 && Base.throw(FITSError(msgError(err)))
 
   o = IORead(filnamA)
-  f = cast_FITS_name(filnamA)
+  f = cast_FITS_filnam(filnamA)
 
   filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
 
-  err = _err_FITS_name(filnamB; protect)
+  err = _err_FITS_filnam(filnamB; protect)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
   _fits_write_IO(o, filnamB)
@@ -353,23 +353,23 @@ fits_combine("T01.fits", "T22.fits")
 """
 function fits_combine(filnamA::String, filnamB::String; protect=true)
 
-  err = _err_FITS_name(filnamA; protect)
+  err = _err_FITS_filnam(filnamA; protect)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
-  err = _err_FITS_name(filnamB; protect)
+  err = _err_FITS_filnam(filnamB; protect)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
   filnamA = uppercase(filnamA)
   filnamB = uppercase(filnamB)
 
-  nam = cast_FITS_name(filnamA)
+  nam = cast_FITS_filnam(filnamA)
   strPre = nam.prefix
   strNum = nam.numerator
   strExt = nam.extension
   valNum = parse(Int, strNum)
   numLeadingZeros = length(strNum) - length(string(valNum))
 
-  nam2 = cast_FITS_name(filnamB)
+  nam2 = cast_FITS_filnam(filnamB)
   strPre2 = nam2.prefix
   strNum2 = nam2.numerator
   strExt2 = nam2.extension
@@ -408,7 +408,7 @@ function fits_combine(filnamA::String, filnamB::String; protect=true)
 
   filnamOut = strPre * strNum * "-" * strPre * strNum2 * strExt
 
-  err = _err_FITS_name(filnamOut; protect)
+  err = _err_FITS_filnam(filnamOut; protect)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
   fits_create(filnamOut, dataStack; protect)
@@ -453,7 +453,7 @@ fits_info(f[1])
 """
 function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-  err = _err_FITS_name(filnam; protect=false)
+  err = _err_FITS_filnam(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
   o = IORead(filnam)
@@ -525,7 +525,7 @@ fits_info(f[1])
 """
 function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
 
-  err = _err_FITS_name(filnam; protect=false)
+  err = _err_FITS_filnam(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
   o = IORead(filnam)
@@ -591,7 +591,7 @@ fits_delete_key(filnam, 1, "NAXIS")
 """
 function fits_delete_key(filnam::String, hduindex::Int, key::String)
 
-  err = _err_FITS_name(filnam; protect=false)
+  err = _err_FITS_filnam(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
   o = IORead(filnam)
@@ -663,7 +663,7 @@ fits_info(f[1])
 """
 function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 
-  err = _err_FITS_name(filnam; protect=false)
+  err = _err_FITS_filnam(filnam; protect=false)
   err > 1 && Base.throw(FITSError(msgError(err)))
 
   o = IORead(filnam)

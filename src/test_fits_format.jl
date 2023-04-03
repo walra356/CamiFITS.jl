@@ -39,7 +39,7 @@ end
 
 function _filnam_test(filnam::String; protect=false, msg=true)
 
-    err = _err_FITS_name(filnam::String; protect)
+    err = _err_FITS_filnam(filnam::String; protect)
 
     F = cast_FITS_test(1, err)
 
@@ -119,7 +119,7 @@ end
 
 function _passed_filnam_test(filnam::String)
 
-    err = _err_FITS_name(filnam)
+    err = _err_FITS_filnam(filnam)
 
     if err === 0
         str = "$(filnam) - passed name test:    "

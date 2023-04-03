@@ -53,7 +53,7 @@ Header and Data Unit. A data structure consisting of a header and the data the h
 Note that an HDU may consist entirely of a header with no data blocks.
 ```
 
-#### The simplest FITS file
+#### Creating a simple FITS file
 FITS files can be created using the command [`fits_create`](@ref).
 The minimal file conforming to the FITS standard consists of a single HDU 
 with an empty data field.
@@ -87,7 +87,27 @@ Any[]
 julia> rm(filnam); f = nothing
 ```
 
-### The FITS file for a single matrix
+#### Inspecting the FITS object
+
+```
+julia> filnam = "minimal.fits";
+
+julia> f = fits_create(filnam; protect=false);
+
+julia> i = Base.get(f.hdu[1].header.map, "NAXIS", 0)
+3
+
+julia> (card[i].cardindex, card[i].keyword, card[i].value, card[i].comment)
+(3, "NAXIS", 1, "number of data axes                            ")
+
+julia> card[i].record
+"NAXIS   =                    1 / number of data axes                            "
+
+julia> rm(filnam); f = nothing
+```
+
+#### The FITS file for a single matrix
+
 We first create the data field in the form of a 3x3 matrix:
 ```
 julia> filnam = "matrix.fits";
@@ -157,7 +177,7 @@ terminology(term::String; test=false)
 #### Types
 
 ```@docs
-FITS_name
+FITS_filnam
 FITS
 FITS_HDU
 FITS_header
@@ -168,7 +188,7 @@ FITS_table
 #### Type casting
 
 ```@docs
-cast_FITS_name(filnam::String)
+cast_FITS_filnam(filnam::String)
 cast_FITS_card(record::String, cardindex::Int)
 cast_FITS_data(hduindex::Int, hdutype::String, data)
 ```

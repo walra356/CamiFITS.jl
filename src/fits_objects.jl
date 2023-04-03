@@ -106,7 +106,7 @@ struct FITS_card
     cardindex::Int
     record::String
     keyword::String
-    val::Any
+    value::Any
     comment::String
 
 end
@@ -242,11 +242,11 @@ function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 end
 
 # ------------------------------------------------------------------------------
-#                            FITS_name
+#                            FITS_filnam
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    FITS_name
+    FITS_filnam
 
 FITS object to hold the decomposed name of a .fits file.
 
@@ -256,7 +256,7 @@ The fields are:
 * `.numerator`:  for 'p#.fits' this is '#', a serial number (e.g., '3') or a range (e.g., '3-7') (`::String`)
 * `.extension`:  for 'p#.fits' this is '.fits' (`::String`)
 """
-struct FITS_name
+struct FITS_filnam
 
     name::String
     prefix::String
@@ -266,24 +266,24 @@ struct FITS_name
 end
 
 # ------------------------------------------------------------------------------
-#                            cast_FITS_name(filnam)
+#                            cast_FITS_filnam(filnam)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS_name(str::String)
+    cast_FITS_filnam(str::String)
 
 Decompose the FITS filnam 'filnam.fits' into its name, prefix, numerator and extension.
 #### Examples:
 ```
 strExample = "T23.01.fits"
-f = cast_FITS_name(strExample)
-FITS_name("T23.01", "T23.", "01", ".fits")
+f = cast_FITS_filnam(strExample)
+FITS_filnam("T23.01", "T23.", "01", ".fits")
 
 f.name, f.prefix, f.numerator, f.extension
 ("T23.01", "T23.", "01", ".fits")
 ```
 """
-function cast_FITS_name(filnam::String)
+function cast_FITS_filnam(filnam::String)
 
     nl = Base.length(filnam)      # nl: length of file name including extension
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
@@ -306,7 +306,7 @@ function cast_FITS_name(filnam::String)
         strNum = " "
     end
 
-    return FITS_name(strNam, strPre, strNum, strExt)
+    return FITS_filnam(strNam, strPre, strNum, strExt)
 
 end
 

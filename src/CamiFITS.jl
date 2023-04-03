@@ -16,7 +16,7 @@ export errFITS
 export dictDefinedTerms
 export terminology
 
-export test_FITS_name
+export test_FITS_filnam
 
 export test_fits_create
 export test_fits_read
@@ -30,7 +30,7 @@ export test_fits_edit_key
 export test_fits_delete_key
 export test_fits_rename_key
 
-export FITS_name
+export FITS_filnam
 export FITS_test
 
 export FITS
@@ -46,7 +46,7 @@ export cast_FITS_card
 export cast_FITS_data
 
 export cast_FITS_test
-export cast_FITS_name
+export cast_FITS_filnam
 
 export parse_FITS_TABLE
 

@@ -64,7 +64,7 @@ function _read_data(o::IO, hduindex::Int)                   # read all data usin
 
     h = _read1_header(o, hduindex) #  FITS_header
 
-    hdutype = h.card[1].keyword == "XTENSION" ? h.card[1].val : "'PRIMARY '"
+    hdutype = h.card[1].keyword == "XTENSION" ? h.card[1].value : "'PRIMARY '"
     hdutype = Base.strip(hdutype[2:9])
 
     hdutype == "PRIMARY" && return _read_PRIMARY_data(o, hduindex)
@@ -84,15 +84,15 @@ function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data us
     Base.seek(o, ptrdata[hduindex])
 
     i = get(h.map, "NAXIS", 0)
-    ndims = h.card[i].val
+    ndims = h.card[i].value
 
     if ndims > 0
-        dims = Core.tuple([h.card[i+n].val for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
+        dims = Core.tuple([h.card[i+n].value for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
         ndata = Base.prod(dims)                                                     # number of data points
         i = get(h.map, "BITPIX", 0)
-        nbits = h.card[i].val
+        nbits = h.card[i].value
         i = get(h.map, "BZERO", 0)
-        bzero = h.card[i].val
+        bzero = h.card[i].value
         E = _fits_eltype(nbits, bzero)
         data = [Base.read(o, E) for n = 1:ndata]
         data = Base.ntoh.(data)                            # change from network to host ordering
@@ -118,12 +118,12 @@ function _read_IMAGE_data(o::IO, hduindex::Int)             # read all data usin
 
     if ndims > 0
 
-        dims = Core.tuple([h.key[i+n].val for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
+        dims = Core.tuple([h.card[i+n].value for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
         ndata = Base.prod(dims)                                                     # number of data points
         i = get(h.map, "BITPIX", 0)
-        nbits = h.key[i].val
+        nbits = h.card[i].value
         i = get(h.map, "NAXIS", 0)
-        bzero = h.key[i].val
+        bzero = h.card[i].value
         E = _fits_eltype(nbits, bzero)
         data = [Base.read(o, E) for n = 1:ndata]
         data = Base.ntoh.(data)                            # change from network to host ordering
@@ -146,9 +146,9 @@ function _read_TABLE_data(o::IO, hduindex::Int)
     Base.seek(o, ptr[hduindex])
 
     i = get(h.map, "NAXIS1", 0)
-    lrecs = h.card[i].val
+    lrecs = h.card[i].value
     i = get(h.map, "NAXIS2", 0)
-    nrecs = h.card[i].val
+    nrecs = h.card[i].value
 
     # dicts = FITS_header.dict
     # lrecs = Base.get(dicts, "NAXIS1", 0)

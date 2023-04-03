@@ -8,10 +8,10 @@
 using Dates
 
 # ------------------------------------------------------------------------------
-#                  _err_FITS_name(filnam::String; protect=true)
+#                  _err_FITS_filnam(filnam::String; protect=true)
 # ------------------------------------------------------------------------------
 
-function _err_FITS_name(filnam::String; protect=true)
+function _err_FITS_filnam(filnam::String; protect=true)
 
     nl = Base.length(filnam)      # nl: length of file name including extension
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
@@ -275,8 +275,8 @@ function _rm_blanks!(records::Array{String,1})            # remove blank records
 
 end
 
-function _validate_FITS_name(filnam::String)
+function _validate_FITS_filnam(filnam::String)
 
-    return cast_FITS_name(filnam)
+    return cast_FITS_filnam(filnam)
 
 end
