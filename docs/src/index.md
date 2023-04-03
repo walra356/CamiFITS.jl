@@ -27,7 +27,7 @@ A FITS file consists of a sequence of one or more *Header and Data Units* ([`FIT
 
 We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a `.fits` file is called the *PRIMARY HDU*.
 
-Let "example.fits" be an *existing* FITS file. By the commands 
+Let "example.fits" be an *existing* `.fits` file. By the commands 
 
 ```
 julia> filnam = "example.fits"
