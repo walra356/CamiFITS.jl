@@ -262,7 +262,7 @@ function cast_FITS_filnam(filnam::String)
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
 
     !isnothing(ne) || Base.throw(FITSError(msgError(2)))
-    !isone(ne)     || Base.throw(FITSError(msgError(3)))
+    !isone(ne) || Base.throw(FITSError(msgError(3)))
 
     strExt = filnam[ne:nl]
     strExt = Base.Unicode.lowercase(strExt)
@@ -296,10 +296,10 @@ end
 @doc raw"""
     FITS
 
-Object to hold a single 'FITS file'.
+Object to hold a single '.fits' file .
 
 The fields are
-* `.filnam`:  name of the corresponding 'FITS file' (`::String`)
+* `.filnam`:  filename of the corresponding '.fits' file (`::String`)
 * `.hdu`:  array of [`FITS_HDU`](@ref)s (`::Vector{FITS_HDU}`)
 """
 struct FITS
