@@ -112,30 +112,41 @@ struct FITS_card
 end
 
 # ------------------------------------------------------------------------------
-#                     cast_FITS_card(record, index)
+#                     cast_FITS_card(cardindex, record)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS_card(record::String, cardindex::Int)
+    cast_FITS_card(cardindex::Int, key::String, value::Any, com::String)
+    cast_FITS_card(cardindex::Int, record::String)
 
 Creates the [`FITS_card`](@ref) object for `record` with index `cardindex`.
 #### Example:
 ```
 julia> record = "SIMPLE  =                    T / file does conform to FITS standard             ";
 
-julia> card = cast_FITS_card(record, 1);
+julia> card = cast_FITS_card(1, record);
 
-julia> card.keyword, card.val
+julia> card.keyword, card.value
 ("SIMPLE", true)
 ```
 """
-function cast_FITS_card(record::String, cardindex::Int)
+function cast_FITS_card(cardindex::Int, record::String)
 
     key = Base.strip(record[1:8])
     val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
     com = record[34:80]
 
     return FITS_card(cardindex, record, key, val, com)
+
+end
+function cast_FITS_card(cardindex::Int, key::String, value::Any, com::String)
+
+    key = _format_keyword(key)
+
+    val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
+    com = record[34:80]
+
+    return FITS_card(cardindex, record, key, value, com)
 
 end
 
@@ -172,7 +183,7 @@ function cast_FITS_header(record::Vector{String}, hduindex::Int)
     iszero(remainder) || Base.throw(FITSError(msgError(8)))
     #                    FITSError 8: fails mandatory integer number of blocks
 
-    card = [cast_FITS_card(record[i], i) for i ∈ eachindex(record)]
+    card = [cast_FITS_card(i, record[i]) for i ∈ eachindex(record)]
     map = Dict([Base.strip(record[i][1:8]) => i for i ∈ eachindex(record)])
 
     return FITS_header(hduindex, card, map)

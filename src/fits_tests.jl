@@ -19,7 +19,7 @@ function test_fits_create()
 
     filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
-    
+
     f = fits_create(filnam, data; protect=false)
     p = f.hdu[1].header.card[1].keyword == "SIMPLE"
     q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
@@ -29,7 +29,7 @@ function test_fits_create()
     rm(filnam)
 
     o = isnothing(findfirst(.![a, b, c, d, p, q, r, s])) ? true : false
- 
+
     o || println([a, b, c, d, p, q, r, s])
 
     return o
@@ -71,7 +71,6 @@ function test_fits_read()
 
 end
 
-
 function test_fits_extend()
 
     filnam = "test_example.fits"
@@ -94,7 +93,6 @@ function test_fits_extend()
     b = f.hdu[1].dataobject.data[1][1] == 0x0000043e
     c = f.hdu[2].header.card[1].keyword == "XTENSION"
     d = f.hdu[2].dataobject.data[1] == strExample
-    # e = f.hdu[2].header.key[3].val == 2
     e = get(Dict(f.hdu[2].header.map), "NAXIS", 0) == 3
 
     rm(filnam)
@@ -104,6 +102,24 @@ function test_fits_extend()
     o || println([a, b, c, d, e])
 
     return o
+
+end
+
+function test_fits_add_key()
+
+    filnam = "minimal.fits"
+    fits_create(filnam; protect=false)
+    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+
+    f = fits_read(filnam)
+    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
+    r = f.hdu[1].header.record[i]
+
+    test = r[i] == "KEYNEW1 =                    T / FITS dataset may contain extension             "
+
+    rm(filnam)
+
+    return test
 
 end
 
@@ -179,24 +195,6 @@ function test_fits_edit_key()
     r = f[1].header.records
 
     test = r[i] == "KEYNEW1 =                    F / comment has changed                            "
-
-    rm(filnam)
-
-    return test
-
-end
-
-function test_fits_add_key()
-
-    filnam = "minimal.fits"
-    fits_create(filnam; protect=false)
-    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-
-    f = fits_read(filnam)
-    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
-    r = f.hdu[1].header.record[i]
-
-    test = r[i] == "KEYNEW1 =                    T / FITS dataset may contain extension             "
 
     rm(filnam)
 

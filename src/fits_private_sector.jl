@@ -67,8 +67,8 @@ end
 
 function _fits_new_records(key::String, val::Any, com::String)
 
-    k = _format_recordkey(key)
-    v = _format_recordvalue(val)
+    k = _format_keyword(key)
+    v = _format_value(val)
     c = _format_recordcomment(com, val)
 
     records = length(v * c) > 67 ? _format_recordslongstring(k, v, c) : [(k * "= " * v * " / " * c)]
@@ -135,13 +135,45 @@ function _fits_parse(str::String) # routine
 
 end
 
-function _format_key(key::String)::String
+function _isascii_text(text::String)::Bool
+
+    return !convert(Bool, sum(.!(32 .≤ Int.(collect(text)) .≤ 126)))
+
+end
+
+function _format_keyword(key::String)::String
 
     key = Base.Unicode.uppercase(Base.strip(key))
+    l = length(key)
+    l ≤ 8 || Base.throw(FITSError(msgError(10))) # exceeds 8 characters
 
-    length(key) > 8 && error("strError: '$(key)': length exceeds 8 characters (FITS standard)")
+    v = Int.(collect(key))
+    o = (48 .≤ v .≤ 57) .| (65 .≤ v .≤ 90) .| (v .== 45) .| (v .== 95)
 
-    return key
+    ispermitted = !convert(Bool, sum(.!o))
+
+    ispermitted || Base.throw(FITSError(msgError(24))) # illegal character
+
+    keyword = rpad(key, 8)
+
+    if (keyword[1:5] == "NAXIS") & (keyword[6] == '0')
+        Base.throw(FITSError(msgError(24))) 
+    end
+
+    return keyword
+
+end
+
+function _format_value(val::Any)
+
+    typeof(val) <: AbstractChar && error("strError: '$(val)': invalid record value (not 'numeric', 'date' or 'single quote' delimited string')")
+    typeof(val) <: AbstractString ? (length(val) > 1 ? true : error("strError: string value not delimited by single quotes")) : 0
+
+    typeof(val) <: AbstractString && return _format_value_charstring(val)
+    typeof(val) <: DateTime && return _format_value_datetime(val)
+    typeof(val) <: Real && return _format_value_numeric(val)
+
+    return error("strError: '$(val)' invalid record value type")
 
 end
 
@@ -150,18 +182,12 @@ function _format_recordcomment(com::String, val::Any)::String
     strErr = "FitsWarning: record truncated at 80 characters (FITS standard)"
 
     c = strip(com)
-    v = _format_recordvalue(val)
+    v = _format_value(val)
     T = typeof(val)
 
     (T <: DateTime) | (T <: Real) ? (length(v * c) > 67 ? (c = c[1:67-length(v)]; println(strErr)) : 0) : 0
 
     return length(c) > 47 ? com : rpad(c, 67 - length(v))
-
-end
-
-function _format_recordkey(key::String)
-
-    return rpad(key, 8)
 
 end
 
@@ -202,20 +228,7 @@ function _format_recordslongstring(key::String, val::AbstractString, com::String
 
 end
 
-function _format_recordvalue(val::Any)
-
-    typeof(val) <: AbstractChar && error("strError: '$(val)': invalid record value (not 'numeric', 'date' or 'single quote' delimited string')")
-    typeof(val) <: AbstractString ? (length(val) > 1 ? true : error("strError: string value not delimited by single quotes")) : 0
-
-    typeof(val) <: AbstractString && return _format_recordvalue_charstring(val)
-    typeof(val) <: DateTime && return _format_recordvalue_datetime(val)
-    typeof(val) <: Real && return _format_recordvalue_numeric(val)
-
-    return error("strError: '$(val)' invalid record value type")
-
-end
-
-function _format_recordvalue_charstring(val::AbstractString)
+function _format_value_charstring(val::AbstractString)
 
     isascii(val) || error("strError: string not standard ASCII")
 
@@ -233,13 +246,13 @@ function _format_recordvalue_charstring(val::AbstractString)
 
 end
 
-function _format_recordvalue_datetime(val::Dates.DateTime)
+function _format_value_datetime(val::Dates.DateTime)
 
     return "'" * string(val) * "'"
 
 end
 
-function _format_recordvalue_numeric(val::Real)
+function _format_value_numeric(val::Real)
 
     val = typeof(val) != Bool ? string(val) : val == true ? "T" : "F"
 

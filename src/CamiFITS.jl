@@ -1,6 +1,7 @@
 module CamiFITS
 
 import CamiMath
+
 import Printf
 import Dates           # used in fits_private_sector
 
@@ -12,6 +13,7 @@ export dictError
 
 export FITSError
 export errFITS
+export msgError
 
 export dictDefinedTerms
 export terminology

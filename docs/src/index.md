@@ -189,7 +189,7 @@ FITS_table
 
 ```@docs
 cast_FITS_filnam(filnam::String)
-cast_FITS_card(record::String, cardindex::Int)
+cast_FITS_card(cardindex::Int, record::String)
 cast_FITS_data(hduindex::Int, hdutype::String, data)
 ```
 
