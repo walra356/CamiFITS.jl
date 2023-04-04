@@ -150,7 +150,7 @@ Object to hold the header information of a [`FITS_HDU`](@ref).
 
 The fields are:
 * `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
-* `.card`: the array of 'cards' (`::Vector{FITS_card}`)
+* `.card`: the array of `cards` (`::Vector{FITS_card}`)
 * `.map`:  Dictionary `keyword => recordindex` (`::Dict{String, Int}`)
 """
 struct FITS_header
@@ -185,7 +185,7 @@ end
 Object to hold a single "Header and Data Unit" (HDU).
 
 The fields are
-* `.filnam`:  name of the corresponding FITS file (`::String`)
+* `.filnam`:  name of the corresponding `,fits` file (`::String`)
 * `.hduindex:`:  identifier (a file may contain more than one HDU) (`:Int`)
 * `.header`:  the header object where T=FITS_header (`::FITS_header`)
 * `.dataobject`:  the data object where V=FITS_data (`::FITS_data`)
@@ -218,13 +218,13 @@ end
 @doc raw"""
     FITS_filnam
 
-FITS object to hold the decomposed name of a .fits file.
+FITS object to hold the decomposed name of a `.fits` file.
 
 The fields are:
-* `     .name`:  for 'p#.fits' this is 'p#.fits' (`::String`)
-* `   .prefix`:  for 'p#.fits' this is 'p' (`::String`)
-* `.numerator`:  for 'p#.fits' this is '#', a serial number (e.g., '3') or a range (e.g., '3-7') (`::String`)
-* `.extension`:  for 'p#.fits' this is '.fits' (`::String`)
+* `     .name`:  for `p#.fits` this is `p#.fits` (`::String`)
+* `   .prefix`:  for `p#.fits` this is `p` (`::String`)
+* `.numerator`:  for `p#.fits` this is `#`, a serial number (e.g., '3') or a range (e.g., '3-7') (`::String`)
+* `.extension`:  for `p#.fits` this is `.fits` (`::String`)
 """
 mutable struct FITS_filnam
 
@@ -243,7 +243,8 @@ end
 @doc raw"""
     cast_FITS_filnam(str::String; protect=true))
 
-Decompose the FITS filnam 'filnam.fits' into its name, prefix, numerator and extension.
+Decompose the FITS filnam 'filnam.fits' into its name, prefix, numerator 
+and extension.
 #### Examples:
 ```
 strExample = "T23.01.fits"
@@ -296,10 +297,10 @@ end
 @doc raw"""
     FITS
 
-Object to hold a single '.fits' file .
+Object to hold a single `.fits` file .
 
 The fields are
-* `.filnam`:  filename of the corresponding '.fits' file (`::String`)
+* `.filnam`:  filename of the corresponding `.fits` file (`::String`)
 * `.hdu`:  array of [`FITS_HDU`](@ref)s (`::Vector{FITS_HDU}`)
 """
 struct FITS

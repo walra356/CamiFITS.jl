@@ -14,6 +14,9 @@ using Test
     @test test_fits_read()
     @test test_fits_extend()
 
+    fits_create("kanweg.fits"; protect=false)
+    @test_throws FITSError fits_create("kanweg.fits") 
+    rm("kanweg.fits")
     @test_throws FITSError fits_create("kanweg")
     @test_throws FITSError fits_create("kanweg.fit")
     @test_throws FITSError fits_create(" .fits")

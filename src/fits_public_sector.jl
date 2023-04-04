@@ -75,7 +75,7 @@ end
 @doc raw"""
     fits_create(filnam [, data [; protect=true]])
 
-Create FITS file of given filnam [, optional data block [, default overwrite
+Create `.fits` file of given filnam [, optional data block [, default overwrite
 protection]] and return Array of HDUs.
 Key:
 * `protect::Bool`: overwrite protection
@@ -155,8 +155,8 @@ julia> rm(filnam); f = nothing
 """
 function fits_create(filnam::String, data=nothing; protect=true)
 
-  if Base.Filesystem.isfile(filnam) & protect 
-     Base.throw(FITSError(msgError(4)))
+  if Base.Filesystem.isfile(filnam) & protect
+    Base.throw(FITSError(msgError(4)))
   end
 
   hduindex = 1
@@ -183,7 +183,7 @@ end
 @doc raw"""
     fits_read(filnam::String)
 
-Read FITS file and return Array of `FITS_HDU`s
+Read `.fits` file and return Array of `FITS_HDU`s
 #### Example:
 ```
 julia> filnam = "minimal.fits"
@@ -214,6 +214,8 @@ julia> rm(filnam); f = nothing
 """
 function fits_read(filnam::String)
 
+  Base.Filesystem.isfile(filnam) || Base.throw(FITSError(msgError(1)))
+
   o = IORead(filnam)
 
   nhdu = _hdu_count(o)
@@ -239,7 +241,7 @@ end
 @doc raw"""
     fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
 
-Extend the FITS file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
+Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
 ```
 strExample = "test_example.fits"
@@ -268,6 +270,8 @@ rm(strExample); f = data = a = b = c = d = e = nothing
 ```
 """
 function fits_extend(filnam::String, data_extend, hdutype="IMAGE")
+
+  Base.Filesystem.isfile(filnam) || Base.throw(FITSError(msgError(1)))
 
   hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
   hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
