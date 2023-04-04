@@ -56,15 +56,24 @@ function fits_info(hdu::FITS_HDU)
     "\r\nMetainformation:"
   ]
 
-  record = hdu.header.record
+  card = hdu.header.card
 
-  _rm_blanks!(record)
+  records = [card[i].record for i ∈ eachindex(card)]
 
-  Base.append!(info, record)
+  _rm_blanks!(records)
+
+  Base.append!(info, records)
 
   println(Base.join(info .* "\r\n"))
 
   return hdu.dataobject.data
+
+end
+function fits_info(f::FITS)
+
+    for i ∈ eachindex(f.hdu)
+        return fits_info(f.hdu[i]) 
+    end
 
 end
 

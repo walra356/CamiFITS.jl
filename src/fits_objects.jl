@@ -185,10 +185,10 @@ end
 Object to hold a single "Header and Data Unit" (HDU).
 
 The fields are
-* `.filnam`:  name of the corresponding `,fits` file (`::String`)
+* `.filnam`:  name of the corresponding `.fits` file (`::String`)
 * `.hduindex:`:  identifier (a file may contain more than one HDU) (`:Int`)
-* `.header`:  the header object where T=FITS_header (`::FITS_header`)
-* `.dataobject`:  the data object where V=FITS_data (`::FITS_data`)
+* `.header`:  the header object (`::FITS_header`)
+* `.dataobject`:  the data object (`::FITS_data`)
 
 NB. An empty data block (`.dataobject = nothing`) conforms to the standard.
 """
