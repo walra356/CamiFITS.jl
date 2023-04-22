@@ -45,9 +45,9 @@ is often practical to redefine `f = f.hdu` to represent the
 object.
 
 The formal terminology of the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html) can be consulted using 
-[`terminology`](@ref): 
+[`fits_terminology`](@ref): 
 ```
-julia> terminology("HDU")
+julia> fits_terminology("HDU")
 HDU:
 Header and Data Unit. A data structure consisting of a header and the data the header describes. 
 Note that an HDU may consist entirely of a header with no data blocks.
@@ -169,7 +169,7 @@ is given by the matrix indices.
 ### Terminology
 
 ```@docs
-terminology(term::String; test=false)
+fits_terminology(term::String; test=false)
 ```
 
 ### FITS 

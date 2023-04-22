@@ -105,17 +105,27 @@ function test_fits_extend()
 
 end
 
+function test_fits_keyword()
+
+    a = fits_keyword("end"; msg=false)[1] == 'K'
+    b = fits_keyword("ed"; msg=false)[1] == 'E'
+    c = fits_keyword(; msg=false)[1]  == 'F'
+
+    return a & b & c
+
+end
+
 function test_fits_add_key()
 
     filnam = "minimal.fits"
     fits_create(filnam; protect=false)
-    fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+    fits_add_key(filnam, 1, "KEYNEW1", true, "this is a comment")
 
     f = fits_read(filnam)
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
-    r = f.hdu[1].header.record[i]
+    k = f.hdu[1].header.card[i].keyword
 
-    test = r[i] == "KEYNEW1 =                    T / FITS dataset may contain extension             "
+    test = k == "KEYNEW1"
 
     rm(filnam)
 

@@ -1,9 +1,10 @@
 module CamiFITS
 
 import CamiMath
-
 import Printf
 import Dates           # used in fits_private_sector
+
+export indices
 
 export dictPass
 export dictFail
@@ -14,9 +15,30 @@ export dictError
 export FITSError
 export errFITS
 export msgError
+export msgErr
+
+export _index_space
+export _size_word
+export _format_com
+export _split_wordsize
+export _update_spaces
+export _offset
+export _format_long_data
+export _format_value_string
+
+export _format_keyword
+export _format_value
+export _format_comment
+export _format_record
+export _format_normrecord
+export _format_longrecord
+export _passed_keyword_test
 
 export dictDefinedTerms
-export terminology
+export dictDefinedKeywords
+export fits_terminology
+export fits_keyword
+export fits_keywords
 
 export test_FITS_filnam
 
@@ -27,6 +49,7 @@ export test_fits_extend
 export test_fits_extend
 export test_fits_read
 
+export test_fits_keyword
 export test_fits_add_key
 export test_fits_edit_key
 export test_fits_delete_key
@@ -85,6 +108,7 @@ export FORTRAN_format
 export cast_FORTRAN_format
 export cast_FORTRAN_datatype
 
+include("julia_toolbox.jl")
 include("dicts.jl")
 include("fits_objects.jl")
 include("fits_pointers.jl")

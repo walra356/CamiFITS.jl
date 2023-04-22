@@ -142,11 +142,13 @@ end
 function cast_FITS_card(cardindex::Int, key::String, value::Any, com::String)
 
     key = _format_keyword(key)
+    val = _format_value(value)
+    com = _format_comment(com)
 
     val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
     com = record[34:80]
 
-    return FITS_card(cardindex, record, key, value, com)
+    return FITS_card(cardindex, record, key, val, com)
 
 end
 
@@ -168,19 +170,19 @@ struct FITS_header
 
     hduindex::Int
     card::Vector{FITS_card}
-    map::Dict{String,Int}
+    map::Dict{String, Int}
 
 end
 
 # ------------------------------------------------------------------------------
-#                   cast_FITS_header(records, hduindex)
+#                   cast_FITS_header(record, hduindex)
 # ------------------------------------------------------------------------------
 
 function cast_FITS_header(record::Vector{String}, hduindex::Int)
 
     remainder = length(record) % 36
 
-    iszero(remainder) || Base.throw(FITSError(msgError(8)))
+    iszero(remainder) || Base.throw(FITSError(msgErr(8)))
     #                    FITSError 8: fails mandatory integer number of blocks
 
     card = [cast_FITS_card(i, record[i]) for i ∈ eachindex(record)]
@@ -208,7 +210,7 @@ struct FITS_HDU
     filnam::String
     hduindex::Int
     header::FITS_header     # FITS_header
-    dataobject::FITS_data    # FITS_data
+    dataobject::FITS_data   # FITS_data
 
 end
 
@@ -232,14 +234,15 @@ end
 FITS object to hold the decomposed name of a `.fits` file.
 
 The fields are:
-* `     .name`:  for `p#.fits` this is `p#.fits` (`::String`)
+" `    .value`:  for `p#.fits` this is `p#.fits` (`::String`)
+* `     .name`:  for `p#.fits` this is `p#` (`::String`)
 * `   .prefix`:  for `p#.fits` this is `p` (`::String`)
 * `.numerator`:  for `p#.fits` this is `#`, a serial number (e.g., '3') or a range (e.g., '3-7') (`::String`)
 * `.extension`:  for `p#.fits` this is `.fits` (`::String`)
 """
 mutable struct FITS_filnam
 
-    filnam::String
+    value::String
     name::String
     prefix::String
     numerator::String
@@ -273,13 +276,13 @@ function cast_FITS_filnam(filnam::String)
     nl = Base.length(filnam)      # nl: length of file name including extension
     ne = Base.findlast('.', filnam)              # ne: first digit of extension
 
-    !isnothing(ne) || Base.throw(FITSError(msgError(2)))
-    !isone(ne) || Base.throw(FITSError(msgError(3)))
+    !isnothing(ne) || Base.throw(FITSError(msgErr(2)))
+    !isone(ne) || Base.throw(FITSError(msgErr(3)))
 
     strExt = filnam[ne:nl]
     strExt = Base.Unicode.lowercase(strExt)
 
-    strExt == ".fits" || Base.throw(FITSError(msgError(2)))
+    strExt == ".fits" || Base.throw(FITSError(msgErr(2)))
 
     strNam = filnam[1:ne-1]
 
@@ -333,8 +336,6 @@ function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
 end
 
-
-
 # ------------------------------------------------------------------------------
 #                         FITSError <: Exception
 # ------------------------------------------------------------------------------
@@ -354,6 +355,15 @@ end
 # ------------------------------------------------------------------------------
 #                             strErr(err::Int)
 # ------------------------------------------------------------------------------
+
+function msgErr(err::Int)
+
+    str = "FITSError: $(err) - "
+    str *= Base.get!(dictErr, err, "not found")
+
+    return str
+
+end
 
 function msgError(err::Int)
 

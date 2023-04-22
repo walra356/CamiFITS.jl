@@ -20,7 +20,7 @@ function IORead(filnam::String)
     nblock = nbytes ÷ 2880                      # number of blocks 
     remain = nbytes % 2880                      # remainder (incomplete block)
 
-    remain > 0 && Base.throw(FITSError(msgError(6)))
+    remain > 0 && Base.throw(FITSError(msgErr(6)))
 
     return o
 

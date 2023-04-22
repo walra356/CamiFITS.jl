@@ -11,7 +11,7 @@ function _fits_save(f::FITS)
         o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data))
     end
 
-    return _fits_write_IO(o, f.filnam.filnam)
+    return _fits_write_IO(o, f.filnam.value)
 
 end
 
@@ -38,13 +38,12 @@ function IOWrite_header(hdu::FITS_HDU)
     Base.seekstart(o)
 
     records = [hdu.header.card[i].record for i ∈ eachindex(hdu.header.card)]
-    # records = header.card
     header = join(records)
-    isascii = !convert(Bool, sum(.!(31 .< Int.(collect(header)) .< 127)))
-    isascii || Base.throw(FITSError(msgError(9)))
+    isasciitext = _isascii_text(header)
+    isasciitext || Base.throw(FITSError(msgErr(23)))
     nbytes = Base.write(o, Array{UInt8,1}(header))
     remain = nbytes % 2880
-    remain > 0 && Base.throw(FITSError(msgError(8)))
+    remain > 0 && Base.throw(FITSError(msgErr(8)))
 
     return o
 
@@ -78,7 +77,7 @@ function IOWrite_IMAGE_data(hdu::FITS_HDU)
     ndat ≠ 0 || return o
 
     E = Base.eltype(data)
-    E <: Real || Base.throw(FITSError(msgError(5)))
+    E <: Real || Base.throw(FITSError(msgErr(5)))
     # 5 - incorrect DataType (Real type mandatory for image HDUs)
 
     nbyte = sizeof(E)

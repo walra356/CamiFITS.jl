@@ -65,18 +65,6 @@ function _fits_eltype(nbits::Int, bzero::Number)
 
 end
 
-function _fits_new_records(key::String, val::Any, com::String)
-
-    k = _format_keyword(key)
-    v = _format_value(val)
-    c = _format_recordcomment(com, val)
-
-    records = length(v * c) > 67 ? _format_recordslongstring(k, v, c) : [(k * "= " * v * " / " * c)]
-
-    return records
-
-end
-
 function _fits_obsolete_records(h::FITS_header, recordindex::Int)
 
     n = recordindex    # to be updated for change FITS to FITS1
@@ -141,122 +129,190 @@ function _isascii_text(text::String)::Bool
 
 end
 
+# ==============================================================================
+#                      _format_keyword(key)::String
+# ------------------------------------------------------------------------------
+
 function _format_keyword(key::String)::String
 
     key = Base.Unicode.uppercase(Base.strip(key))
     l = length(key)
-    l ≤ 8 || Base.throw(FITSError(msgError(10))) # exceeds 8 characters
+    l ≤ 8 || Base.throw(FITSError(msgErr(10))) # exceeds 8 characters
 
     v = Int.(collect(key))
     o = (48 .≤ v .≤ 57) .| (65 .≤ v .≤ 90) .| (v .== 45) .| (v .== 95)
 
     ispermitted = !convert(Bool, sum(.!o))
 
-    ispermitted || Base.throw(FITSError(msgError(24))) # illegal character
+    ispermitted || Base.throw(FITSError(msgErr(24))) # illegal character
 
-    keyword = rpad(key, 8)
-
-    if (keyword[1:5] == "NAXIS") & (keyword[6] == '0')
-        Base.throw(FITSError(msgError(24))) 
-    end
-
-    return keyword
+    return key
 
 end
 
-function _format_value(val::Any)
-
-    typeof(val) <: AbstractChar && error("strError: '$(val)': invalid record value (not 'numeric', 'date' or 'single quote' delimited string')")
-    typeof(val) <: AbstractString ? (length(val) > 1 ? true : error("strError: string value not delimited by single quotes")) : 0
-
-    typeof(val) <: AbstractString && return _format_value_charstring(val)
-    typeof(val) <: DateTime && return _format_value_datetime(val)
-    typeof(val) <: Real && return _format_value_numeric(val)
-
-    return error("strError: '$(val)' invalid record value type")
-
-end
-
-function _format_recordcomment(com::String, val::Any)::String
-
-    strErr = "FitsWarning: record truncated at 80 characters (FITS standard)"
-
-    c = strip(com)
-    v = _format_value(val)
-    T = typeof(val)
-
-    (T <: DateTime) | (T <: Real) ? (length(v * c) > 67 ? (c = c[1:67-length(v)]; println(strErr)) : 0) : 0
-
-    return length(c) > 47 ? com : rpad(c, 67 - length(v))
-
-end
-
-function _format_recordslongstring(key::String, val::AbstractString, com::String)
-
-    lcom = length(com)
-    last = lcom > 0 ? "&'" : "'"
-    lval = length(val)
-
-    records = [(key * "= " * val)]
-
-    if lval < 70
-        records[1] = rpad(records[1][1:end-1] * last, 80)
-    elseif (lval == 70)
-        chr = records[1][end-1]
-        records[1] = records[1][1:end-2] * last
-        Base.push!(records, rpad(("CONTINUE  '" * chr * last), 80))
-    elseif lval > 70
-        val = val[1:end-1]
-        lval = length(val)
-        nrec = (length(val) - 68) ÷ 67 + 1
-        nrec > 1 ? [push!(records, ("CONTINUE  '" * val[68i+2-i:68(i+1)-i] * "&'")) for i = 1:nrec-1] : 0
-        val = val[68(nrec)+2-nrec:end]
-        lval = length(val)
-        (lcom == 0) & (lval == 1) ? (records[end] = records[end][1:end-2] * val * "'"; lval = 0) : 0
-        lval > 0 ? Base.push!(records, rpad(("CONTINUE  '" * val * last), 80)) : 0
-    end
-
-    if lcom <= 65
-        Base.push!(records, rpad("CONTINUE  '' / " * com, 80))
-    else
-        ncom = lcom ÷ 64 + 1
-        ncom > 1 ? [push!(records, "CONTINUE  '&' / " * com[64i+1:64(i+1)]) for i = 0:ncom-2] : 0
-        Base.push!(records, rpad("CONTINUE  '' / " * com[64(ncom-1)+1:end], 80))
-    end
-
-    return records
-
-end
-
-function _format_value_charstring(val::AbstractString)
-
-    isascii(val) || error("strError: string not standard ASCII")
-
-    isasciiprintable = !convert(Bool, sum(.!(31 .< Int.(collect(val)) .< 127)))
-
-    isasciiprintable || error("strError: string not printable (not restricted to ASCII range 32-126)")
-
-    v = (strip(val))
-
-    (v[1] == '\'') & (v[end] == '\'') || error("strError: string value not delimited by single quotes")
-
-    recordvalue = length(v) == 10 ? rpad(v, 20) : length(v) < 21 ? rpad(v[1:end-1], 19) * "'" : val
-
-    return recordvalue
-
-end
-
-function _format_value_datetime(val::Dates.DateTime)
-
-    return "'" * string(val) * "'"
-
-end
+# ==============================================================================
+#                      _format_value(val::Any)::String
+# ------------------------------------------------------------------------------
 
 function _format_value_numeric(val::Real)
 
     val = typeof(val) != Bool ? string(val) : val == true ? "T" : "F"
 
-    return lpad(val, 20)
+    return [lpad(val, 20)]
+
+end
+# ------------------------------------------------------------------------------
+
+function _format_value_datetime(val)
+
+    return [rpad("'" * string(val) * "'", 20)]
+
+end
+# ------------------------------------------------------------------------------
+
+function _format_value_string(val::AbstractString, nocomment=true)
+
+    isasciitext = _isascii_text(val)
+    isasciitext || Base.throw(FITSError(msgErr(23)))
+
+    v = (strip(val))
+    n = length(v) ÷ 67 + 1
+
+    if nocomment
+        if length(v) ≤ 18
+            o = [rpad("'" * v * "'", 20)]
+        elseif length(v) ≤ 68
+            o = ["'" * v * "'"]
+        else
+            o = ["'" * v[2+68(i-1)-i:67i] * "&'" for i = 1:n-1]
+            push!(o, "'" * v[2+68(n-1)-n:end])
+        end
+    else
+        if length(v) ≤ 18
+            o = [rpad("'" * v * "'", 20)]
+        elseif length(v) ≤ 67
+            o = ["'" * v * "&'"]
+        else
+            o = ["'" * v[2+68(i-1)-i:67i] * "&'" for i = 1:n-1]
+            push!(o, "'" * v[2+68(n-1)-n:end] * "&'")
+        end
+    end
+
+    return o
+
+end
+# ------------------------------------------------------------------------------
+
+function _format_value(val::Any, nocomment=true)
+
+    T = typeof(val)
+
+    T <: AbstractChar && Base.throw(FITSError(msgErr(15)))
+    T <: AbstractString && length(val) ≤ 1 && Base.throw(FITSError(msgErr(14)))
+
+    o = T <: Real ? _format_value_numeric(val) :
+        T <: AbstractString ? _format_value_string(val, nocomment) :
+        T <: Date ? _format_value_datetime(val) :
+        T <: Time ? _format_value_datetime(val) :
+        T <: DateTime ? _format_value_datetime(val) :
+        Base.throw(FITSError(msgErr(16)))  # Error: illegal keyword value type
+
+    return o
+
+end
+
+# ==============================================================================
+#                      _format_comment(com::String)::String
+# ------------------------------------------------------------------------------
+
+function _format_comment(comment::String; offset=0, linesize=65)
+
+    com = collect(repeat(' ', offset) * " " * strip(comment) * " ")
+    pos = findall(x -> x == ' ', collect(com)) .- 1
+    len = prepend!([pos[i] - pos[i-1] for i ∈ indices(pos, 2)], 1)
+    out = []
+
+    n = 1
+    while n < 25
+        i = findfirst(x -> x > linesize * n, pos)
+        !isnothing(i) || break
+        spaces = n * linesize - pos[i-1]
+        if len[i] > linesize
+            insert!(com, n * linesize + 1, ' ')
+            for j ∈ indices(pos, i - 1)
+                pos[j] += 1
+            end
+            insert!(pos, i, n * linesize)
+            insert!(len, i, spaces)
+            len[i] -= spaces
+        else
+            for s = 1:spaces
+                insert!(com, pos[i-1] + 1, ' ')
+            end
+            for j ∈ indices(pos, i - 1)
+                pos[j] += spaces
+            end
+        end
+        push!(out, join(com[(n-1)*linesize+1:n*linesize]))
+        n += 1
+    end
+    push!(out, rpad(join(com[(n-1)*linesize+1:end]), 65))
+
+    for n ∈ indices(out, dropfirst=true)
+        out[n] = "CONTINUE  '&' /" * out[n]
+    end
+
+    return out
+
+end
+
+# ==============================================================================
+#            _format_record(key::String, val::Any, com::String)
+# ------------------------------------------------------------------------------
+
+function _format_record(key::String, val::Any, com::String)
+
+    nocomment = iszero(length(com)) ? true : false
+    key = _format_keyword(key)
+    key = rpad(key, 8)
+
+    key == "BLANK  " && return [repeat(' ', 80)]
+    key == "END    " && return ["END" * repeat(' ', 77)]
+
+    v = _format_value(val, nocomment)
+    c = _format_comment(com)
+    n = length(v)
+
+    if (length(v[1]) == 20) & (length(com) ≤ 47)
+        return [rpad(key * "= " * v[1] * " / " * strip(com), 80)]
+    elseif nocomment
+        v[1] = key * "= " * v[1]
+        v[2:end] = "CONTINUE  " .* v[2:end]
+        v[end] = n > 1 ? v[end] * "'" : v[end]
+        v[end] = rpad(v[end], 80)
+        return v
+    else
+        if isone(n)
+            if length(v[1]) + length(com) < 69
+                o = key * "= " * v[1][1:end-2] * "' / " * strip(c[1])
+                o = [rpad(o, 80)]
+            else
+                offset = length(v[1])
+                o = _format_comment(com; offset)
+                o[1] = rpad(key * "= " * v[1] * " /" * o[1][offset+1:end], 80)
+            end
+        else
+            offset = length(v[end])
+            o = _format_comment(com; offset)
+            v[1] = key * "= " * v[1][1:end-2] * "&'"
+            v[2:end-1] = "CONTINUE  " .* v[2:end-1]
+            o[1] = rpad("CONTINUE  " * v[end] * " /" * o[1][offset+1:end], 80)
+            o = vcat(v[1:end-1], o)
+        end
+
+        return o
+
+    end
 
 end
 
@@ -268,7 +324,33 @@ function _hdu_count(o::IO)
 
 end
 
-function _rm_blanks(records::Array{String,1})               # remove blank records
+# ------------------------------------------------------------------------------
+#                  _append_blanks!(records::Vector{String})
+# ------------------------------------------------------------------------------  
+
+function _append_blanks!(records::Vector{String})
+
+    nrec = length(records)
+
+    nrec > 0 || Base.throw(FITSError(msgErr(13))) # "END keyword not present
+
+    remainder = nrec % 36
+    nblanks = 36 - remainder
+
+    if nblanks > 0
+        blanks = [Base.repeat(' ', 80) for i = 1:nblanks]
+        append!(records, blanks)
+    end
+
+    return records
+
+end
+
+# ------------------------------------------------------------------------------
+#                  _rm_blanks(records::Vector{String})
+# ------------------------------------------------------------------------------  
+
+function _rm_blanks(records::Vector{String})          # remove blank records
 
     record_B = repeat(' ', length(records[1]))
 
@@ -276,7 +358,11 @@ function _rm_blanks(records::Array{String,1})               # remove blank recor
 
 end
 
-function _rm_blanks!(records::Array{String,1})            # remove blank records
+# ------------------------------------------------------------------------------
+#                  _rm_blanks!(records::Vector{String})
+# ------------------------------------------------------------------------------  
+
+function _rm_blanks!(records::Vector{String})         # remove blank records
 
     blank = repeat(' ', 80)
 
@@ -285,11 +371,5 @@ function _rm_blanks!(records::Array{String,1})            # remove blank records
     end
 
     return records
-
-end
-
-function _validate_FITS_filnam(filnam::String)
-
-    return cast_FITS_filnam(filnam)
 
 end

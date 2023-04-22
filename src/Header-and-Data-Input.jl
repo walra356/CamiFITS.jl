@@ -6,31 +6,6 @@
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-#                  _append_blanks!(records::Vector{String})
-# 
-#   - 
-#   - 
-# ------------------------------------------------------------------------------  
-
-function _append_blanks!(records::Array{String,1})
-
-    nrec = length(records)
-
-    nrec > 0 || Base.throw(FITSError(msgError(10))) # "END keyword not present
-
-    remainder = nrec % 36
-    nblanks = 36 - remainder
-
-    if nblanks > 0
-        blanks = [Base.repeat(' ', 80) for i = 1:nblanks]
-        append!(records, blanks)
-    end
-
-    return records
-
-end
-
-# ------------------------------------------------------------------------------
 #                  _PRIMARY_input(dataobject::FITS_data)
 # 
 #   - use dataobject to generate one or more header blocks
