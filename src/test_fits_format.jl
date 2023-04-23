@@ -13,7 +13,7 @@
 
 function fits_verifier(filnam::String; msg=true)
 
-    println("fits_verifier: " * filnam)
+    msg && println("fits_verifier: " * filnam)
 
     isfile(filnam) || return println("file not found")
 
@@ -25,11 +25,11 @@ function fits_verifier(filnam::String; msg=true)
     f = fits_read(filnam)
 
     for i ∈ eachindex(f.hdu)
-        println("HDU-$i:")
+        msg && println("HDU-$i:")
         append!(passed, _record_count(f.hdu[i]; msg))
     end
 
-    return passed
+    return sum(.!passed)
 
 end
 
@@ -406,24 +406,6 @@ function _suggest_keyword(dict::Dict, keyword::String)
     end
 
     str = str[1:end-2]
-
-    return str *= "\n\nreference: " * _fits_standard
-
-end
-# ------------------------------------------------------------------------------
-function _keyword()
-
-    dict = dictDefinedKeywords
-
-    o = sort(collect(keys(dict)))
-
-    str = "FITS defined keywords:\n\n"
-    for i ∈ eachindex(o)
-        str *= (isone(i) ? "(blanks) " : rpad(o[i], 9))
-        iszero(i % 8) ? str = str * "\n" : false
-    end
-
-    # str = str[1:end-2]
 
     return str *= "\n\nreference: " * _fits_standard
 

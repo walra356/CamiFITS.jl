@@ -21,6 +21,7 @@ using Test
 
 
     fits_create("kanweg.fits"; protect=false)
+    @test fits_verifier("kanweg.fits"; msg=false) == 0
     @test_throws FITSError fits_create("kanweg.fits") 
     rm("kanweg.fits")
     @test_throws FITSError fits_create("kanweg")
