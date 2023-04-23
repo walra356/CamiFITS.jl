@@ -93,10 +93,10 @@ function _record_count(hdu::FITS_HDU; msg=true)
 
     typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
 
-    records = hdu.header.record
+    card = hdu.header.card
     hduindex = hdu.header.hduindex
 
-    nrec = length(records)
+    nrec = length(card)
     nblock = nrec ÷ 36
     remain = nrec % 36
 
@@ -282,5 +282,246 @@ function _passed_keyword_test(hdu::FITS_HDU)
     passed = err > 0 ? false : true
 
     return passed
+
+end
+
+# ==============================================================================
+#                               fits_terminology()
+# ..............................................................................
+function _suggest(dict::Dict, term::String; test=false)
+
+    o = sort(collect(keys(dict)))
+    a = [o[i][1] for i ∈ eachindex(o)]
+    X = Base.Unicode.uppercase(term[1])
+
+    itr = findall(x -> x == X, a)
+
+    str = term * ":"
+    str *= "\nNot one of the FITS defined terms."
+    str *= "\nsuggestions: "
+    for i ∈ itr
+        str *= o[i]
+        str *= ", "
+    end
+
+    str = str[1:end-2]
+    str *= "\n\nreference: " * _fits_standard
+
+    return test ? true : str
+
+end
+@doc raw"""
+    fits_terminology([term::String [; test=false]])
+
+Description of the *defined terms* from [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html): 
+
+ANSI, ASCII, ASCII NULL, ASCII character, ASCII digit, ASCII space, ASCII text, 
+Array, Array value, Basic FITS, Big endian, Bit, Byte, Card image, 
+Character string, Conforming extension, Data block, Deprecate, Entry, 
+Extension, Extension type name, FITS, FITS Support Office, FITS block, 
+FITS file, FITS structure, Field, File, Floating point, Fraction, 
+Group parameter value, HDU Header and Data Unit., Header, Header block, Heap, 
+IAU, IAUFWG, IEEE, IEEE NaN, IEEE special values, Indexed keyword, 
+Keyword name, Keyword record, MEF, Mandatory keyword, Mantissa, NOST, 
+Physical value, Pixel, Primary HDU, Primary data array, Primary header, 
+Random Group, Record, Repeat count, Reserved keyword, SIF, Special records, 
+Standard extension.
+```
+julia> fits_terminology()
+FITS defined terms:
+ANSI, ASCII, ASCII NULL, ASCII character, ..., SIF, Special records, Standard extension.
+
+julia> fits_terminology("FITS")
+FITS:
+Flexible Image Transport System.
+
+julia> get(dictDefinedTerms, "FITS", nothing)
+"Flexible Image Transport System."
+
+julia> fits_terminology("p")
+p:
+Not one of the FITS defined terms.
+suggestions: Physical value, Pixel, Primary HDU, Primary data array, Primary header.
+
+see FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
+```
+"""
+function fits_terminology(term::String; test=false)
+
+    term = isnothing(term) ? "" : term
+    dict = dictDefinedTerms
+
+    length(term) > 0 || return fits_terminology()
+
+    o = sort(collect(keys(dict)))
+    u = [Base.uppercase(o[i]) for i ∈ eachindex(o)]
+    X = Base.Unicode.uppercase(term)
+
+    itr = findall(x -> x == X, u)
+
+    str = length(itr) == 0 ? _suggest(dict::Dict, term::String; test) :
+          (o[itr][1] * ":\n" * Base.get(dict, o[itr][1], nothing))
+
+    test ? (return str) : println(str)
+
+end
+function fits_terminology(; test=false)
+
+    dict = dictDefinedTerms
+
+    o = sort(collect(keys(dict)))
+
+    str = "FITS defined terms:\n"
+    for i ∈ eachindex(o)
+        str *= o[i]
+        str *= ", "
+    end
+
+    str = str[1:end-2]
+    str *= "\n\nreference: " * _fits_standard
+
+    test ? true : println(str)
+
+end
+
+
+# ==============================================================================
+#                            fits_keyword(keyword)
+# ------------------------------------------------------------------------------
+
+function _suggest_keyword(dict::Dict, keyword::String)
+
+    o = sort(collect(keys(dict)))
+    u = [o[i][1] for i ∈ eachindex(o)]
+    X = Base.Unicode.uppercase(keyword[1])
+
+    itr = findall(x -> x == X, u)
+
+    str = keyword * ": "
+    str *= "Not recognized as a FITS defined keyword"
+    str *= "\nsuggestions: "
+    for i ∈ itr
+        str *= o[i]
+        str *= ", "
+    end
+
+    str = str[1:end-2]
+
+    return str *= "\n\nreference: " * _fits_standard
+
+end
+# ------------------------------------------------------------------------------
+function _keyword()
+
+    dict = dictDefinedKeywords
+
+    o = sort(collect(keys(dict)))
+
+    str = "FITS defined keywords:\n\n"
+    for i ∈ eachindex(o)
+        str *= (isone(i) ? "(blanks) " : rpad(o[i], 9))
+        iszero(i % 8) ? str = str * "\n" : false
+    end
+
+    # str = str[1:end-2]
+
+    return str *= "\n\nreference: " * _fits_standard
+
+end
+# ------------------------------------------------------------------------------
+@doc raw"""
+    fits_keyword(keyword::String)
+
+Description of a keyword from the FITS standard (https://fits.gsfc.nasa.gov/fits_standard.html)
+```
+julia> fits_keyword("END")
+KEYWORD:    END
+REFERENCE:  FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
+STATUS:     mandatory
+HDU:        any
+VALUE:      none
+COMMENT:    marks the end of the header keywords
+DEFINITION: This keyword has no associated value.  Columns 9-80 shall be filled with ASCII blanks.
+
+julia> fits_keyword()
+FITS defined keywords:
+
+(blanks) AUTHOR   BITPIX   BLANK    BLOCKED  BSCALE   BUNIT    BZERO    
+CDELTn   COMMENT  CROTAn   CRPIXn   CRVALn   CTYPEn   DATAMAX  DATAMIN  
+DATE     DATE-OBS END      EPOCH    EQUINOX  EXTEND   EXTLEVEL EXTNAME  
+EXTVER   GCOUNT   GROUPS   HISTORY  INSTRUME NAXIS    NAXISn   OBJECT   
+OBSERVER ORIGIN   PCOUNT   PSCALn   PTYPEn   PZEROn   REFERENC SIMPLE   
+TBCOLn   TDIMn    TDISPn   TELESCOP TFIELDS  TFORMn   THEAP    TNULLn   
+TSCALn   TTYPEn   TUNITn   TZEROn   XTENSION
+
+reference: FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
+```
+"""
+function fits_keyword(keyword::String; msg=true)
+
+    isnothing(keyword) && return _keyword()
+
+    keyword = strip(keyword)
+    keyword = keyword == "" ? repeat(' ', 8) : keyword
+
+    dict = dictDefinedKeywords
+
+    o = sort(collect(keys(dict)))
+    u = [Base.uppercase(o[i]) for i ∈ eachindex(o)]
+    X = Base.Unicode.uppercase(keyword)
+
+    itr = findall(x -> x == X, u)
+
+    length(itr) ≠ 0 || return _suggest_keyword(dict, X)
+
+    o = Base.get(dict, o[itr][1], nothing)
+
+    str = "KEYWORD:    " * o[1]
+    str *= "\nREFERENCE:  " * o[2]
+    str *= "\nSTATUS:     " * o[3]
+    str *= "\nHDU:        " * o[4]
+    str *= "\nVALUE:      " * o[5]
+    o[6] ≠ "" ? (str *= "\n" * o[6]) : false
+    str *= "\nCOMMENT:    " * o[7]
+    str *= "\nDEFINITION: " * o[8]
+
+    msg && println(str)
+
+    return str
+
+end
+function fits_keyword(; msg=true)
+
+    dict = dictDefinedKeywords
+
+    o = sort(collect(keys(dict)))
+
+    str = "FITS defined keywords:\n\n"
+    for i ∈ eachindex(o)
+        str *= (isone(i) ? "(blanks) " : rpad(o[i], 9))
+        iszero(i % 8) ? str = str * "\n" : false
+    end
+
+    str *= "\n\nreference: " * _fits_standard
+
+    msg && println(str)
+
+    str = "FITS defined keywords:\n\n"
+    for i ∈ eachindex(o)
+        str *= fits_keyword(o[i]; msg=false)
+        str *= "\n\n" 
+    end
+
+    return str
+
+end
+function _primary_hdu()
+
+end
+function fits_reserved_keywords(hdu::FITS_HDU)
+
+    hdutype = hdu.dataobject.hdutype
+
+    hdutype == "PRIMARY" && return _primary_hdu()
 
 end

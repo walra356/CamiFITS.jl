@@ -353,10 +353,10 @@ function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com:
     f = fits_read(filnam::String)
 
     k = get(f.hdu[hduindex].header.map, _format_keyword(key), 0)
-    k > 0 && Base.throw(FITSError(msgErr(7)))   # " keyword in use
+    k > 0 && Base.throw(FITSError(msgErr(7)))        # " keyword in use
 
     k = get(f.hdu[hduindex].header.map, "END", 0)
-    k > 0 || Base.throw(FITSError(msgErr(13)))   # "END keyword not found
+    k > 0 || Base.throw(FITSError(msgErr(13)))       # "END keyword not found
 
     remain = (k + 1) % 36
     nblank = 36 - remain

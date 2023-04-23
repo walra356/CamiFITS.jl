@@ -17,6 +17,7 @@ export errFITS
 export msgError
 export msgErr
 
+export _fits_standard
 export _index_space
 export _size_word
 export _format_com
@@ -109,8 +110,8 @@ export cast_FORTRAN_format
 export cast_FORTRAN_datatype
 
 include("julia_toolbox.jl")
-include("dicts.jl")
 include("fits_objects.jl")
+include("dicts.jl")
 include("fits_pointers.jl")
 include("read_io.jl")
 include("write_io.jl")

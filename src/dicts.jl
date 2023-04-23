@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
 
+_fits_standard = "FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html"
+
 # ------------------------------------------------------------------------------
 #     dictTest
 # ------------------------------------------------------------------------------
@@ -96,7 +98,7 @@ dictError = Dict(0 => nothing,
 )
 
 # ------------------------------------------------------------------------------
-# dictDefinedTerms
+#                               dictDefinedTerms
 # ------------------------------------------------------------------------------
 
 dictDefinedTerms = Dict("ANSI" => "American National Standards Institute.",
@@ -160,113 +162,11 @@ dictDefinedTerms = Dict("ANSI" => "American National Standards Institute.",
     "Standard extension" => "A conforming extensionwhose header and data content are completely specified in Sect. 7 of this Standard, namely, an image extension, an ASCII-table extension, or a binary-table extension."
 )
 
-# ------------------------------------------------------------------------------
-#  fits_terminology()
-# ..............................................................................
-function _suggest(dict::Dict, term::String; test=false)
-
-    o = sort(collect(keys(dict)))
-    a = [o[i][1] for i ∈ eachindex(o)]
-    X = Base.Unicode.uppercase(term[1])
-
-    itr = findall(x -> x == X, a)
-
-    str = term * ":"
-    str *= "\nNot one of the FITS defined terms."
-    str *= "\nsuggestions: "
-    for i ∈ itr
-        str *= o[i]
-        str *= ", "
-    end
-
-    str = str[1:end-2]
-    str *= ".\n\nsee FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html"
-
-    return test ? true : str
-
-end
-@doc raw"""
-    fits_terminology([term::String [; test=false]])
-
-Description of the *defined terms* from [FITS standard - Version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html): 
-
-ANSI, ASCII, ASCII NULL, ASCII character, ASCII digit, ASCII space, ASCII text, 
-Array, Array value, Basic FITS, Big endian, Bit, Byte, Card image, 
-Character string, Conforming extension, Data block, Deprecate, Entry, 
-Extension, Extension type name, FITS, FITS Support Office, FITS block, 
-FITS file, FITS structure, Field, File, Floating point, Fraction, 
-Group parameter value, HDU Header and Data Unit., Header, Header block, Heap, 
-IAU, IAUFWG, IEEE, IEEE NaN, IEEE special values, Indexed keyword, 
-Keyword name, Keyword record, MEF, Mandatory keyword, Mantissa, NOST, 
-Physical value, Pixel, Primary HDU, Primary data array, Primary header, 
-Random Group, Record, Repeat count, Reserved keyword, SIF, Special records, 
-Standard extension.
-```
-julia> fits_terminology()
-FITS defined terms:
-ANSI, ASCII, ASCII NULL, ASCII character, ..., SIF, Special records, Standard extension.
-
-julia> fits_terminology("FITS")
-FITS:
-Flexible Image Transport System.
-
-julia> get(dictDefinedTerms, "FITS", nothing)
-"Flexible Image Transport System."
-
-julia> fits_terminology("p")
-p:
-Not one of the FITS defined terms.
-suggestions: Physical value, Pixel, Primary HDU, Primary data array, Primary header.
-
-see FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html
-```
-"""
-function fits_terminology(term::String; test=false)
-
-    term = isnothing(term) ? "" : term
-    dict = dictDefinedTerms
-
-    length(term) > 0 || return fits_terminology()
-
-    o = sort(collect(keys(dict)))
-    u = [Base.uppercase(o[i]) for i ∈ eachindex(o)]
-    X = Base.Unicode.uppercase(term)
-
-    itr = findall(x -> x == X, u)
-
-    str = length(itr) == 0 ? _suggest(dict::Dict, term::String; test) :
-          (o[itr][1] * ":\n" * Base.get(dict, o[itr][1], nothing))
-
-    test ? (return str) : println(str)
-
-end
-function fits_terminology(; test=false)
-
-    dict = dictDefinedTerms
-
-    o = sort(collect(keys(dict)))
-
-    str = "FITS defined terms:\n"
-    for i ∈ eachindex(o)
-        str *= o[i]
-        str *= ", "
-    end
-
-    str = str[1:end-2]
-
-    str *= ".\n\nsee FITS Standard (Version 4.0) - https://fits.gsfc.nasa.gov/fits_standard.html"
-
-    test ? true : println(str)
-
-end
-
-_fits_standard = "FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html"
-
 dictDefinedKeywords = Dict(
-    "        " => ("(blank)", _fits_standard, "reserved", "any", "none", "", "descriptive comment",
+    "        " => ("(blank)", _fits_standard, "reserved", "any commentary", "none", "", "descriptive comment",
         "Columns 1-8 contain ASCII blanks. This keyword has no associated value.  Columns 9-80 may contain any ASCII text.  
 Any number of card images with blank keyword fields may appear in a header."),
-    "AUTHOR" => ("AUTHOR", _fits_standard, "reserved", "any", "string", "", "author of the data",
+    "AUTHOR" => ("AUTHOR", _fits_standard, "reserved", "any bibliographic", "string", "", "author of the data",
         "The value field shall contain a character string identifying who compiled the information in the data associated with the header. 
 This keyword is appropriate when the data originate in a published paper or are compiled from many sources."),
     "BITPIX" => ("BITPIX", _fits_standard, "manditory", "any", "integer", "RANGE:      -64,-32,8,16,32", "bits per data value",
@@ -298,7 +198,7 @@ The default value for this keyword is 0.0."),
     "CDELTn" => ("CDELTn", _fits_standard, "reserved", "image", "real", "", "coordinate increment along axis",
         "The value field shall contain a floating point number giving the partial derivative of the coordinate specified by the CTYPEn keywords with respect to the pixel index, evaluated at the reference point CRPIXn, in units of the coordinate specified by  the CTYPEn keyword.  
 These units must follow the prescriptions of section 5.3 of the FITS Standard."),
-    "COMMENT" => ("COMMENT", _fits_standard, "reserved", "any", "none", "", "descriptive comment",
+    "COMMENT" => ("COMMENT", _fits_standard, "reserved", "any commentary", "none", "", "descriptive comment",
         "This keyword shall have no associated value; columns 9-80 may contain any ASCII text.  
 Any number of COMMENT card images may appear in a header."),
     "CROTAn" => ("CROTAn", _fits_standard, "reserved", "image", "real", "UNITS:      degrees", "coordinate system rotation angle",
@@ -321,17 +221,17 @@ This number shall give the maximum valid physical value represented by the array
     "DATAMIN" => ("DATAMIN", _fits_standard, "reserved", "image", "real", "", "minimum data value",
         "The value field shall always contain a floating point number, regardless of the value of BITPIX. 
 This number shall give the minimum valid physical value represented by the array, exclusive of any special values."),
-    "DATE" => ("DATE", _fits_standard, "reserved", "any", "string", "", "date of file creation",
+    "DATE" => ("DATE", _fits_standard, "reserved", "any production", "string", "", "date of file creation",
         "The date on which the HDU was created, in the format specified in the FITS Standard.  
 The old date format was 'yy/mm/dd' and may be used only for dates from 1900 through 1999. 
 The new Y2K compliant date format is 'yyyy-mm-dd' or 'yyyy-mm-ddTHH:MM:SS[.sss]'."),
-    "DATE-OBS" => ("DATE-OBS", "FITS Stadard", "reserved", "any", "string", "", "date of the observation",
+    "DATE-OBS" => ("DATE-OBS", "FITS Stadard", "reserved", "any observation", "string", "", "date of the observation",
         "The date of the observation, in the format specified in the FITS Standard. 
 The old date format was 'yy/mm/dd' and may be used only for dates from 1900 through 1999.  
 The new Y2K compliant date format is 'yyyy-mm-dd' or 'yyyy-mm-ddTHH:MM:SS[.sss]'."),
     "END" => ("END", _fits_standard, "mandatory", "any", "none", "", "marks the end of the header keywords",
         "This keyword has no associated value.  Columns 9-80 shall be filled with ASCII blanks."),
-    "EPOCH" => ("EPOCH", _fits_standard, "reserved", "any", "real", "", "equinox of celestial coordinate system",
+    "EPOCH" => ("EPOCH", _fits_standard, "reserved", "any observation", "real", "", "equinox of celestial coordinate system",
         "The value field shall contain a floating point number giving the equinox in years for the celestial coordinate system in which positions are expressed.  
 Starting with Version 1, the Standard has deprecated the use of the EPOCH keyword and thus it shall not be used in FITS files created after the adoption of the standard; rather, the EQUINOX keyword shall be used."),
     "EQUINOX" => ("EQUINOX", _fits_standard, "reserved", "any", "real", "", "equinox of celestial coordinate system",
@@ -359,11 +259,11 @@ In most other cases this keyword will have the value 1."),
     "GROUPS" => ("GROUPS", _fits_standard, "mandatory", "groups", "logical", "", "indicates random groups structure",
         "The value field shall contain the logical constant T.  
 The value T associated with this keyword implies that random groups records are present."),
-    "HISTORY" => ("HISTORY", _fits_standard, "reserved", "any", "none", "", "processing history of the data",
+    "HISTORY" => ("HISTORY", _fits_standard, "reserved", "any commentary", "none", "", "processing history of the data",
         "This keyword shall have no associated value; columns 9-80 may contain any ASCII text.  
 The text should contain a history of steps and procedures associated with the processing of the associated data. 
 Any number of HISTORY card images may appear in a header."),
-    "INSTRUME" => ("INSTRUME", _fits_standard, "reserved", "any", "string", "", "name of instrument",
+    "INSTRUME" => ("INSTRUME", _fits_standard, "reserved", "any observation", "string", "", "name of instrument",
         "The value field shall contain a character string identifying the instrument used to acquire the data associated with the header."),
     "NAXIS" => ("NAXIS", _fits_standard, "mandatory", "any", "integer", "RANGE:      [0:999]", "number of axes",
         "The value field shall contain a non-negative integer no greater than 999, representing the number of axes in the associated data array. 
@@ -374,11 +274,11 @@ In the context of FITS 'TABLE' or 'BINTABLE' extensions, the value of NAXIS is a
 The NAXISn must be present for all values n = 1,...,NAXIS, and for no other values of n. 
 A value of zero for any of the NAXISn signifies that no data follow the header in the HDU. 
 If NAXIS is equal to 0, there should not be any NAXISn keywords."),
-    "OBJECT" => ("OBJECT", _fits_standard, "reserved", "any", "string", "", "name of observed object",
+    "OBJECT" => ("OBJECT", _fits_standard, "reserved", "any observation", "string", "", "name of observed object",
         "The value field shall contain a character string giving a name for the object observed."),
-    "OBSERVER" => ("OBSERVER", _fits_standard, "reserved", "any", "string", "", "observer who acquired the data",
+    "OBSERVER" => ("OBSERVER", _fits_standard, "reserved", "any observation", "string", "", "observer who acquired the data",
         "The value field shall contain a character string identifying who acquired the data associated with the header."),
-    "ORIGIN" => ("ORIGIN", _fits_standard, "reserved", "any", "string", "", "organization responsible for the data",
+    "ORIGIN" => ("ORIGIN", _fits_standard, "reserved", "any production", "string", "", "organization responsible for the data",
         "The value field shall contain a character string identifying the organization or institution responsible for creating the FITS file."),
     "PCOUNT" => ("PCOUNT", _fits_standard, "mandatory", "extension", "integer", "", "parameter count",
         "The value field shall contain an integer that shall be used in any way appropriate to define the data structure, consistent with Eq.5.2 in the FITS Standard. 
@@ -401,7 +301,7 @@ for example, by summing two 16-bit values with the first scaled relative to the 
 This keyword shall be used, along with the PSCALn keyword, when the nth FITS group parameter value is not the true physical value, to transform the group parameter value to the physical value. 
 The value field shall contain a floating point number, representing the true value corresponding to a group parameter value of zero.  
 The default value for this keyword is 0.0.  The transformation equation is as follows: physical_value = PZEROn + PSCALn * group_parameter_value."),
-    "REFERENC" => ("REFERENC", _fits_standard, "reserved", "any", "string", "", "bibliographic reference",
+    "REFERENC" => ("REFERENC", _fits_standard, "reserved", "any bibliographic", "string", "", "bibliographic reference",
         "The value field shall contain a character string citing a reference where the data associated with the header are published."),
     "SIMPLE" => ("SIMPLE", _fits_standard, "mandatory", "primary", "logical", "", "does file conform to the Standard?",
         "The SIMPLE keyword is required to be the first keyword in the primary header of all FITS files. 
@@ -421,7 +321,7 @@ For purposes of display, each byte of bit (type X) and byte (type B) arrays is t
 Only the format codes in Table 8.6, discussed in section 8.3.4 of the FITS Standard, are permitted for encoding. 
 The format codes must be specified in upper case. If the Bw.m, Ow.m, and Zw.m formats are not readily available to the reader, the Iw.m display format may be used instead, and if the ENw.d and ESw.d formats are not available, Ew.d may be used.  
 The meaning of this keyword is not defined for fields of type P in the Standard but may be defined in conventions using such fields."),
-    "TELESCOP" => ("TELESCOP", _fits_standard, "reserved", "any", "string", "", "name of telescope",
+    "TELESCOP" => ("TELESCOP", _fits_standard, "reserved", "any observation", "string", "", "name of telescope",
         "The value field shall contain a character string identifying the telescope used to acquire the data associated with the header."),
     "TFIELDS" => ("TFIELDS", _fits_standard, "mandatory", "table", "integer", "RANGE:      [0:999]", "number of columns in the table",
         "The value field shall contain a non-negative integer representing the number of fields in each row of a 'TABLE' or 'BINTABLE' extension.  
@@ -460,137 +360,3 @@ This keyword may not be used if the format of field n is A, L, or X."),
     "XTENSION" => ("XTENSION", "FITS Stadard", "mandatory", "extension", "string", "", "marks beginning of new HDU",
         "The value field shall contain a character string giving the name of the extension type. This keyword is mandatory for an extension header and must not appear in the primary header.  
 For an extension that is not a standard extension, the type name must not be the same as that of a standard extension."))
-
-# ==============================================================================
-#                            fits_keyword(keyword)
-# ..............................................................................
-
-function _suggest_keyword(dict::Dict, keyword::String)
-
-    o = sort(collect(keys(dict)))
-    u = [o[i][1] for i ∈ eachindex(o)]
-    X = Base.Unicode.uppercase(keyword[1])
-
-    itr = findall(x -> x == X, u)
-
-    str = keyword * ": "
-    str *= "Not recognized as a FITS defined keyword"
-    str *= "\nsuggestions: "
-    for i ∈ itr
-        str *= o[i]
-        str *= ", "
-    end
-
-    str = str[1:end-2]
-
-    return str *= "\n\nreference: " * _fits_standard
-
-end
-function _keyword(keyword)
-
-    isnothing(keyword) && return _keyword()
-
-    keyword = strip(keyword)
-    keyword = keyword == "" ? repeat(' ', 8) : keyword
-
-    dict = dictDefinedKeywords
-
-    o = sort(collect(keys(dict)))
-    u = [Base.uppercase(o[i]) for i ∈ eachindex(o)]
-    X = Base.Unicode.uppercase(keyword)
-
-    itr = findall(x -> x == X, u)
-
-    length(itr) ≠ 0 || return _suggest_keyword(dict, X)
-
-    o = Base.get(dict, o[itr][1], nothing)
-
-    str = "KEYWORD:    " * o[1]
-    str *= "\nREFERENCE:  " * o[2]
-    str *= "\nSTATUS:     " * o[3]
-    str *= "\nHDU:        " * o[4]
-    str *= "\nVALUE:      " * o[5]
-    o[6] ≠ "" ? (str *= "\n" * o[6]) : false
-    str *= "\nCOMMENT:    " * o[7]
-    str *= "\nDEFINITION: " * o[8]
-
-    return str
-
-end
-function _keyword()
-
-    dict = dictDefinedKeywords
-
-    o = sort(collect(keys(dict)))
-
-    str = "FITS defined keywords:\n\n"
-    for i ∈ eachindex(o)
-        str *= (isone(i) ? "(blanks) " : rpad(o[i], 9))
-        iszero(i % 8) ? str = str * "\n" : false
-    end
-
-    # str = str[1:end-2]
-
-    return str *= "\n\nreference: " * _fits_standard
-
-end
-
-@doc raw"""
-    fits_keyword(keyword::String)
-
-Description of a keyword from the FITS standard (https://fits.gsfc.nasa.gov/fits_standard.html)
-```
-julia> fits_keyword("END")
-KEYWORD:    END
-REFERENCE:  FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
-STATUS:     mandatory
-HDU:        any
-VALUE:      none
-COMMENT:    marks the end of the header keywords
-DEFINITION: This keyword has no associated value.  Columns 9-80 shall be filled with ASCII blanks.
-
-julia> fits_keyword()
-FITS defined keywords:
-
-(blanks) AUTHOR   BITPIX   BLANK    BLOCKED  BSCALE   BUNIT    BZERO    
-CDELTn   COMMENT  CROTAn   CRPIXn   CRVALn   CTYPEn   DATAMAX  DATAMIN  
-DATE     DATE-OBS END      EPOCH    EQUINOX  EXTEND   EXTLEVEL EXTNAME  
-EXTVER   GCOUNT   GROUPS   HISTORY  INSTRUME NAXIS    NAXISn   OBJECT   
-OBSERVER ORIGIN   PCOUNT   PSCALn   PTYPEn   PZEROn   REFERENC SIMPLE   
-TBCOLn   TDIMn    TDISPn   TELESCOP TFIELDS  TFORMn   THEAP    TNULLn   
-TSCALn   TTYPEn   TUNITn   TZEROn   XTENSION
-
-reference: FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
-```
-"""
-function fits_keyword(keyword::String; msg=true)
-
-    o = _keyword(keyword)
-
-    msg && println(o)
-    
-    return o
-
-end
-function fits_keyword(; msg=true)
-
-    o = _keyword()
-
-    msg && println(o)
-    
-    return o
-
-end
-
-function fits_keywords()
-
-    dict = dictDefinedKeywords
-
-    o = sort(collect(keys(dict)))
-
-    for i ∈ eachindex(o)
-        fits_keyword(o[i])
-        println(" ")
-    end
-
-end
