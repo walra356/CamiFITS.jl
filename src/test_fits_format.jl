@@ -414,7 +414,14 @@ end
 @doc raw"""
     fits_keyword(keyword::String [; msg=true])
 
-Description of a keyword from the FITS standard (https://fits.gsfc.nasa.gov/fits_standard.html)
+Description of a keyword from the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html):
+(blanks) AUTHOR   BITPIX   BLANK    BLOCKED  BSCALE   BUNIT    BZERO    
+CDELTn   COMMENT  CROTAn   CRPIXn   CRVALn   CTYPEn   DATAMAX  DATAMIN  
+DATE     DATE-OBS END      EPOCH    EQUINOX  EXTEND   EXTLEVEL EXTNAME  
+EXTVER   GCOUNT   GROUPS   HISTORY  INSTRUME NAXIS    NAXISn   OBJECT   
+OBSERVER ORIGIN   PCOUNT   PSCALn   PTYPEn   PZEROn   REFERENC SIMPLE   
+TBCOLn   TDIMn    TDISPn   TELESCOP TFIELDS  TFORMn   THEAP    TNULLn   
+TSCALn   TTYPEn   TUNITn   TZEROn   XTENSION
 ```
 julia> fits_keyword("END")
 KEYWORD:    END
@@ -491,7 +498,7 @@ function fits_keyword(; msg=true)
     str = "FITS defined keywords:\n\n"
     for i ∈ eachindex(o)
         str *= fits_keyword(o[i]; msg=false)
-        str *= "\n\n" 
+        str *= "\n\n"
     end
 
     return str
