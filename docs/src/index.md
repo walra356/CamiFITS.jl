@@ -4,7 +4,7 @@ FITS stands for *Flexible Image Transport System*. This is an open standard orig
 
 CamiFITS offers the *basic FITS functionality* for scientific users not requiring celestal coordinates. Optional *Conforming Extentions* are under development. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-04-02:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
+*Disclaimer 2023-04-22:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
 
 # Table of contents
 
@@ -166,10 +166,11 @@ represented by the keyword `BITPIX`. In the above example the pixel value
 is given by the matrix indices.
 # API
 
-### Terminology
+### Terminology and keywords
 
 ```@docs
 fits_terminology(term::String; test=false)
+fits_keyword(keyword::String; msg=true)
 ```
 
 ### FITS 

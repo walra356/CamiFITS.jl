@@ -430,7 +430,7 @@ function _keyword()
 end
 # ------------------------------------------------------------------------------
 @doc raw"""
-    fits_keyword(keyword::String)
+    fits_keyword(keyword::String [; msg=true])
 
 Description of a keyword from the FITS standard (https://fits.gsfc.nasa.gov/fits_standard.html)
 ```
