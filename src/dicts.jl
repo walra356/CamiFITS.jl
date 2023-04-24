@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 
-_fits_standard = "FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html"
+_fits_standard = "FITS Standard - version 4.0 - Appendic C"
 
 # ------------------------------------------------------------------------------
 #     dictTest
