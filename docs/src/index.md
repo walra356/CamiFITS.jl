@@ -37,12 +37,9 @@ julia> f = fits_read(filnam);
 ```
 we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dics) to the variable `f`. 
 
-The fields of `f`, `f.hdu[1]`, `f.hdu[2]`, ... correspond to the 
+The fields of `f` (`f.hdu[1]`, `f.hdu[2]`, ...) correspond to 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
-represented by `f.hdu[1]`. When dealing with a single [`FITS`](@ref) object it 
-is often practical to redefine `f = f.hdu` to represent the 
-[`FITS_HDU`](@ref) object without explicit reference to principal [`FITS`](@ref)
-object.
+represented by `f.hdu[1]`. 
 
 The formal terminology of the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html) can be consulted using 
 [`fits_terminology`](@ref): 
@@ -83,10 +80,25 @@ COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
 
 Any[]
-
+```
+The description of the *FITS keywords* is found in [`fits_keywords`](@ref):
+```
+julia> fits_keyword("bitpix");
+KEYWORD:    BITPIX
+REFERENCE:  FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
+STATUS:     manditory
+HDU:        any
+VALUE:      integer
+RANGE:      -64,-32,8,16,32,64
+COMMENT:    bits per data value
+DEFINITION: The value field shall contain an integer.  The absolute value is
+used in computing the sizes of data structures. It shall specify the number of
+bits that represent a data value (using a minus sign for floating point data).
+```
+At this point it is good practice to remove the example: 
+```
 julia> rm(filnam); f = nothing
 ```
-
 #### Inspecting the FITS object
 
 ```
@@ -127,9 +139,7 @@ julia> fits_create(filnam, data; protect=false)
 
 julia> f = fits_read(filnam);
 
-julia> f = f.hdu;
-
-julia> fits_info(f[1])
+julia> fits_info(f)
 
 File: matrix.fits
 hdu: 1

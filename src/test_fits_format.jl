@@ -414,7 +414,7 @@ end
 @doc raw"""
     fits_keyword(keyword::String [; msg=true])
 
-Description of a keyword from the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html):
+Description of the *reserved keywords* from the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html):
 
 (blanks), AUTHOR, BITPIX, BLANK, BLOCKED, BSCALE, BUNIT, BZERO, CDELTn, 
 COMMENT, CROTAn, CRPIXn, CRVALn, CTYPEn, DATAMAX, DATAMIN, DATE, DATE-OBS,

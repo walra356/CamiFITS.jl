@@ -164,36 +164,57 @@ dictDefinedTerms = Dict("ANSI" => "American National Standards Institute.",
 
 dictDefinedKeywords = Dict(
     "        " => ("(blank)", _fits_standard, "reserved", "any commentary", "none", "", "descriptive comment",
-        "Columns 1-8 contain ASCII blanks. This keyword has no associated value.  Columns 9-80 may contain any ASCII text.  
-Any number of card images with blank keyword fields may appear in a header."),
+        "Columns 1-8 contain ASCII blanks. This keyword has no associated value.
+Columns 9-80 may contain any ASCII text.  Any number of card images with blank 
+keyword fields may appear in a header."),
     "AUTHOR" => ("AUTHOR", _fits_standard, "reserved", "any bibliographic", "string", "", "author of the data",
-        "The value field shall contain a character string identifying who compiled the information in the data associated with the header. 
-This keyword is appropriate when the data originate in a published paper or are compiled from many sources."),
-    "BITPIX" => ("BITPIX", _fits_standard, "manditory", "any", "integer", "RANGE:      -64,-32,8,16,32", "bits per data value",
-        "The value field shall contain an integer.  
-The absolute value is used in computing the sizes of data structures.  
-It shall specify the number of bits that represent a data value."),
+        "The value field shall contain a character string identifying who 
+compiled the information in the data associated with the header. This keyword 
+is appropriate when the data originate in a published paper or are compiled 
+from many sources."),
+    "BITPIX" => ("BITPIX", _fits_standard, "manditory", "any", "integer", "RANGE:      -64,-32,8,16,32,64", "bits per data value",
+        "The value field shall contain an integer.  The absolute value is 
+used in computing the sizes of data structures. It shall specify the number of 
+bits that represent a data value (using a minus sign for floating point data)."),
     "BLANK" => ("BLANK", _fits_standard, "reserved", "image", "integer", "", "value used for undefined array elements",
-        "This keyword shall be used only in primary array headers or IMAGE extension headers with positive values of BITPIX (i.e., in arrays with integer data). 
-Columns 1-8 contain the string, `BLANK   ' (ASCII blanks in columns 6-8). 
-The value field shall contain an integer that specifies the representation of array values whose physical values are undefined."),
+        "This keyword shall be used only in primary array headers or IMAGE 
+extension headers with positive values of BITPIX (i.e., in arrays with integer 
+data). Columns 1-8 contain the string, `BLANK   ' (ASCII blanks in columns 6-8).
+The value field shall contain an integer that specifies the representation of 
+array values whose physical values are undefined."),
     "BLOCKED" => ("BLOCKED", _fits_standard, "reserved", "primary", "logical", "", "is physical blocksize a multiple of 2880?",
-        "This keyword may be used only in the primary header.  It shall appear within the first 36 card images of the FITS file. 
-(Note: This keyword thus cannot appear if NAXIS is greater than 31, or if NAXIS is greater than 30 and the EXTEND keyword is present.) 
-Its presence with the required logical value of T advises that the physical block size of the FITS file on which it appears may be an integral multiple of the logical record length, and not necessarily equal to it. 
-Physical block size and logical record length may be equal even if this keyword is present or unequal if it is absent.  
-It is reserved primarily to prevent its use with other meanings. Since the issuance of version 1 of the standard, the BLOCKED keyword has been deprecated."),
+        "This keyword may be used only in the primary header.  It shall appear 
+within the first 36 card images of the FITS file. (Note: This keyword thus 
+cannot appear if NAXIS is greater than 31, or if NAXIS is greater than 30 and 
+the EXTEND keyword is present.) Its presence with the required logical value of
+T advises that the physical block size of the FITS file on which it appears may 
+be an integral multiple of the logical record length, and not necessarily equal
+to it. Physical block size and logical record length may be equal even if this 
+keyword is present or unequal if it is absent. It is reserved primarily to 
+prevent its use with other meanings. Since the issuance of version 1 of the 
+standard, the BLOCKED keyword has been deprecated."),
     "BSCALE" => ("BSCALE", _fits_standard, "reserved", "image", "real", "DEFAULT:    1.0", "linear factor in scaling equation",
-        "This keyword shall be used, along with the BZERO keyword, when the array pixel values are not the true physical values, to transform the primary data array values to the true physical values they represent, using the equation: physical_value = BZERO + BSCALE * array_value.  
-The value field shall contain a floating point number representing the coefficient of the linear term in the scaling equation, the ratio of physical value to array value at zero offset. 
-The default value for this keyword is 1.0."),
+        "This keyword shall be used, along with the BZERO keyword, when the 
+array pixel values are not the true physical values, to transform the primary 
+data array values to the true physical values they represent, using the
+equation: physical_value = BZERO + BSCALE * array_value. The value field shall 
+contain afloating point number representing the coefficient of the linear term 
+in the scaling equation, the ratio of physical value to array value at zero 
+offset. The default value for this keyword is 1.0."),
     "BUNIT" => ("BUNIT", _fits_standard, "reserved", "image", "string", "", "physical units of the array values",
-        "The value field shall contain a character string, describing the physical units in which the quantities in the array, after application of BSCALE and BZERO, are expressed.
-The units of all FITS header keyword values, with the exception of measurements of angles, should conform with the recommendations in the IAU Style Manual. 
-For angular measurements given as floating point values and specified with reserved keywords, degrees are the recommended units (with the units, if specified, given as 'deg')."),
+        "The value field shall contain a character string, describing the 
+physical units in which the quantities in the array, after application of 
+BSCALE and BZERO, are expressed. The units of all FITS header keyword values, 
+with the exception of measurements of angles, should conform with the 
+recommendations in the IAU Style Manual. For angular measurements given as 
+floating point values and specified with reserved keywords, degrees are the 
+recommended units (with the units, if specified, given as 'deg')."),
     "BZERO" => ("BZERO", _fits_standard, "reserved", "image", "real", "DEFAULT:    0.0", "zero point in scaling equation",
-        "This keyword shall be used, along with the BSCALE keyword, when the array pixel values are not the true physical values, to transform the primary data array values to the true values using the equation: physical_value = BZERO + BSCALE * array_value. 
-The value field shall contain a floating point number representing the physical value corresponding to an array value of zero.
+        "This keyword shall be used, along with the BSCALE keyword, when the 
+array pixel values are not the true physical values, to transform the primary 
+data array values to the true values using the equation: physical_value = 
+BZERO + BSCALE * array_value. The value field shall contain a floating point 
+number representing the physical value corresponding to an array value of zero.
 The default value for this keyword is 0.0."),
     "CDELTn" => ("CDELTn", _fits_standard, "reserved", "image", "real", "", "coordinate increment along axis",
         "The value field shall contain a floating point number giving the partial derivative of the coordinate specified by the CTYPEn keywords with respect to the pixel index, evaluated at the reference point CRPIXn, in units of the coordinate specified by  the CTYPEn keyword.  
