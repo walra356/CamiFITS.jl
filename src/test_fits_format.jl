@@ -414,7 +414,7 @@ end
 @doc raw"""
     fits_keyword(keyword::String [; msg=true])
 
-Description of the *reserved keywords* from the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html):
+Description of the *reserved keywords*:
 
 (blanks), AUTHOR, BITPIX, BLANK, BLOCKED, BSCALE, BUNIT, BZERO, CDELTn, 
 COMMENT, CROTAn, CRPIXn, CRVALn, CTYPEn, DATAMAX, DATAMIN, DATE, DATE-OBS,
@@ -422,6 +422,9 @@ END, EPOCH, EQUINOX, EXTEND, EXTLEVEL, EXTNAME, EXTVER, GCOUNT, GROUPS,
 HISTORY, INSTRUME, NAXIS, NAXISn, OBJECT, OBSERVER, ORIGIN, PCOUNT, PSCALn,
 PTYPEn, PZEROn, REFERENC, SIMPLE, TBCOLn, TDIMn, TDISPn, TELESCOP, TFIELDS,
 TFORMn, THEAP, TNULLn, TSCALn, TTYPEn, TUNITn, TZEROn, XTENSION.
+
+The descriptions are based on appendix C to the [FITS standard - version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html),
+which is *formally not part of the standard* but included for convenient reference.
 ```
 julia> fits_keyword("END")
 KEYWORD:    END

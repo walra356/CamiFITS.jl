@@ -81,7 +81,7 @@ END
 
 Any[]
 ```
-The description of the *FITS keywords* is found in [`fits_keywords`](@ref):
+The description of the *FITS keywords* is found in [`fits_keyword`](@ref):
 ```
 julia> fits_keyword("bitpix");
 KEYWORD:    BITPIX
@@ -176,12 +176,13 @@ represented by the keyword `BITPIX`. In the above example the pixel value
 is given by the matrix indices.
 # API
 
-### Terminology and keywords
+### Terminology and keyword descriptions
 
 ```@docs
 fits_terminology(term::String; test=false)
 fits_keyword(keyword::String; msg=true)
 ```
+
 
 ### FITS 
 
