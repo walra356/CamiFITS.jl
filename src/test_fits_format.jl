@@ -414,6 +414,7 @@ end
 # ------------------------------------------------------------------------------
 @doc raw"""
     fits_keyword(keyword::String [; msg=true])
+    fits_keyword([; hdutype="all" [, msg=true]])
 
 Description of the *reserved keywords* of the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html):
 
@@ -536,21 +537,6 @@ function fits_keyword(; hdutype="all", msg=true)
 
     str *= "\n\nHDU options: "
     str *= "'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'"
-
-    return msg ? println(str) : str
-
-end
-function fits_keyword1(; msg=true)
-
-    dict = dictDefinedKeywords
-
-    o = sort(collect(keys(dict)))
-
-    str = "FITS defined keywords:\n\n"
-    for i ∈ eachindex(o)
-        str *= (isone(i) ? "(blanks) " : rpad(o[i], 9))
-        iszero(i % 8) ? str = str * "\n" : false
-    end
 
     return msg ? println(str) : str
 
