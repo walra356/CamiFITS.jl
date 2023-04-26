@@ -412,6 +412,34 @@ function _suggest_keyword(dict::Dict, keyword::String; msg=true)
 
 end
 # ------------------------------------------------------------------------------
+function _keywords(str, o, class, status, hdutype)
+
+    for i ∈ eachindex(o)
+        if (o[i][3] == class) & (o[i][4] == status) & (hdutype ∈ o[i][5])
+            str *= (isone(i) ? "(blanks) " : rpad(o[i][1], 9))
+        end
+    end
+
+    return str
+
+end
+# ------------------------------------------------------------------------------
+function _all_keywords(; msg=true)
+
+    dict = dictDefinedKeywords
+
+    o = sort(collect(keys(dict)))
+
+    str = "FITS defined keywords:\n\n"
+    for i ∈ eachindex(o)
+        str *= fits_keyword(o[i]; msg=false)
+        str *= "\n\n"
+    end
+
+    return msg ? println(str) : str
+
+end
+# ------------------------------------------------------------------------------
 @doc raw"""
     fits_keyword(keyword::String [; msg=true])
     fits_keyword([; hdutype="all" [, msg=true]])
@@ -428,18 +456,19 @@ TFORMn, THEAP, TNULLn, TSCALn, TTYPEn, TUNITn, TZEROn, XTENSION.
 The descriptions are based on appendix C to [FITS standard - version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html),
 which is *not part of the standard but included for convenient reference*.
 ```
-julia> fits_keyword("END")
+julia> fits_keyword("END");
 KEYWORD:    END
-REFERENCE:  FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
+REFERENCE:  FITS Standard - version 4.0 - Appendix C
+CLASS:      general
 STATUS:     mandatory
-HDU:        any
+HDU:        primary, groups, extension, array, image, ASCII-table, bintable,
 VALUE:      none
+DEFAULT:    none
 COMMENT:    marks the end of the header keywords
 DEFINITION: This keyword has no associated value.  Columns 9-80 shall be filled with ASCII blanks.
 
 julia> fits_keyword()
 FITS defined keywords:
-
 (blanks) AUTHOR   BITPIX   BLANK    BLOCKED  BSCALE   BUNIT    BZERO    
 CDELTn   COMMENT  CROTAn   CRPIXn   CRVALn   CTYPEn   DATAMAX  DATAMIN  
 DATE     DATE-OBS END      EPOCH    EQUINOX  EXTEND   EXTLEVEL EXTNAME  
@@ -448,7 +477,9 @@ OBSERVER ORIGIN   PCOUNT   PSCALn   PTYPEn   PZEROn   REFERENC SIMPLE
 TBCOLn   TDIMn    TDISPn   TELESCOP TFIELDS  TFORMn   THEAP    TNULLn   
 TSCALn   TTYPEn   TUNITn   TZEROn   XTENSION
 
-reference: FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
+HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
+
+reference: FITS Standard - version 4.0 - Appendix C
 ```
 """
 function fits_keyword(keyword::String; msg=true)
@@ -482,32 +513,6 @@ function fits_keyword(keyword::String; msg=true)
     msg && println(str)
 
     return str
-
-end
-function _keywords(str, o, class, status, hdutype)
-
-    for i ∈ eachindex(o)
-        if (o[i][3] == class) & (o[i][4] == status) & (hdutype ∈ o[i][5])
-            str *= (isone(i) ? "(blanks) " : rpad(o[i][1], 9))
-        end
-    end
-
-    return str
-
-end
-function _all_keywords(; msg=true)
-
-    dict = dictDefinedKeywords
-
-    o = sort(collect(keys(dict)))
-
-    str = "FITS defined keywords:\n\n"
-    for i ∈ eachindex(o)
-        str *= fits_keyword(o[i]; msg=false)
-        str *= "\n\n"
-    end
-
-    return msg ? println(str) : str
 
 end
 function fits_keyword(; hdutype="all", msg=true)
@@ -552,6 +557,7 @@ function fits_keyword(; hdutype="all", msg=true)
 
     str *= "\n\nHDU options: "
     str *= "'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'"
+    str *= "\n\nreference: " * _fits_standard
 
     return msg ? println(str) : str
 

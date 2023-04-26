@@ -119,6 +119,8 @@ HDU type: 'primary'
   - reserved : DATE-OBS EPOCH    EQUINOX  INSTRUME OBJECT   OBSERVER TELESCOP
 
 HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
+
+reference: FITS Standard - version 4.0 - Appendix C
 ```
 #### Inspecting the FITS object
 
