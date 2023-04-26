@@ -389,7 +389,7 @@ end
 #                            fits_keyword(keyword)
 # ------------------------------------------------------------------------------
 
-function _suggest_keyword(dict::Dict, keyword::String)
+function _suggest_keyword(dict::Dict, keyword::String; msg=true)
 
     o = sort(collect(keys(dict)))
     u = [o[i][1] for i ∈ eachindex(o)]
@@ -406,15 +406,16 @@ function _suggest_keyword(dict::Dict, keyword::String)
     end
 
     str = str[1:end-2]
+    str *= "\n\nreference: " * _fits_standard
 
-    return str *= "\n\nreference: " * _fits_standard
+    return msg ? println(str) : str
 
 end
 # ------------------------------------------------------------------------------
 @doc raw"""
     fits_keyword(keyword::String [; msg=true])
 
-Description of the *reserved keywords* of the [FITS standard - version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html):
+Description of the *reserved keywords* of the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html):
 
 (blanks), AUTHOR, BITPIX, BLANK, BLOCKED, BSCALE, BUNIT, BZERO, CDELTn, 
 COMMENT, CROTAn, CRPIXn, CRVALn, CTYPEn, DATAMAX, DATAMIN, DATE, DATE-OBS,
@@ -423,7 +424,7 @@ HISTORY, INSTRUME, NAXIS, NAXISn, OBJECT, OBSERVER, ORIGIN, PCOUNT, PSCALn,
 PTYPEn, PZEROn, REFERENC, SIMPLE, TBCOLn, TDIMn, TDISPn, TELESCOP, TFIELDS,
 TFORMn, THEAP, TNULLn, TSCALn, TTYPEn, TUNITn, TZEROn, XTENSION.
 
-The descriptions are based on appendix C to version 4.0 of the FITS standard,
+The descriptions are based on appendix C to [FITS standard - version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html),
 which is *not part of the standard but included for convenient reference*.
 ```
 julia> fits_keyword("END")
@@ -451,8 +452,6 @@ reference: FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
 """
 function fits_keyword(keyword::String; msg=true)
 
-    isnothing(keyword) && return _keyword()
-
     keyword = strip(keyword)
     keyword = keyword == "" ? repeat(' ', 8) : keyword
 
@@ -464,25 +463,84 @@ function fits_keyword(keyword::String; msg=true)
 
     itr = findall(x -> x == X, u)
 
-    length(itr) ≠ 0 || return _suggest_keyword(dict, X)
+    length(itr) ≠ 0 || return _suggest_keyword(dict, X; msg)
 
     o = Base.get(dict, o[itr][1], nothing)
 
     str = "KEYWORD:    " * o[1]
     str *= "\nREFERENCE:  " * o[2]
-    str *= "\nSTATUS:     " * o[3]
-    str *= "\nHDU:        " * o[4]
-    str *= "\nVALUE:      " * o[5]
-    o[6] ≠ "" ? (str *= "\n" * o[6]) : false
-    str *= "\nCOMMENT:    " * o[7]
-    str *= "\nDEFINITION: " * o[8]
+    str *= "\nCLASS:      " * o[3]
+    str *= "\nSTATUS:     " * o[4]
+    str *= "\nHDU:        " * join([o[5][i] * ", " for i ∈ eachindex(o[5])])
+    str *= "\nVALUE:      " * o[6]
+    #o[7] ≠ "" ? (str *= "\n" * o[7]) : false
+    str *= "\nDEFAULT:    " * o[7]
+    str *= "\nCOMMENT:    " * o[8]
+    str *= "\nDEFINITION: " * o[9]
 
     msg && println(str)
 
     return str
 
 end
-function fits_keyword(; msg=true)
+function _keywords(str, o, class, status, hdutype)
+
+    for i ∈ eachindex(o)
+        if (o[i][3] == class) & (o[i][4] == status) & (hdutype ∈ o[i][5])
+            str *= (isone(i) ? "(blanks) " : rpad(o[i][1], 9))
+        end
+    end
+
+    return str
+
+end
+function fits_keyword(; hdutype="all", msg=true)
+
+    dict = dictDefinedKeywords
+
+    k = sort(collect(keys(dict)))
+    o = [Base.get(dict, k[:][i], nothing) for i ∈ eachindex(k)]
+
+    str = "FITS defined keywords:\n"
+    if hdutype == "all"
+        for i ∈ eachindex(o)
+            str *= (isone(i) ? "(blanks) " : rpad(o[i][1], 9))
+            iszero(i % 8) ? str = str * "\n" : false
+        end
+    else
+        str *= "HDU type: '" * hdutype * "'"
+        str *= "\n- general\n"
+        str *= "  - mandatory: "
+        str = _keywords(str, o, "general", "mandatory", hdutype)
+        str *= "\n  - reserved : "
+        str = _keywords(str, o, "general", "reserved", hdutype)
+
+        str *= "\n- bibliographic\n"
+        str *= "  - mandatory: "
+        str = _keywords(str, o, "bibliographic", "mandatory", hdutype)
+        str *= "\n  - reserved : "
+        str = _keywords(str, o, "bibliographic", "reserved", hdutype)
+
+        str *= "\n- commentary\n"
+        str *= "  - mandatory: "
+        str = _keywords(str, o, "commentary", "mandatory", hdutype)
+        str *= "\n  - reserved : "
+        str = _keywords(str, o, "commentary", "reserved", hdutype)
+
+        str *= "\n- observation\n"
+        str *= "  - mandatory: "
+        str = _keywords(str, o, "observation", "mandatory", hdutype)
+        str *= "\n  - reserved : "
+        str = _keywords(str, o, "observation", "reserved", hdutype)
+    end
+
+    str *= "\n\nHDU options: "
+    str *= "'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'"
+
+    return msg ? println(str) : str
+
+end
+function fits_keyword1(; msg=true)
 
     dict = dictDefinedKeywords
 
@@ -494,9 +552,14 @@ function fits_keyword(; msg=true)
         iszero(i % 8) ? str = str * "\n" : false
     end
 
-    str *= "\n\nreference: " * _fits_standard
+    return msg ? println(str) : str
 
-    msg && println(str)
+end
+function list_keywords(; msg=true)
+
+    dict = dictDefinedKeywords
+
+    o = sort(collect(keys(dict)))
 
     str = "FITS defined keywords:\n\n"
     for i ∈ eachindex(o)
@@ -504,7 +567,7 @@ function fits_keyword(; msg=true)
         str *= "\n\n"
     end
 
-    return str
+    return msg ? println(str) : str
 
 end
 function _primary_hdu()

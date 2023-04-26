@@ -40,6 +40,7 @@ export dictDefinedKeywords
 export fits_terminology
 export fits_keyword
 export fits_keywords
+export list_keywords
 
 export test_FITS_filnam
 

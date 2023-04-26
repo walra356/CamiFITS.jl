@@ -81,23 +81,44 @@ END
 
 Any[]
 ```
+At this point it is good practice to remove the example: 
+```
+julia> rm(filnam); f = nothing
+```
 The description of the *FITS keywords* is found in [`fits_keyword`](@ref):
 ```
 julia> fits_keyword("bitpix");
 KEYWORD:    BITPIX
-REFERENCE:  FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
-STATUS:     manditory
-HDU:        any
+REFERENCE:  FITS Standard - version 4.0 - Appendix C
+CLASS:      general
+STATUS:     mandatory
+HDU:        primary, groups, extension, array, image, ASCII-table, bintable,
 VALUE:      integer
-RANGE:      -64,-32,8,16,32,64
+DEFAULT:    RANGE:      -64,-32,8,16,32,64
 COMMENT:    bits per data value
 DEFINITION: The value field shall contain an integer.  The absolute value is
 used in computing the sizes of data structures. It shall specify the number of
 bits that represent a data value (using a minus sign for floating point data).
 ```
-At this point it is good practice to remove the example: 
+By specifying the *FITS HDU type* a summary of the corresponding keywords is obtained.
 ```
-julia> rm(filnam); f = nothing
+julia> fits_keyword(hdutype="primary");
+FITS defined keywords:
+HDU type: 'primary'
+- general
+  - mandatory: BITPIX   END      NAXIS    NAXISn   SIMPLE
+  - reserved : BLANK    BSCALE   BUNIT    BZERO    CDELTn   CROTAn   CRPIXn   CRVALn   CTYPEn   DATAMAX  DATAMIN  EXTEND
+- bibliographic
+  - mandatory:
+  - reserved : AUTHOR   REFERENC
+- commentary
+  - mandatory:
+  - reserved : (blanks) COMMENT  HISTORY
+- observation
+  - mandatory:
+  - reserved : DATE-OBS EPOCH    EQUINOX  INSTRUME OBJECT   OBSERVER TELESCOP
+
+HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
 ```
 #### Inspecting the FITS object
 
