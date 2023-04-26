@@ -418,7 +418,7 @@ end
 
 Description of the *reserved keywords* of the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html):
 
-(blanks), AUTHOR, BITPIX, BLANK, BLOCKED, BSCALE, BUNIT, BZERO, CDELTn, 
+(blanks), ALL, AUTHOR, BITPIX, BLANK, BLOCKED, BSCALE, BUNIT, BZERO, CDELTn, 
 COMMENT, CROTAn, CRPIXn, CRVALn, CTYPEn, DATAMAX, DATAMIN, DATE, DATE-OBS,
 END, EPOCH, EQUINOX, EXTEND, EXTLEVEL, EXTNAME, EXTVER, GCOUNT, GROUPS,
 HISTORY, INSTRUME, NAXIS, NAXISn, OBJECT, OBSERVER, ORIGIN, PCOUNT, PSCALn,
@@ -453,7 +453,7 @@ reference: FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html
 """
 function fits_keyword(keyword::String; msg=true)
 
-    keyword = strip(keyword)
+    keyword = keyword ≠ "all" ? strip(keyword) : return _all_keywords(; msg)
     keyword = keyword == "" ? repeat(' ', 8) : keyword
 
     dict = dictDefinedKeywords
@@ -493,6 +493,21 @@ function _keywords(str, o, class, status, hdutype)
     end
 
     return str
+
+end
+function _all_keywords(; msg=true)
+
+    dict = dictDefinedKeywords
+
+    o = sort(collect(keys(dict)))
+
+    str = "FITS defined keywords:\n\n"
+    for i ∈ eachindex(o)
+        str *= fits_keyword(o[i]; msg=false)
+        str *= "\n\n"
+    end
+
+    return msg ? println(str) : str
 
 end
 function fits_keyword(; hdutype="all", msg=true)
@@ -537,21 +552,6 @@ function fits_keyword(; hdutype="all", msg=true)
 
     str *= "\n\nHDU options: "
     str *= "'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'"
-
-    return msg ? println(str) : str
-
-end
-function list_keywords(; msg=true)
-
-    dict = dictDefinedKeywords
-
-    o = sort(collect(keys(dict)))
-
-    str = "FITS defined keywords:\n\n"
-    for i ∈ eachindex(o)
-        str *= fits_keyword(o[i]; msg=false)
-        str *= "\n\n"
-    end
 
     return msg ? println(str) : str
 

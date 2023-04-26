@@ -110,8 +110,10 @@ function test_fits_keyword()
     a = fits_keyword("end"; msg=false)[1] == 'K'
     b = fits_keyword("ed"; msg=false)[1] == 'E'
     c = fits_keyword(; msg=false)[1]  == 'F'
+    d = fits_keyword(hdutype="primary"; msg=false)[1] == 'F'
+    e = fits_keyword("all"; msg=false)[1] == 'F'
 
-    return a & b & c
+    return a & b & c & d & e
 
 end
 
