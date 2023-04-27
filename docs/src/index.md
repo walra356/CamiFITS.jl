@@ -196,7 +196,7 @@ of the ``x, y`` data matrix stacked in the ``z`` direction.
 
 The matrix elements are referred to as `pixels` and their bit size is 
 represented by the keyword `BITPIX`. In the above example the pixel value 
-is given by the matrix indices.
+is used to indicate the matrix indices.
 # API
 
 ### Terminology and keyword descriptions
