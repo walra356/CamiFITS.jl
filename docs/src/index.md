@@ -94,7 +94,7 @@ CLASS:      general
 STATUS:     mandatory
 HDU:        primary, groups, extension, array, image, ASCII-table, bintable,
 VALUE:      integer
-DEFAULT:    RANGE:      -64,-32,8,16,32,64
+RANGE:      -64,-32,8,16,32,64
 COMMENT:    bits per data value
 DEFINITION: The value field shall contain an integer.  The absolute value is
 used in computing the sizes of data structures. It shall specify the number of
