@@ -153,13 +153,13 @@ function test_fits_rename_key()
 
     test2 = i == 5
 
-    test = .![test1, test2]
+    # test = .![test1, test2]
 
-    o = isnothing(findfirst(.![test1, test2])) ? true : false
+    # o = isnothing(findfirst(.![test1, test2])) ? true : false
 
     rm(filnam)
 
-    return o
+    return test1 & test2
 
 end
 
@@ -170,28 +170,20 @@ function test_fits_delete_key()
     fits_add_key(filnam, 1, "KEYNEW1", true, "FITS dataset may contain extension")
 
     f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
+    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
-    test1 = i == 5
-
-    # println(test1)
+    test1 = i == 9
 
     fits_delete_key(filnam, 1, "KEYNEW1")
 
     f = fits_read(filnam)
-    i = get(f[1].header.maps, "KEYNEW1", 0)
+    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
     test2 = i == 0
 
-    # println(test2)
-
-    test = .![test1, test2]
-
-    o = isnothing(findfirst(.![test1, test2])) ? true : false
-
     rm(filnam)
 
-    return o
+    return test1 & test2
 
 end
 

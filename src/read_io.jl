@@ -33,7 +33,7 @@ end
 #   - stop after "END" record is reached
 # ------------------------------------------------------------------------------
 
-function _read1_header(o::IO, hduindex::Int)
+function _read_header(o::IO, hduindex::Int)
 
     ptrhdu = _hdu_pointers(o)
     ptrdat = _data_pointers(o)
@@ -62,7 +62,7 @@ end
 
 function _read_data(o::IO, hduindex::Int)                   # read all data using header information
 
-    h = _read1_header(o, hduindex) #  FITS_header
+    h = _read_header(o, hduindex) #  FITS_header
 
     hdutype = h.card[1].keyword == "XTENSION" ? h.card[1].value : "'PRIMARY '"
     hdutype = Base.strip(hdutype[2:9])
@@ -78,7 +78,7 @@ end
 
 function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data using header information
 
-    h = _read1_header(o, hduindex)            # FITS_header object
+    h = _read_header(o, hduindex)            # FITS_header object
 
     ptrdata = _data_pointers(o)
     Base.seek(o, ptrdata[hduindex])
@@ -108,7 +108,7 @@ end
 
 function _read_IMAGE_data(o::IO, hduindex::Int)             # read all data using header information
 
-    h = _read1_header(o, hduindex) # FITS_header object
+    h = _read_header(o, hduindex) # FITS_header object
 
     ptrdata = _data_pointers(o)
     Base.seek(o, ptrdata[hduindex])
@@ -141,7 +141,7 @@ function _read_TABLE_data(o::IO, hduindex::Int)
 
     ptr = _data_pointers(o)
 
-    h = _read1_header(o, hduindex) # FITS_header object
+    h = _read_header(o, hduindex) # FITS_header object
 
     Base.seek(o, ptr[hduindex])
 

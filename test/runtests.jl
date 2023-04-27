@@ -15,8 +15,8 @@ using Test
     @test test_fits_read()
     @test test_fits_extend()
     @test test_fits_add_key()
+    @test test_fits_delete_key()
     #@test test_fits_edit_key()
-    #@test test_fits_delete_key()
     # @test test_fits_rename_key()
 
 
