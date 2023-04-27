@@ -453,24 +453,25 @@ HISTORY, INSTRUME, NAXIS, NAXISn, OBJECT, OBSERVER, ORIGIN, PCOUNT, PSCALn,
 PTYPEn, PZEROn, REFERENC, SIMPLE, TBCOLn, TDIMn, TDISPn, TELESCOP, TFIELDS,
 TFORMn, THEAP, TNULLn, TSCALn, TTYPEn, TUNITn, TZEROn, XTENSION,
 
-where `n = 1,...,nmax` as specified for the keyword. Use `keyword = "ALL"` to dump
-a list of all keyword descriptions.
+where `n = 1,...,nmax` as specified for the keyword. Use the `keyword` "ALL" 
+to dump the full list of keyword descriptions.
 
 The descriptions are based on appendix C to [FITS standard - version 4.0](https://fits.gsfc.nasa.gov/fits_standard.html),
 which is *not part of the standard but included for convenient reference*.
 ```
-julia> fits_keyword("NAXISn");
+julia> fits_keyword("naxisn");
 KEYWORD:    NAXISn
 REFERENCE:  FITS Standard - version 4.0 - Appendix C
 CLASS:      general
 STATUS:     mandatory
 HDU:        primary, groups, extension, array, image, ASCII-table, bintable,
 VALUE:      integer
-DEFAULT:    RANGE:      [0:]
+RANGE:      [0:]
 COMMENT:    size of the axis
-DEFINITION: The value field of this indexed keyword shall contain a non-negative integer, representing the number of elements along axis n of a data array.
-The NAXISn must be present for all values n = 1,...,NAXIS, and for no other values of n.
-A value of zero for any of the NAXISn signifies that no data follow the header in the HDU.
+DEFINITION: The value field of this indexed keyword shall contain a non-negative integer,  
+representing the number of elements along axis n of a data array.
+The NAXISn must be present for all values n = 1,...,NAXIS, and for no other values of n.   
+A value of zero for any of the NAXISn signifies that no data follow the header in the HDU. 
 If NAXIS is equal to 0, there should not be any NAXISn keywords.
 
 julia> fits_keyword()
@@ -511,10 +512,11 @@ function fits_keyword(keyword::String; msg=true)
     str *= "\nSTATUS:     " * o[4]
     str *= "\nHDU:        " * join([o[5][i] * ", " for i ∈ eachindex(o[5])])
     str *= "\nVALUE:      " * o[6]
-    #o[7] ≠ "" ? (str *= "\n" * o[7]) : false
-    str *= "\nDEFAULT:    " * o[7]
-    str *= "\nCOMMENT:    " * o[8]
-    str *= "\nDEFINITION: " * o[9]
+    o[7] ≠ "" ? (str *= "\n" * o[7]) : false
+    o[8] ≠ "" ? (str *= "\nDEFAULT:    " * o[8]) : false
+    #str *= "\nDEFAULT:    " * o[7]
+    str *= "\nCOMMENT:    " * o[9]
+    str *= "\nDEFINITION: " * o[10]
 
     msg && println(str)
 
