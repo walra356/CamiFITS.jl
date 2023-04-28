@@ -514,7 +514,6 @@ function fits_keyword(keyword::String; msg=true)
     str *= "\nVALUE:      " * o[6]
     o[7] ≠ "" ? (str *= "\n" * o[7]) : false
     o[8] ≠ "" ? (str *= "\nDEFAULT:    " * o[8]) : false
-    #str *= "\nDEFAULT:    " * o[7]
     str *= "\nCOMMENT:    " * o[9]
     str *= "\nDEFINITION: " * o[10]
 
@@ -570,13 +569,25 @@ function fits_keyword(; hdutype="all", msg=true)
     return msg ? println(str) : str
 
 end
-function _primary_hdu()
-
-end
-function fits_reserved_keywords(hdu::FITS_HDU)
+function fits_mandatory_keyword(hdu::FITS_HDU)
 
     hdutype = hdu.dataobject.hdutype
+    hdutype = Base.Unicode.lowercase(hdutype)
 
-    hdutype == "PRIMARY" && return _primary_hdu()
+    dict = dictDefinedKeywords
+
+    k = sort(collect(keys(dict)))
+    o = [Base.get(dict, k[:][i], nothing) for i ∈ eachindex(k)]
+
+    u = []
+    class = "general"
+    status = "mandatory"
+    for i ∈ eachindex(o)
+        if (o[i][3] == class) & (o[i][4] == status) & (hdutype ∈ o[i][5])
+            push!(u, o[i][1])
+        end
+    end
+
+    return u
 
 end

@@ -100,7 +100,7 @@ DEFINITION: The value field shall contain an integer.  The absolute value is
 used in computing the sizes of data structures. It shall specify the number of
 bits that represent a data value (using a minus sign for floating point data).
 ```
-By specifying the *FITS HDU type* in [`fits_keyword`](@ref) the restricted list of relevant keywords is obtained.
+Specifying the *FITS HDU type* in [`fits_keyword`](@ref) yields the restricted list of HDU-specific keywords.
 ```
 julia> fits_keyword(hdutype="primary");
 FITS defined keywords:
@@ -248,8 +248,8 @@ fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 ### FITS - Key Methods
 
 ```@docs
-fits_add_key(filnam::String, hduindex::Int, key::String, val::Real, com::String)
-fits_delete_key(filnam::String, hduindex::Int, key::String)
+fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String)
+fits_delete_key(f::FITS, hduindex::Int, key::String)
 fits_edit_key(filnam::String, hduindex::Int, key::String, val::Real, com::String)
 fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
 ```

@@ -16,9 +16,8 @@ using Test
     @test test_fits_extend()
     @test test_fits_add_key()
     @test test_fits_delete_key()
-    #@test test_fits_edit_key()
-    # @test test_fits_rename_key()
-
+    @test test_fits_edit_key()
+    @test test_fits_rename_key()
 
     fits_create("kanweg.fits"; protect=false)
     @test fits_verifier("kanweg.fits"; msg=false) == 0
@@ -27,11 +26,6 @@ using Test
     @test_throws FITSError fits_create("kanweg")
     @test_throws FITSError fits_create("kanweg.fit")
     @test_throws FITSError fits_create(" .fits")
-
-    # @test test_fits_add_key()
-    #@test test_fits_edit_key()
-    #@test test_fits_delete_key()
-    # @test test_fits_rename_key()
 
     @test fits_terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."
     @test fits_terminology("s"; test=true)

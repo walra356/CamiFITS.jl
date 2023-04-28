@@ -70,8 +70,9 @@ dictErr = Dict(0 => nothing,
     14 => "illegal keyword value (not 'single quote' delimited string')",
     15 => "illegal keyword value (not 'numeric', 'date' or 'single quote' delimited string')",
     16 => "illegal keyword value type",
-    17 => "mandatory keyword",
+    17 => "illegal keyword deletion (mandatory keyword)",
     18 => "keyword not found",
+    19 => "illegal keyword renaming (mandatory keyword0)",
     23 => "header contains illegal ASCII character (not ASCCI 32 - 126)",
     24 => "keyword contains illegal character."
 )

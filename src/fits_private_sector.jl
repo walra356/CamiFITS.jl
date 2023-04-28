@@ -130,10 +130,10 @@ function _isascii_text(text::String)::Bool
 end
 
 # ==============================================================================
-#                      _format_keyword(key)::String
+#                      _format_keyword(key; abr=false)::String
 # ------------------------------------------------------------------------------
 
-function _format_keyword(key::String)::String
+function _format_keyword(key::String; abr=false)::String
 
     key = Base.Unicode.uppercase(Base.strip(key))
     l = length(key)
@@ -145,6 +145,8 @@ function _format_keyword(key::String)::String
     ispermitted = !convert(Bool, sum(.!o))
 
     ispermitted || Base.throw(FITSError(msgErr(24))) # illegal character
+
+    key = !isnumeric(key[6]) ? key : abr ? (key[1:5] * "n") : key
 
     return key
 

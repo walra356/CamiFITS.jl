@@ -319,16 +319,15 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
+    fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 
 Add a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
 #### Example:
 ```
 strExample="minimal.fits"
-fits_create(strExample; protect=false)
-fits_add_key(strExample, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+f = fits_create(strExample; protect=false)
+fits_add_key(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
 
-f = fits_read(strExample)
 fits_info(f[1])
 
   File: minimal.fits
@@ -348,9 +347,7 @@ fits_info(f[1])
   Any[]
 ```
 """
-function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
-
-    f = fits_read(filnam::String)
+function fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 
     k = get(f.hdu[hduindex].header.map, _format_keyword(key), 0)
     k > 0 && Base.throw(FITSError(msgErr(7)))        # " keyword in use
@@ -373,7 +370,7 @@ function fits_add_key(filnam::String, hduindex::Int, key::String, val::Any, com:
     card[k+nrec] = card[k]
     for i = 0:nrec-1
         card[k+i] = cast_FITS_card(k + i, rec[1+i])
-        push!(f.hdu[hduindex].header.map, card[k+i].keyword => k+i)
+        push!(f.hdu[hduindex].header.map, card[k+i].keyword => k + i)
     end
 
     _fits_save(f)
@@ -387,7 +384,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_delete_key(filnam::String, hduindex::Int, key::String)
+    fits_delete_key(f::FITS, hduindex::Int, key::String)
 
 Delete a header record of given `key`, `value` and `comment` to `FITS_HDU[hduindex]` of file with name  'filnam'
 #### Examples:
@@ -398,32 +395,35 @@ julia> f = fits_create(strExample; protect=false);
 
 Julia> f = fits_add_key(strExample, 1, "KEYNEW1", true, "this is record 5");
 
-Julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1",0)
-  5
+Julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
+9
 
-Julia> keyword = f.hdu[1].header.card[cardindex]
+Julia> keyword = f.hdu[1].header.card[cardindex].keyword
+"KEYNEW1"
 
-fits_delete_key(strExample, 1, "KEYNEW1")
+Julia> f = fits_delete_key(strExample, 1, "KEYNEW1");
 
-f = fits_read(strExample)
-get(f[1].header.maps,"KEYNEW1",0)
-  0
+Julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
 
-fits_delete_key(filnam, 1, "NAXIS")
+Julia> fits_delete_key(strExample, 1, "NAXIS")
  'NAXIS': cannot be deleted (key protected under FITS standard)
 ```
 """
-function fits_delete_key(filnam::String, hduindex::Int, key::String)
+function fits_delete_key(f::FITS, hduindex::Int, key::String)
 
-    f = fits_read(filnam::String)
     i = hduindex
     keyword = _format_keyword(key)
 
     k = get(f.hdu[i].header.map, keyword, 0)
-    k > 0 || Base.throw(FITSError(msgErr(18)))       # keyword not found
+    k > 0 || Base.throw(FITSError(msgErr(18)))        # keyword not found
 
     card = f.hdu[i].header.card
     kend = length(card)
+
+    abrkey = _format_keyword(key; abr=true)
+    ismandatory = abrkey ∈ fits_mandatory_keyword(f.hdu[i])
+
+    ismandatory && Base.throw(FITSError(msgErr(17)))
 
     while (card[k].keyword == keyword) | (card[k].keyword == "CONTINUE")
         push!(f.hdu[i].header.card, cast_FITS_card(kend, repeat(' ', 80)))
@@ -435,6 +435,54 @@ function fits_delete_key(filnam::String, hduindex::Int, key::String)
     _fits_save(f)
 
     return f
+end
+
+
+# ------------------------------------------------------------------------------
+#              fits_edit_key(filnam, hduindex, key, val, com)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
+
+Edit a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
+#### Example:
+```
+data = DateTime("2020-01-01T00:00:00.000")
+strExample="minimal.fits"
+fits_create(strExample; protect=false)
+fits_add_key(strExample, 1, "KEYNEW1", true, "this is record 5")
+fits_edit_key(strExample, 1, "KEYNEW1", data, "record 5 changed to a DateTime type")
+
+f = fits_read(strExample)
+fits_info(f[1])
+
+  File: minimal.fits
+  hdu: 1
+  hdutype: PRIMARY
+  DataType: Any
+  Datasize: (0,)
+
+  Metainformation:
+  SIMPLE  =                    T / file does conform to FITS standard
+  NAXIS   =                    0 / number of data axes
+  EXTEND  =                    T / FITS dataset may contain extensions
+  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
+  KEYNEW1 = '2020-01-01T00:00:00' / record 5 changed to a DateTime type
+  END
+
+  Any[]
+```
+"""
+function fits_edit_key(f::FITS, hduindex::Int, key::String, val::Any, com::String)
+
+    fits_delete_key(f, hduindex, key)
+    fits_add_key(f, hduindex, key, val, com)
+
+    _fits_save(f)
+
+    return f
+
 end
 
 # ------------------------------------------------------------------------------
@@ -472,44 +520,29 @@ fits_info(f[1])
   Any[]
 ```
 """
-function fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
-
-    f = fits_read(filnam::String)
+function fits_rename_key(f::FITS, hduindex::Int, keyold::String, keynew::String)
 
     keyold = _format_keyword(keyold)
     keynew = _format_keyword(keynew)
 
     k = get(f.hdu[hduindex].header.map, keyold, 0)
-    k > 0 || return println("keyword not found in hdu[$(hduindex)]")
+    k > 0 || Base.throw(FITSError(msgErr(18)))        # keyword not found
 
-    k = get(f.hdu[hduindex].header.map, keynew, 0)
-    k > 0 && Base.throw(FITSError(msgErr(7)))   # " keyword in use
+    abrkey = _format_keyword(keyold; abr=true)
+    ismandatory = abrkey ∈ fits_mandatory_keyword(f.hdu[hduindex])
+    ismandatory && Base.throw(FITSError(msgErr(19)))
 
-    if isone(hduindex)
-        mandatory = ["SIMPLE", "BITPIX", "NAXIS", "BZERO", "END"]
-        append!(mandatory, ["NAXIS" * string(i) for i = 1:5])
-    else
-        mandatory = ["EXTENSION", "BITPIX", "NAXIS", "BZERO", "END"]
-        append!(mandatory, ["NAXIS" * string(i) for i = 1:5])
-    end
+    card = f.hdu[hduindex].header.card[k]
 
+    record = rpad(keynew, 8) * card.record[9:80]
 
-    keyold ∈ res && return println("FitsWarning: '$keyold': cannot be renamed (key protected under FITS standard)")
+    f.hdu[hduindex].header.card[k] = cast_FITS_card(k, record)
+    delete!(f.hdu[hduindex].header.map, keyold)
+    push!(f.hdu[hduindex].header.map, keynew => k)
 
-    h = FITS_headers[hduindex]
-    i = Base.get(h.maps, keyold, 0)
-    i == 0 && return println("strError: '$keyold': key not found")
-    Base.get(h.maps, keynew, 0) > 0 && return println("FitsWarning: '$keynew': key in use (use different name or edit key)")
+    _fits_save(f)
 
-    h.records[i] = rpad(keynew, 8) * h.records[i][9:80]
-
-    FITS_headers[hduindex] = _cast_header(h.records, hduindex)
-
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-    _fits_save(FITS)
-
-    return FITS
+    return f
 
 end
 
@@ -636,80 +669,6 @@ function fits_combine(filnamA::String, filnamB::String; protect=true)
     return println("'$filnamOut': file created")
 
 end
-# ------------------------------------------------------------------------------
-#              fits_edit_key(filnam, hduindex, key, val, com)
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
-
-Edit a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
-#### Example:
-```
-data = DateTime("2020-01-01T00:00:00.000")
-strExample="minimal.fits"
-fits_create(strExample; protect=false)
-fits_add_key(strExample, 1, "KEYNEW1", true, "this is record 5")
-fits_edit_key(strExample, 1, "KEYNEW1", data, "record 5 changed to a DateTime type")
-
-f = fits_read(strExample)
-fits_info(f[1])
-
-  File: minimal.fits
-  hdu: 1
-  hdutype: PRIMARY
-  DataType: Any
-  Datasize: (0,)
-
-  Metainformation:
-  SIMPLE  =                    T / file does conform to FITS standard
-  NAXIS   =                    0 / number of data axes
-  EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
-  KEYNEW1 = '2020-01-01T00:00:00' / record 5 changed to a DateTime type
-  END
-
-  Any[]
-```
-"""
-function fits_edit_key(filnam::String, hduindex::Int, key::String, val::Any, com::String)
-
-    err = _err_FITS_filnam(filnam; protect=false)
-    err > 1 && Base.throw(FITSError(msgError(err)))
-
-    o = IORead(filnam)
-
-    nhdu = _hdu_count(o)
-
-    FITS_headers = [_read_header(o, i) for i = 1:nhdu]
-    FITS_data = [_read_data(o, i) for i = 1:nhdu]
-
-    key = _format_keyword(key)
-    res = ["SIMPLE", "BITPIX", "NAXIS", "NAXIS1", "NAXIS2", "NAXIS3", "BZERO", "END"]
-    key ∈ res && return println("strError: '$key': cannot be edited (key protected under FITS standard)")
-
-    h = FITS_headers[hduindex]
-    i = Base.get(h.maps, key, 0)
-    i == 0 && return println("strError: '$key': key not found")
-
-    nold = length(h.keys)
-    nobs = length(_fits_obsolete_records(h, i))
-    newrecords = _fits_new_record(key, val, com)
-    oldrecords = h.records[i+nobs:end]
-    [Base.pop!(h.records) for j = i:nold]
-    [Base.push!(h.records, newrecords[i]) for i ∈ eachindex(newrecords)]
-    [Base.push!(h.records, oldrecords[i]) for i ∈ eachindex(oldrecords)]
-
-    FITS_headers[hduindex] = _cast_header(h.records, hduindex)
-
-    FITS = [FITS_HDU(filnam, i, FITS_headers[i], FITS_data[i]) for i = 1:nhdu]
-
-    _fits_save(FITS)
-
-    return FITS
-
-end
-
 # ------------------------------------------------------------------------------
 #                    parse_FITS_TABLE(hdu::FITS_HDU)
 # ------------------------------------------------------------------------------
