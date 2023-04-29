@@ -43,7 +43,7 @@ Any[]
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_info(hdu::FITS_HDU)
+function fits_info(hdu::FITS_HDU; msg=true)
 
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
@@ -66,14 +66,14 @@ function fits_info(hdu::FITS_HDU)
 
     Base.append!(info, records)
 
-    println(Base.join(info .* "\r\n"))
+    msg && println(Base.join(info .* "\r\n"))
 
     return hdu.dataobject.data
 
 end
-function fits_info(f::FITS)
+function fits_info(f::FITS; msg=true)
 
-    return fits_info(f.hdu[1])
+    return fits_info(f.hdu[1]; msg)
 
 end
 

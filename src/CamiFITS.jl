@@ -51,6 +51,7 @@ export test_fits_extend!
 
 export test_fits_read
 
+export test_fits_info
 export test_fits_keyword
 export test_fits_add_key
 export test_fits_edit_key

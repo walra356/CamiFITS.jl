@@ -5,6 +5,22 @@
 #                        Jook Walraven 18-03-2023
 # ------------------------------------------------------------------------------
 
+function test_fits_info()
+
+    filnam = "minimal.fits"
+
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+
+    f = fits_create(filnam, data; protect=false)
+
+    o = fits_info(f; msg=false) == data
+    
+    rm(filnam)
+
+    return o
+
+end
+
 function test_fits_create()
 
     filnam = "minimal.fits"
