@@ -122,20 +122,30 @@ HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
 
 reference: FITS Standard - version 4.0 - Appendix C
 ```
-#### Inspecting the FITS object
+#### The FITS object
 ![Image](./assets/FITS_object.png)
+All information of a given `.fits` file is stored in the *FITS* object. The
+header of a *FITS_HDU* is contained in an array of `.card` objects as 
+illustrated above.
+##### Example:
 ```
 julia> filnam = "minimal.fits";
 
 julia> f = fits_create(filnam; protect=false);
-
-julia> i = Base.get(f.hdu[1].header.map, "NAXIS", 0)
+```
+To find the `cardindex` associated with the keyword "NAXIS" we use the `map`:
+```
+julia> k = f.hdu[1].header.map["NAXIS"]
 3
-
-julia> (card[i].cardindex, card[i].keyword, card[i].value, card[i].comment)
-(3, "NAXIS", 1, "number of data axes                            ")
-
-julia> card[i].record
+```
+The result is easily verified:
+```
+julia> f.hdu[1].header.card[k].cardindex
+3
+```
+The full record is:
+```
+julia> f.hdu[1].header.card[3].record
 "NAXIS   =                    1 / number of data axes                            "
 
 julia> rm(filnam); f = nothing
