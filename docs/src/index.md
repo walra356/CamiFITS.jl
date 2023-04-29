@@ -123,7 +123,7 @@ HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
 reference: FITS Standard - version 4.0 - Appendix C
 ```
 #### Inspecting the FITS object
-
+![Image](../assets/FITS_object.png)
 ```
 julia> filnam = "minimal.fits";
 
