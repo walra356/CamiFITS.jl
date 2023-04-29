@@ -49,7 +49,7 @@ function _read_header(o::IO, hduindex::Int)
         Base.push!(record, rec)
     end
 
-    return cast_FITS_header(record, hduindex)
+    return cast_FITS_header(record) #, hduindex)
 
 end
 
@@ -102,7 +102,7 @@ function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data us
         data = Any[]
     end
 
-    return FITS_data = cast_FITS_data(hduindex, "PRIMARY", data)
+    return FITS_data = cast_FITS_data("PRIMARY", data) # (hduindex, "PRIMARY", data)
 
 end
 
@@ -133,7 +133,7 @@ function _read_IMAGE_data(o::IO, hduindex::Int)             # read all data usin
         data = Any[]
     end
 
-    return FITS_data = _cast_data(hduindex, "IMAGE", data)
+    return FITS_data = _cast_data("IMAGE", data) # (hduindex, "IMAGE", data)
 
 end
 

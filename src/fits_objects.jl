@@ -22,7 +22,7 @@ The fields are:
 """
 struct FITS_data
 
-    hduindex::Int
+    #hduindex::Int
     hdutype::String
     data
 
@@ -60,9 +60,9 @@ julia> dataobject.data
  31  23  33
 ```
 """
-function cast_FITS_data(hduindex::Int, hdutype::String, data)
+function cast_FITS_data(hdutype::String, data) # (hduindex::Int, hdutype::String, data)
 
-    return FITS_data(hduindex, hdutype, data)
+    return FITS_data(hdutype, data) # (hduindex, hdutype, data)
 
 end
 
@@ -162,23 +162,22 @@ end
 Object to hold the header information of a [`FITS_HDU`](@ref).
 
 The fields are:
-* `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
+#* `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
 * `.card`: the array of `cards` (`::Vector{FITS_card}`)
 * `.map`:  Dictionary `keyword => recordindex` (`::Dict{String, Int}`)
 """
 struct FITS_header
 
-    hduindex::Int
     card::Vector{FITS_card}
     map::Dict{String, Int}
 
 end
 
 # ------------------------------------------------------------------------------
-#                   cast_FITS_header(record, hduindex)
+#                   cast_(record, hduindex)
 # ------------------------------------------------------------------------------
 
-function cast_FITS_header(record::Vector{String}, hduindex::Int)
+function cast_FITS_header(record::Vector{String}) #, hduindex::Int)
 
     remainder = length(record) % 36
 
@@ -188,7 +187,7 @@ function cast_FITS_header(record::Vector{String}, hduindex::Int)
     card = [cast_FITS_card(i, record[i]) for i ∈ eachindex(record)]
     map = Dict([Base.strip(record[i][1:8]) => i for i ∈ eachindex(record)])
 
-    return FITS_header(hduindex, card, map)
+    return FITS_header(card, map)
 
 end
 

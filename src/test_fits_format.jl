@@ -94,7 +94,6 @@ function _record_count(hdu::FITS_HDU; msg=true)
     typeof(hdu) <: FITS_HDU || error("Error: FITS_HDU not found")
 
     card = hdu.header.card
-    hduindex = hdu.header.hduindex
 
     nrec = length(card)
     nblock = nrec ÷ 36

@@ -47,9 +47,8 @@ export test_FITS_filnam
 
 export test_fits_create
 export test_fits_read
-export test_fits_extend
+export test_fits_extend!
 
-export test_fits_extend
 export test_fits_read
 
 export test_fits_keyword
@@ -83,10 +82,11 @@ export parse_FITS_TABLE
 export fits_create
 export fits_create_test
 export fits_read
-export fits_extend
+export fits_extend!
 export fits_info
 export fits_copy
 export fits_combine
+
 export fits_add_key
 export fits_edit_key
 export fits_delete_key

@@ -4,7 +4,7 @@ FITS stands for *Flexible Image Transport System*. This is an open standard orig
 
 CamiFITS offers the *basic FITS functionality* for scientific users not requiring celestal coordinates. Optional *Conforming Extentions* are under development. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-04-27:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
+*Disclaimer 2023-04-29:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
 
 # Table of contents
 
@@ -25,7 +25,7 @@ julia> using CamiFITS
 
 A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) of records with metainformation.
 
-We distinguish between *IMAGE* and *TABLE* HDU data types. The first HDU in a `.fits` file is called the *PRIMARY HDU*.
+We distinguish between *IMAGE*, *TABLE* and *BINTABLE* HDU data types. The first HDU in a `.fits` file is called the *PRIMARY HDU*.
 
 Let "example.fits" be an *existing* `.fits` file. By the commands 
 
@@ -35,7 +35,7 @@ julia> filnam = "example.fits"
 
 julia> f = fits_read(filnam);
 ```
-we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dics) to the variable `f`. 
+we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dic) to the variable `f`. 
 
 The fields of `f` (`f.hdu[1]`, `f.hdu[2]`, ...) correspond to 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
@@ -242,7 +242,7 @@ fits_combine(filnamFirst::String, filnamLast::String; protect=true)
 fits_copy(filnamA::String, filnamB::String=" "; protect=true)
 fits_read(filnam::String)
 fits_create(filnam::String, data=nothing; protect=true, msg=true)
-fits_extend(filnam::String, data_extend, hdutype="IMAGE")
+fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
 ```
 
 ### FITS - Key Methods
@@ -250,8 +250,8 @@ fits_extend(filnam::String, data_extend, hdutype="IMAGE")
 ```@docs
 fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 fits_delete_key(f::FITS, hduindex::Int, key::String)
-fits_edit_key(filnam::String, hduindex::Int, key::String, val::Real, com::String)
-fits_rename_key(filnam::String, hduindex::Int, keyold::String, keynew::String)
+fits_edit_key(f::FITS, hduindex::Int, key::String, val::Real, com::String)
+fits_rename_key(f::FITS, hduindex::Int, keyold::String, keynew::String)
 ```
 
 ## FORTRAN
