@@ -225,7 +225,7 @@ FITS_table
 ```@docs
 cast_FITS_filnam(filnam::String)
 cast_FITS_card(cardindex::Int, record::String)
-cast_FITS_data(hduindex::Int, hdutype::String, data)
+cast_FITS_data(hdutype::String, data)
 ```
 
 ### FITS - HDU Methods
