@@ -38,7 +38,7 @@ julia> f = fits_read(filnam);
 we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dic) to the variable `f`. 
 The structure of the [`FITS`](@ref) object is shown below.
 
-![Image](./assets/FITS_object.png)
+![Image](./assets/flowchart.png)
 
 The fields of `f` (`f.hdu[1]`, `f.hdu[2]`, ...) correspond to 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
