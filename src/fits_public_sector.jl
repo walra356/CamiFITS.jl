@@ -22,6 +22,7 @@ Julia> filnam = "minimal.fits";
 julia> f = fits_create(filnam; protect=false);
 
 julia> fits_info(f)
+File: minimal.fits
 hdu: 1
 hdutype: PRIMARY
 DataType: Any
@@ -148,7 +149,7 @@ function fits_create(filnam::String, data=[]; protect=true)
 
     f = cast_FITS(filnam, [hdu])
 
-    _fits_save(f)
+    fits_save(f)
 
     return f
 
@@ -273,7 +274,7 @@ function fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
 
     push!(f.hdu, cast_FITS_HDU(filnam, nhdu, rec, dat))
 
-    _fits_save(f)
+    fits_save(f)
 
     return f
 
@@ -338,7 +339,7 @@ function fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String
         push!(f.hdu[hduindex].header.map, card[k+i].keyword => k + i)
     end
 
-    _fits_save(f)
+    fits_save(f)
 
     return f
 
@@ -397,7 +398,7 @@ function fits_delete_key(f::FITS, hduindex::Int, key::String)
 
     delete!(f.hdu[hduindex].header.map, keyword)
 
-    _fits_save(f)
+    fits_save(f)
 
     return f
 end
@@ -444,7 +445,7 @@ function fits_edit_key(f::FITS, hduindex::Int, key::String, val::Any, com::Strin
     fits_delete_key(f, hduindex, key)
     fits_add_key(f, hduindex, key, val, com)
 
-    _fits_save(f)
+    fits_save(f)
 
     return f
 
@@ -505,7 +506,7 @@ function fits_rename_key(f::FITS, hduindex::Int, keyold::String, keynew::String)
     delete!(f.hdu[hduindex].header.map, keyold)
     push!(f.hdu[hduindex].header.map, keynew => k)
 
-    _fits_save(f)
+    fits_save(f)
 
     return f
 
@@ -533,22 +534,19 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
   'T01.fits' was saved as 'T01a.fits'
 ```
 """
-function fits_copy(filnamA::String, filnamB::String=" "; protect=true)
+function fits_copy(filnamA::String, filnamB::String=" "; protect=true, msg=true)
 
-    # err =_err_FITS_filnam(filnamA; protect)
-    # err > 1 && Base.throw(FITSError(msgError(err)))
+    f = fits_read(filnamA)
 
-    o = IORead(filnamA)
-    f = cast_FITS_filnam(filnamA)
+    filnamB = filnamB == " " ? "$(f.filnam.name) - Copy.fits" : filnamB
 
-    filnamB = filnamB == " " ? "$(f.name) - Copy.fits" : filnamB
+    fits_save_as(f, filnamB; protect=false)
 
-    err = _err_FITS_filnam(filnamB; protect)
-    err > 1 && Base.throw(FITSError(msgError(err)))
+    f = fits_read(filnamB)
 
-    _fits_write_IO(o, filnamB)
+    str = "'$filnamA' was saved as '$filnamB'"
 
-    return println("'$filnamA' was saved as '$filnamB'")
+    return msg ? println(str) : str
 
 end
 

@@ -11,10 +11,13 @@ using Test
     @test step125.([5, 10, 21.3, 50, 100.1]) == [1, 2, 5, 10, 20]
 
     @test test_fits_info()
+    @test test_fits_copy()
     @test test_fits_create()
     @test test_fits_extend!()
     @test test_fits_keyword()
     @test test_fits_read()
+    @test test_fits_save_as()
+
     @test test_fits_add_key()
     @test test_fits_delete_key()
     @test test_fits_edit_key()

@@ -1,6 +1,15 @@
-# .................................. save to file for FITS array ...................................................
+# SPDX-License-Identifier: MIT
 
-function _fits_save(f::FITS)
+# ------------------------------------------------------------------------------
+#                          write_io.jl
+#                         Jook Walraven 21-03-2023
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+#                        fits_save(f::FITS)
+# ------------------------------------------------------------------------------
+
+function fits_save(f::FITS)
 
     o = IOBuffer()
 
@@ -12,6 +21,62 @@ function _fits_save(f::FITS)
     end
 
     return _fits_write_IO(o, f.filnam.value)
+
+end
+
+# ------------------------------------------------------------------------------
+#                        fits_save_as(f::FITS)
+# ------------------------------------------------------------------------------
+@doc raw"""
+    fits_save_as(f::FITS, filnam::String [; protect=true])
+
+Save the [`FITS`](@ref) object under the name `filnam`.
+Key:
+* `protect::Bool`: overwrite protection
+```
+julia> f = fits_create("minimal.fits"; protect=false);
+
+julia> fits_save_as(f, "kanweg.fits"; protect=false);
+
+julia> f = fits_read("kanweg.fits");
+
+julia> fits_info(f)
+File: kanweg.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+Any[]
+```
+"""
+function fits_save_as(f::FITS, filnam::String; protect=true)
+
+    o = IOBuffer()
+
+    for i ∈ eachindex(f.hdu)
+        o1 = IOWrite_header(f.hdu[i])
+        Base.write(o, Array{UInt8,1}(o1.data))
+        o2 = IOWrite_data(f.hdu[i])
+        o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data))
+    end
+
+    if Base.Filesystem.isfile(filnam) & protect
+        Base.throw(FITSError(msgErr(4)))
+    end
+
+    return _fits_write_IO(o, filnam)
 
 end
 

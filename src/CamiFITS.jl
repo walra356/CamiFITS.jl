@@ -45,11 +45,12 @@ export list_keywords
 
 export test_FITS_filnam
 
+export test_fits_copy
 export test_fits_create
 export test_fits_read
 export test_fits_extend!
-
 export test_fits_read
+export test_fits_save_as
 
 export test_fits_info
 export test_fits_keyword
@@ -78,11 +79,10 @@ export cast_FITS_filnam
 
 export parse_FITS_TABLE
 
-#export force_create
-
 export fits_create
-export fits_create_test
 export fits_read
+export fits_save
+export fits_save_as
 export fits_extend!
 export fits_info
 export fits_copy
