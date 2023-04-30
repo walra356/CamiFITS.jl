@@ -36,6 +36,7 @@ julia> filnam = "example.fits"
 julia> f = fits_read(filnam);
 ```
 we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dic) to the variable `f`. 
+The structure of the [`FITS`](@ref) object is shown in [`The FITS object`](@ref)
 
 The fields of `f` (`f.hdu[1]`, `f.hdu[2]`, ...) correspond to 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
@@ -60,7 +61,7 @@ julia> filnam = "minimal.fits"
 
 julia> f = fits_create(filnam; protect=false);
 
-julia> fits_info(f.hdu[1])
+julia> fits_info(f)
 
 File: minimal.fits
 hdu: 1
@@ -87,7 +88,7 @@ julia> rm(filnam); f = nothing
 ```
 The description of the *FITS keywords* is found in [`fits_keyword`](@ref):
 ```
-julia> fits_keyword("bitpix");
+julia> fits_keyword("bitpix")
 KEYWORD:    BITPIX
 REFERENCE:  FITS Standard - version 4.0 - Appendix C
 CLASS:      general
@@ -102,7 +103,7 @@ bits that represent a data value (using a minus sign for floating point data).
 ```
 Specifying the *FITS HDU type* in [`fits_keyword`](@ref) yields the restricted list of HDU-specific keywords.
 ```
-julia> fits_keyword(hdutype="primary");
+julia> fits_keyword(hdutype="primary")
 FITS defined keywords:
 HDU type: 'primary'
 - general

@@ -216,33 +216,33 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+    fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
 
 Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
 ```
 Julia> filnam = "test_example.fits";
 
-Julia> data = [0x0000043e, 0x0000040c, 0x0000041f]
+Julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
-Julia> f = fits_create(filnam, data; protect=false)
+Julia> f = fits_create(filnam, data; protect=false);
 
-Julia> a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6]
+Julia> a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6];
 
-Julia> b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
+Julia> b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
 
-Julia> c = [1.23,2.12,3.,4.,5.]
+Julia> c = [1.23,2.12,3.,4.,5.];
 
-Julia> d = ['a','b','c','d','e']
+Julia> d = ['a','b','c','d','e'];
 
-Julia> e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"]
+Julia> e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"];
 
-Julia> data = [a,b,c,d,e]
+Julia> data = [a,b,c,d,e];
 
-fits_extend(strExample, data, "TABLE")
+Julia> fits_extend!(f, data, "TABLE")
 
-f = fits_read(strExample)
-f[2].dataobject.data
+
+Julia> f.hdu[2].dataobject.data
   5-element Vector{String}:
    "1.0e-6 1086 1.23 a a                    "
    "2.0e-6 1036 2.12 b bb                   "
@@ -260,18 +260,15 @@ function fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
     hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
     hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
     hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) :
-    error("strError: unknown HDU type")
+    Base.throw(FITSError(msgErr(20)))
 
     filnam = f.filnam.value
     nhdu = f.hdu[end].hduindex + 1
 
     rec = cast_FITS_header(records)
-    dat = cast_FITS_data(hdutype, data) # (nhdu, hdutype, data)
+    dat = cast_FITS_data(hdutype, data)
 
     push!(f.hdu, cast_FITS_HDU(filnam, nhdu, rec, dat))
-    # hdu = [cast_FITS_HDU(filnam, i, rec[i], dat[i]) for i=1:nhdu]
-
-    #f = cast_FITS(filnam, hdu)
 
     _fits_save(f)
 

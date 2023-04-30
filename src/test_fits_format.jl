@@ -516,9 +516,7 @@ function fits_keyword(keyword::String; msg=true)
     str *= "\nCOMMENT:    " * o[9]
     str *= "\nDEFINITION: " * o[10]
 
-    msg && println(str)
-
-    return str
+    return msg ? println(str) : str
 
 end
 function fits_keyword(; hdutype="all", msg=true)

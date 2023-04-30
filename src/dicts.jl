@@ -73,6 +73,7 @@ dictErr = Dict(0 => nothing,
     17 => "illegal keyword deletion (mandatory keyword)",
     18 => "keyword not found",
     19 => "illegal keyword renaming (mandatory keyword0)",
+    20 => "hdutype not found",
     23 => "header contains illegal ASCII character (not ASCCI 32 - 126)",
     24 => "keyword contains illegal character."
 )
