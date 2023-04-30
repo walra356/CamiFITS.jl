@@ -158,17 +158,15 @@ end
 
 function test_fits_collect()
 
-    filnam1 = raw"T1.fits"
-    filnam2 = raw"T3.fits"
-    filnam3 = raw"T1-T3.fits"
+    filnam1 = "T1.fits"
+    filnam2 = "T3.fits"
+    filnam3 = "T1-T3.fits"
 
     fits_collect(filnam1, filnam2; protect=false, msg=false)
 
     f = fits_read(filnam3)
 
     o = f.filnam.value == filnam3
-
-    rm(filnam3)
 
     return o
 
