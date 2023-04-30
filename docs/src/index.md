@@ -36,7 +36,7 @@ julia> filnam = "example.fits"
 julia> f = fits_read(filnam);
 ```
 we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dic) to the variable `f`. 
-The structure of the [`FITS`](@ref) object is shown in [`The FITS object`](@ref)
+The structure of the [`FITS`](@ref) object is shown in [`FITS_object`](@ref)
 
 The fields of `f` (`f.hdu[1]`, `f.hdu[2]`, ...) correspond to 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
@@ -123,7 +123,7 @@ HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
 
 reference: FITS Standard - version 4.0 - Appendix C
 ```
-#### The FITS object
+#### The FITS object (@id FITS_object)
 ![Image](./assets/FITS_object.png)
 All information of a given `.fits` file is stored in the *FITS* object. The
 header of a *FITS_HDU* is contained in an array of `.card` objects as 
