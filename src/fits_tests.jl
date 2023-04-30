@@ -143,9 +143,7 @@ function test_fits_copy()
     filnam2="fitsB.fits"
 
     f = fits_create(filnam1; protect=false)
-    fits_copy(filnam1, filnam2; protect=false, msg=false);
-
-    f = fits_read(filnam2)
+    f = fits_copy(filnam1, filnam2; protect=false, msg=false);
 
     o = f.filnam.value == filnam2
     
@@ -162,14 +160,13 @@ function test_fits_collect()
     filnam2 = "T3.fits"
     filnam3 = "T1-T3.fits"
 
-    fits_collect(filnam1, filnam2; protect=false, msg=false)
-
-    f = fits_read(filnam3)
+    f = fits_collect(filnam1, filnam2; protect=false, msg=false)
 
     o = f.filnam.value == filnam3
 
-    return o
+    rm(filnam3)
 
+    return o
 
 end
 

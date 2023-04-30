@@ -545,9 +545,9 @@ function fits_copy(fileStart::String, fileStop=" "; protect=true, msg=true)
 
     f = fits_read(fileStop)
 
-    str = "'$fileStart' was copied under the name '$fileStop'"
+    msg && println("'$fileStart' was copied under the name '$fileStop'")
 
-    return msg ? println(str) : str
+    return f
 
 end
 
