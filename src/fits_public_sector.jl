@@ -591,8 +591,8 @@ END
 """
 function fits_collect(fileStart::String, fileStop::String; protect=true, msg=true)
 
-    Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
-    Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
+    #Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
+    #Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
 
     fileStart = uppercase(fileStart)
     fileStop = uppercase(fileStop)
