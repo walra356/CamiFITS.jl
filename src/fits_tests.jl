@@ -158,7 +158,7 @@ end
 
 function test_fits_collect()
 
-     cd("./test")
+    cd(".\\test\\")
 
     filnam1 = "T1.fits"
     filnam2 = "T5.fits"
@@ -172,7 +172,7 @@ function test_fits_collect()
 
     rm(filnam3)
 
-    cd("./")
+    cd("..\\")
 
     return o
 
