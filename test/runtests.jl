@@ -17,6 +17,7 @@ using Test
     @test test_fits_keyword()
     @test test_fits_read()
     @test test_fits_save_as()
+    @test test_fits_collect()
 
     @test test_fits_add_key()
     @test test_fits_delete_key()

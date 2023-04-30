@@ -43,22 +43,6 @@ export fits_keywords
 export fits_mandatory_keyword
 export list_keywords
 
-export test_FITS_filnam
-
-export test_fits_copy
-export test_fits_create
-export test_fits_read
-export test_fits_extend!
-export test_fits_read
-export test_fits_save_as
-
-export test_fits_info
-export test_fits_keyword
-export test_fits_add_key
-export test_fits_edit_key
-export test_fits_delete_key
-export test_fits_rename_key
-
 export FITS_filnam
 export FITS_test
 
@@ -86,7 +70,7 @@ export fits_save_as
 export fits_extend!
 export fits_info
 export fits_copy
-export fits_combine
+export fits_collect
 
 export fits_add_key
 export fits_edit_key
@@ -94,6 +78,23 @@ export fits_delete_key
 export fits_rename_key
 export fits_verifier
 export name_verifier
+
+export test_FITS_filnam
+
+export test_fits_copy
+export test_fits_create
+export test_fits_read
+export test_fits_extend!
+export test_fits_read
+export test_fits_save_as
+export test_fits_collect
+
+export test_fits_info
+export test_fits_keyword
+export test_fits_add_key
+export test_fits_edit_key
+export test_fits_delete_key
+export test_fits_rename_key
 
 #export plot_matrices
 #export plot!

@@ -156,6 +156,25 @@ function test_fits_copy()
 
 end
 
+function test_fits_collect()
+
+    filnam1 = "T1.fits"
+    filnam2 = "T5.fits"
+    filnam3 = "T1-T5.fits"
+
+    fits_collect(filnam1, filnam2; protect=false, msg=false)
+
+    f = fits_read(filnam3)
+
+    o = f.filnam.value == filnam3
+
+    rm(filnam3)
+
+    return o
+
+
+end
+
 function test_fits_keyword()
 
     a = fits_keyword("end"; msg=false)[1] == 'K'

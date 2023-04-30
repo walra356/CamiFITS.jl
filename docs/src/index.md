@@ -249,8 +249,8 @@ parse_FITS_TABLE(hdu::FITS_HDU)
 #### FITS - File Methods
 
 ```@docs
-fits_combine(filnamFirst::String, filnamLast::String; protect=true)
-fits_copy(filnamA::String, filnamB::String=" "; protect=true)
+fits_collect(filnamFirst::String, filnamLast::String; protect=true)
+fits_copy(fileStart::String, fileStop::String=" "; protect=true)
 fits_create(filnam::String, data=nothing; protect=true, msg=true)
 fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
 fits_read(filnam::String)
