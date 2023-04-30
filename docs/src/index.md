@@ -124,7 +124,7 @@ HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
 reference: FITS Standard - version 4.0 - Appendix C
 ```
 #### The FITS object (@id FITS_object)
-![Image](./assets/FITS_object.pdf)
+![Image](./assets/FITS_object.png)
 All information of a given `.fits` file is stored in the *FITS* object. The
 header of a *FITS_HDU* is contained in an array of `.card` objects as 
 illustrated above.
