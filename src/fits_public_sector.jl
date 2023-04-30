@@ -594,9 +594,6 @@ function fits_collect(fileStart::String, fileStop::String; protect=true, msg=tru
     #Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
     #Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
 
-    fileStart = uppercase(fileStart)
-    fileStop = uppercase(fileStop)
-
     nam1 = cast_FITS_filnam(fileStart)
     strPre1 = nam1.prefix
     strNum1 = nam1.numerator
