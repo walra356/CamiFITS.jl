@@ -73,6 +73,9 @@ function fits_info(hdu::FITS_HDU; msg=true)
 end
 function fits_info(f::FITS; msg=true)
 
+    str = "File: " * f.filnam.value
+    msg && println(str) 
+
     return fits_info(f.hdu[1]; msg)
 
 end
