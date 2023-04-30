@@ -195,7 +195,7 @@ julia> rm(filnam); f = nothing
 """
 function fits_read(filnam::String)
 
-    Base.Filesystem.isfile(filnam) || Base.throw(FITSError(msgErr(1)))
+    #Base.Filesystem.isfile(filnam) || Base.throw(FITSError(msgErr(1)))
 
     o = IORead(filnam)
 
