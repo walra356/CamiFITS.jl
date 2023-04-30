@@ -158,6 +158,8 @@ end
 
 function test_fits_collect()
 
+     cd("./test")
+
     filnam1 = "T1.fits"
     filnam2 = "T5.fits"
     filnam3 = "T1-T5.fits"
@@ -169,6 +171,8 @@ function test_fits_collect()
     o = f.filnam.value == filnam3
 
     rm(filnam3)
+
+    cd("./")
 
     return o
 
