@@ -36,13 +36,13 @@ julia> filnam = "example.fits"
 julia> f = fits_read(filnam);
 ```
 we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on dic) to the variable `f`. 
-The structure of the [`FITS`](@ref) object is shown below.
+The structure of the [`FITS`](@ref) object is shown in the flow chard below.
 
 ![Image](./assets/flowchart.png)
 
 The fields of `f` (`f.hdu[1]`, `f.hdu[2]`, ...) correspond to 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
-represented by `f.hdu[1]`. 
+represented by `f.hdu[1]`. The header records are contained in an array of *single-record* cards.
 
 The formal terminology of the [FITS standard](https://fits.gsfc.nasa.gov/fits_standard.html) can be consulted using 
 [`fits_terminology`](@ref): 
