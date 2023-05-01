@@ -74,7 +74,7 @@ function fits_info(hdu::FITS_HDU; msg=true)
 end
 function fits_info(f::FITS; msg=true)
 
-    str = "File: " * f.filnam.value
+    str = "\nFile: " * f.filnam.value
     msg && println(str)
 
     return fits_info(f.hdu[1]; msg)
@@ -513,13 +513,13 @@ function fits_rename_key(f::FITS, hduindex::Int, keyold::String, keynew::String)
 end
 
 # ------------------------------------------------------------------------------
-#                 fits_copy(fileStart [, fileStop="" [; protect=true[, msg=true]]])
+#                 fits_copy(filnam1 [, filnam2="" [; protect=true[, msg=true]]])
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_copy(fileStart [, fileStop="" [; protect=true]])
+    fits_copy(filnam1 [, filnam2="" [; protect=true]])
 
-Copy `fileStart` to `fileStop` (with mandatory `.fits` extension)
+Copy `filnam1` to `filnam2` (with mandatory `.fits` extension)
 Key:
 * `protect::Bool`: overwrite protection
 * `msg::Bool`: allow status message
@@ -535,17 +535,28 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
   'T01.fits' was saved as 'T01a.fits'
 ```
 """
-function fits_copy(fileStart::String, fileStop=" "; protect=true, msg=true)
+function fits_copy(filnam1::String, filnam2=" "; protect=true, msg=true)
 
-    f = fits_read(fileStart)
+    f = fits_read(filnam1)
 
-    fileStop = fileStop == " " ? "$(f.filnam.name) - Copy.fits" : fileStop
+    filnam2 = filnam2 == " " ? "$(f.filnam.name) - Copy.fits" : filnam2
 
-    fits_save_as(f, fileStop; protect)
+    Base.Filesystem.isfile(filnam2) && Base.throw(FITSError(msgErr(1)))
 
-    f = fits_read(fileStop)
+    n = cast_FITS_filnam(filnam2)
+    f.filnam.value = n.value
+    f.filnam.name = n.name
+    f.filnam.prefix = n.prefix
+    f.filnam.numerator = n.numerator
+    f.filnam.extension = n.extension
 
-    msg && println("'$fileStart' was copied under the name '$fileStop'")
+    # fits_save_as(f, filnam2; protect)
+
+    #f = fits_read(filnam2)
+
+    msg && println("'$(filnam1)' was copied under the name '$(filnam2)'")
+
+    fits_save(f)
 
     return f
 
@@ -591,8 +602,8 @@ END
 """
 function fits_collect(fileStart::String, fileStop::String; protect=true, msg=true)
 
-    #Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
-    #Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
+    # Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
+    # Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
 
     nam1 = cast_FITS_filnam(fileStart)
     strPre1 = nam1.prefix
@@ -609,7 +620,7 @@ function fits_collect(fileStart::String, fileStop::String; protect=true, msg=tru
     numLeadingZeros2 = length(strNum2) - length(string(valNum2))
 
     if strPre1 ≠ strPre2
-        error(strPre * " ≠ " * strPre2 * " (prefixes must be identical)")
+        error(strPre1 * " ≠ " * strPre2 * " (prefixes must be identical)")
     elseif strExt1 ≠ strExt2
         error(strExt1 * " ≠ " * strExt2 * " (file extensions must be identical)")
     elseif uppercase(strExt1) ≠ ".FITS"

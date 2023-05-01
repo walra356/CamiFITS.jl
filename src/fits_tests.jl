@@ -139,8 +139,8 @@ end
 
 function test_fits_copy()
 
-    filnam1="fitsA.fits"
-    filnam2="fitsB.fits"
+    filnam1="filnam1.fits"
+    filnam2="filnam2.fits"
 
     f = fits_create(filnam1; protect=false)
     f = fits_copy(filnam1, filnam2; protect=false, msg=false);
