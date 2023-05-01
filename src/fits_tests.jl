@@ -156,15 +156,26 @@ end
 
 function test_fits_collect()
 
-    filnam1 = "T1.fits"
-    filnam2 = "T3.fits"
-    filnam3 = "T1-T3.fits"
+    filnam1 = "F1.fits"
+    filnam2 = "F2.fits"
+    filnam3 = "F3.fits"
+    filnam4 = "F1-F3.fits"
 
-    f = fits_collect(filnam1, filnam2; protect=false, msg=false)
+    data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
+    data = reshape(data, (3, 3, 1))
 
-    o = f.filnam.value == filnam3
+    fits_create(filnam1, data; protect=false)
+    fits_create(filnam2, data; protect=false)
+    fits_create(filnam3, data; protect=false)
 
+    f = fits_collect(filnam1, filnam3; protect=false, msg=false)
+
+    o = f.filnam.value == filnam4
+
+    rm(filnam1)
+    rm(filnam2)
     rm(filnam3)
+    rm(filnam4)
 
     return o
 
