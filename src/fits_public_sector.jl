@@ -12,10 +12,10 @@
 @doc raw"""
     fits_info(f::FITS [, hduindex=1 [; msg=true]])
 
-Metafinformation and data as loaded from `f.hdu[hduindex]`; *i.e.,* 
+Metafinformation and data as loaded from `f.hdu[hduindex]`; i.e.,
 *after casting of the FITS object*.
 
-Default: `hduindex` = 1 (primary hdu)
+* `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `msg`: print message (::Bool)
 #### Example:
 ```
@@ -47,11 +47,11 @@ julia> rm(filnam); f = nothing
 ```
     fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
 
-Metafinformation of the specified FITS HDU as loaded from `filnam`; *i.e.,* 
-"without casting the FITS object*.
+Metafinformation of the specified FITS HDU as loaded from `filnam`; i.e., 
+*without casting of the FITS object*.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
-* `nr`: include card numbers (::Bool - default: `true`)
+* `nr`: include cardindex (::Bool - default: `true`)
 * `msg`: print message (::Bool)
 #### Example:
 ```
