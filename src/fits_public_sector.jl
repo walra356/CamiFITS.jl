@@ -62,16 +62,16 @@ julia> fits_info(filnam)
 File: minimal.fits
 hdu: 1
 
-Metainformation:
-1    SIMPLE  =                    T / file does conform to FITS standard
-2    BITPIX  =                   64 / number of bits per data pixel
-3    NAXIS   =                    1 / number of data axes
-4    NAXIS1  =                    0 / length of data axis 1
-5    BZERO   =                  0.0 / offset data range to that of unsigned integer  
-6    BSCALE  =                  1.0 / default scaling factor
-7    EXTEND  =                    T / FITS dataset may contain extensions
-8    COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-9    END
+nr  Metainformation:
+1   SIMPLE  =                    T / file does conform to FITS standard
+2   BITPIX  =                   64 / number of bits per data pixel
+3   NAXIS   =                    1 / number of data axes
+4   NAXIS1  =                    0 / length of data axis 1
+5   BZERO   =                  0.0 / offset data range to that of unsigned integer
+6   BSCALE  =                  1.0 / default scaling factor
+7   EXTEND  =                    T / FITS dataset may contain extensions
+8   COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+9   END
 10
 11
 12
@@ -131,10 +131,10 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     str = "\nFile: " * filnam * "\n"
     str *= "hdu: " * string(hduindex) * "\n\n"
-    str *= nr ? "card " : ""
+    str *= nr ? "nr  " : ""
     str *= "Metainformation:\n"
     for i ∈ eachindex(record.card)
-        str *= nr ? rpad("$i", 5) : ""
+        str *= nr ? rpad("$i", 4) : ""
         str *= record.card[i].record * "\n"
     end
 
