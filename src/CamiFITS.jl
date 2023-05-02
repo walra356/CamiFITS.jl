@@ -75,6 +75,7 @@ export fits_collect
 export fits_add_key
 export fits_edit_key
 export fits_delete_key
+export fits_records
 export fits_rename_key
 export fits_verifier
 export name_verifier

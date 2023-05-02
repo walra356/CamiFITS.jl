@@ -139,7 +139,7 @@ function cast_FITS_card(cardindex::Int, record::String)
     return FITS_card(cardindex, record, key, val, com)
 
 end
-function cast_FITS_card(cardindex::Int, key::String, value::Any, com::String)
+function cast_FITS_card1(cardindex::Int, key::String, value::Any, com::String)
 
     key = _format_keyword(key)
     val = _format_value(value)
@@ -206,7 +206,6 @@ NB. An empty data block (`.dataobject = nothing`) conforms to the standard.
 """
 struct FITS_HDU
 
-    filnam::String
     hduindex::Int
     header::FITS_header     # FITS_header
     dataobject::FITS_data   # FITS_data
@@ -214,12 +213,12 @@ struct FITS_HDU
 end
 
 # ------------------------------------------------------------------------------
-#             cast_FITS_HDU(filnam, hduindex, header, dataobject)
+#             cast_FITS_HDU(hduindex, header, dataobject)
 # ------------------------------------------------------------------------------
 
-function cast_FITS_HDU(filnam::String, hduindex::Int, header::FITS_header, data::FITS_data)
+function cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
 
-    return FITS_HDU(filnam, hduindex, header, data)
+    return FITS_HDU(hduindex, header, data)
 
 end
 

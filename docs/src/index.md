@@ -242,7 +242,7 @@ cast_FITS_data(hdutype::String, data)
 ### FITS - HDU Methods
 
 ```@docs
-fits_info(hdu::FITS_HDU)
+fits_info(f::FITS, hduindex=1; msg=true)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```
 

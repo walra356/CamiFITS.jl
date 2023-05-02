@@ -146,6 +146,8 @@ function _format_keyword(key::String; abr=false)::String
 
     ispermitted || Base.throw(FITSError(msgErr(24))) # illegal character
 
+    l > 5 || return key
+
     key = !isnumeric(key[6]) ? key : abr ? (key[1:5] * "n") : key
 
     return key
@@ -278,7 +280,7 @@ function _format_record(key::String, val::Any, com::String)
     key = _format_keyword(key)
     key = rpad(key, 8)
 
-    key == "BLANK  " && return [repeat(' ', 80)]
+    key == "       " && return [repeat(' ', 80)]
     key == "END    " && return ["END" * repeat(' ', 77)]
 
     v = _format_value(val, nocomment)

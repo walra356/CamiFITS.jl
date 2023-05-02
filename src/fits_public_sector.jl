@@ -72,12 +72,36 @@ function fits_info(hdu::FITS_HDU; msg=true)
     return hdu.dataobject.data
 
 end
-function fits_info(f::FITS; msg=true)
+function fits_info(f::FITS, hduindex=1; msg=true)
 
     str = "\nFile: " * f.filnam.value
     msg && println(str)
 
-    return fits_info(f.hdu[1]; msg)
+    return fits_info(f.hdu[hduindex]; msg)
+
+end
+
+
+
+function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
+
+    o = IORead(filnam)
+
+    Base.seekstart(o)
+
+    record = _read_header(o::IO, hduindex)
+
+    Base.seekstart(o)
+
+    str = "\nFile: " * filnam * "\n"
+    str *= "hdu: " * string(hduindex) * "\n\n"
+    str *= "Metainformation:\n"
+    for i ∈ eachindex(record.card)
+        str *= nr ? rpad("$i", 5) : ""
+        str *= record.card[i].record * "\n"
+    end
+
+    return msg ? println(str) : str
 
 end
 
@@ -145,7 +169,7 @@ function fits_create(filnam::String, data=[]; protect=true)
 
     dat = cast_FITS_data(hdutype, data) # (hduindex, hdutype, data)
     rec = cast_FITS_header(_PRIMARY_input(dat)) # , hduindex)
-    hdu = cast_FITS_HDU(filnam, hduindex, rec, dat)
+    hdu = cast_FITS_HDU(hduindex, rec, dat)
 
     f = cast_FITS(filnam, [hdu])
 
@@ -195,8 +219,6 @@ julia> rm(filnam); f = nothing
 """
 function fits_read(filnam::String)
 
-    #Base.Filesystem.isfile(filnam) || Base.throw(FITSError(msgErr(1)))
-
     o = IORead(filnam)
 
     nhdu = _hdu_count(o)
@@ -207,7 +229,7 @@ function fits_read(filnam::String)
     Base.seekstart(o)
 
     dat = [_read_data(o, i) for i = 1:nhdu]
-    hdu = [cast_FITS_HDU(filnam, i, rec[i], dat[i]) for i = 1:nhdu]
+    hdu = [cast_FITS_HDU(i, rec[i], dat[i]) for i = 1:nhdu]
 
     f = cast_FITS(filnam, hdu)
 
@@ -216,7 +238,7 @@ function fits_read(filnam::String)
 end
 
 # ------------------------------------------------------------------------------
-#           fits_extend(filnam::String, data_extend [, hdutype="IMAGE"])
+#           fits_extend!(f::FITS, data_extend [, hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
 
 @doc raw"""
@@ -272,7 +294,7 @@ function fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
     rec = cast_FITS_header(records)
     dat = cast_FITS_data(hdutype, data)
 
-    push!(f.hdu, cast_FITS_HDU(filnam, nhdu, rec, dat))
+    push!(f.hdu, cast_FITS_HDU(nhdu, rec, dat))
 
     fits_save(f)
 
@@ -321,23 +343,26 @@ function fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String
     k = get(f.hdu[hduindex].header.map, "END", 0)
     k > 0 || Base.throw(FITSError(msgErr(13)))       # "END keyword not found
 
-    remain = (k + 1) % 36
-    nblank = 36 - remain
+    n = f.hdu[hduindex].header.card[end].cardindex
 
     rec = _format_record(key, val, com)
     nrec = length(rec)
+    nadd = (nrec - n + k + 35) ÷ (36)
 
-    card = f.hdu[hduindex].header.card
-    if nrec > nblank
-        block = repeat([repeat(' ', 80)], 36 * nrec ÷ nblank)
-        append!(card, block)
+    if nadd > 0
+        blanks = repeat(' ', 80)
+        block = [cast_FITS_card(n+i, blanks) for i = 1:(36*nadd)]
+        append!(f.hdu[hduindex].header.card, block)
     end
 
-    card[k+nrec] = card[k]
     for i = 0:nrec-1
-        card[k+i] = cast_FITS_card(k + i, rec[1+i])
-        push!(f.hdu[hduindex].header.map, card[k+i].keyword => k + i)
+        card = cast_FITS_card(k + i, rec[1+i])
+        f.hdu[hduindex].header.card[k+i] = card
+        push!(f.hdu[hduindex].header.map, card.keyword => k + i)
     end
+    endrec = "END" * repeat(' ', 77)
+    f.hdu[hduindex].header.card[k+nrec] = cast_FITS_card(k + nrec, endrec)
+    push!(f.hdu[hduindex].header.map, "END" => k + nrec)
 
     fits_save(f)
 
