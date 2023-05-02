@@ -44,46 +44,7 @@ Any[]
 
 julia> rm(filnam); f = nothing
 ```
-"""
-function fits_info(f::FITS, hduindex=1; msg=true)
-
-    str = "\nFile: " * f.filnam.value
-    msg && println(str)
-
-    return fits_info(f.hdu[hduindex]; msg)
-
-end
-function fits_info(hdu::FITS_HDU; msg=true)
-
-    typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
-
-    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
-    strDatasize = Base.string(Base.size(hdu.dataobject.data))
-
-    info = [
-        "hdu: " * Base.string(hdu.hduindex),
-        "hdutype: " * hdu.dataobject.hdutype,
-        "DataType: " * strDataType,
-        "Datasize: " * strDatasize,
-        "\r\nMetainformation:"
-    ]
-
-    card = hdu.header.card
-
-    records = [card[i].record for i ∈ eachindex(card)]
-
-    _rm_blanks!(records)
-
-    Base.append!(info, records)
-
-    msg && println(Base.join(info .* "\r\n"))
-
-    return hdu.dataobject.data
-
-end
-
-@doc raw"""
-    fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
+fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
 
 Metafinformation of the specified FITS HDU as loaded from `filnam`; *i.e.,* 
 "without casting the FITS object*.
@@ -121,6 +82,42 @@ Metainformation:
 julia> rm(filnam); f = nothing
 ```
 """
+function fits_info(f::FITS, hduindex=1; msg=true)
+
+    str = "\nFile: " * f.filnam.value
+    msg && println(str)
+
+    return fits_info(f.hdu[hduindex]; msg)
+
+end
+function fits_info(hdu::FITS_HDU; msg=true)
+
+    typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
+
+    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
+    strDatasize = Base.string(Base.size(hdu.dataobject.data))
+
+    info = [
+        "hdu: " * Base.string(hdu.hduindex),
+        "hdutype: " * hdu.dataobject.hdutype,
+        "DataType: " * strDataType,
+        "Datasize: " * strDatasize,
+        "\r\nMetainformation:"
+    ]
+
+    card = hdu.header.card
+
+    records = [card[i].record for i ∈ eachindex(card)]
+
+    _rm_blanks!(records)
+
+    Base.append!(info, records)
+
+    msg && println(Base.join(info .* "\r\n"))
+
+    return hdu.dataobject.data
+
+end
 function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     o = IORead(filnam)
