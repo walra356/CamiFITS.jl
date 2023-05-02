@@ -13,11 +13,12 @@ function test_fits_info()
 
     f = fits_create(filnam, data; protect=false)
 
-    o = fits_info(f; msg=false) == data
+    a = fits_info(f; msg=false) == data
+    b = fits_info(filnam; msg=false)[1] == '\n'
     
     rm(filnam)
 
-    return o
+    return a & b
 
 end
 

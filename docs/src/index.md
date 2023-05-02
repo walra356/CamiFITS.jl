@@ -243,6 +243,7 @@ cast_FITS_data(hdutype::String, data)
 
 ```@docs
 fits_info(f::FITS, hduindex=1; msg=true)
+fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```
 

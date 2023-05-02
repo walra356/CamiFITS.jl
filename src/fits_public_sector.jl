@@ -6,15 +6,16 @@
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-#                     fits_info(hdu::FITS_HDU)
+#                   fits_info(f::FITS, hduindex=1; msg=true)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_info(hdu::FITS_HDU)
+    fits_info(f::FITS [, hduindex=1 [; msg=true]])
 
-Print metafinformation and data of the specified `hdu`. 
+Metafinformation and data as loaded from `f.hdu[hduindex]`; *i.e.,* 
+*after casting of the FITS object*.
 
-Default: `fits_info(f)` => `fits_info(f.hdu[1])` (primary hdu)
+Default: `hduindex` = 1 (primary hdu)
 #### Example:
 ```
 Julia> filnam = "minimal.fits";
@@ -44,6 +45,14 @@ Any[]
 julia> rm(filnam); f = nothing
 ```
 """
+function fits_info(f::FITS, hduindex=1; msg=true)
+
+    str = "\nFile: " * f.filnam.value
+    msg && println(str)
+
+    return fits_info(f.hdu[hduindex]; msg)
+
+end
 function fits_info(hdu::FITS_HDU; msg=true)
 
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
@@ -72,17 +81,46 @@ function fits_info(hdu::FITS_HDU; msg=true)
     return hdu.dataobject.data
 
 end
-function fits_info(f::FITS, hduindex=1; msg=true)
 
-    str = "\nFile: " * f.filnam.value
-    msg && println(str)
+@doc raw"""
+    fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
 
-    return fits_info(f.hdu[hduindex]; msg)
+Metafinformation of the specified FITS HDU as loaded from `filnam`; *i.e.,* 
+"without casting the FITS object*.
 
-end
+* `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
+* `nr`: include card numbers (::Bool - default: `true`)
+* `msg`: print message (::Bool)
+#### Example:
+```
+Julia> filnam = "minimal.fits";
 
+julia> fits_info(filnam)
 
+File: minimal.fits
+hdu: 1
 
+Metainformation:
+1    SIMPLE  =                    T / file does conform to FITS standard
+2    BITPIX  =                   64 / number of bits per data pixel
+3    NAXIS   =                    1 / number of data axes
+4    NAXIS1  =                    0 / length of data axis 1
+5    BZERO   =                  0.0 / offset data range to that of unsigned integer  
+6    BSCALE  =                  1.0 / default scaling factor
+7    EXTEND  =                    T / FITS dataset may contain extensions
+8    COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+9    END
+10
+11
+12
+⋮
+34
+35
+36
+
+julia> rm(filnam); f = nothing
+```
+"""
 function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     o = IORead(filnam)
@@ -114,7 +152,8 @@ end
 
 Create `.fits` file of given filnam and return Array of HDUs.
 Key:
-* `protect::Bool`: overwrite protection
+* `data`: data primary hdu (::DataType)
+* `protect`: overwrite protection (::Bool)
 #### Examples:
 ```
 julia> data = [11,21,31,12,22,23,13,23,33];
@@ -351,7 +390,7 @@ function fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String
 
     if nadd > 0
         blanks = repeat(' ', 80)
-        block = [cast_FITS_card(n+i, blanks) for i = 1:(36*nadd)]
+        block = [cast_FITS_card(n + i, blanks) for i = 1:(36*nadd)]
         append!(f.hdu[hduindex].header.card, block)
     end
 
