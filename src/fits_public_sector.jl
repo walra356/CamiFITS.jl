@@ -16,6 +16,7 @@ Metafinformation and data as loaded from `f.hdu[hduindex]`; *i.e.,*
 *after casting of the FITS object*.
 
 Default: `hduindex` = 1 (primary hdu)
+* `msg`: print message (::Bool)
 #### Example:
 ```
 Julia> filnam = "minimal.fits";
@@ -44,7 +45,7 @@ Any[]
 
 julia> rm(filnam); f = nothing
 ```
-fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
+    fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
 
 Metafinformation of the specified FITS HDU as loaded from `filnam`; *i.e.,* 
 "without casting the FITS object*.
