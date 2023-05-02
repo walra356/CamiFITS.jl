@@ -131,7 +131,7 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     str = "\nFile: " * filnam * "\n"
     str *= "hdu: " * string(hduindex) * "\n\n"
-    str *= nr ? "card" : ""
+    str *= nr ? "card " : ""
     str *= "Metainformation:\n"
     for i ∈ eachindex(record.card)
         str *= nr ? rpad("$i", 5) : ""
