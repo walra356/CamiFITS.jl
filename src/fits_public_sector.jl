@@ -352,7 +352,7 @@ Add a header record of given 'key, value and comment' to 'HDU[hduindex]' of file
 ```
 strExample="minimal.fits"
 f = fits_create(strExample; protect=false)
-fits_add_key(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+fits_add_key(f, 1, "KEYNEW1", true, "FITS dataset may contain extension") 
 
 fits_info(f[1])
 
