@@ -55,6 +55,7 @@ export FITS_table
 
 export cast_FITS
 export cast_FITS_filnam
+export cast_FITS_HDU
 export cast_FITS_header
 export cast_FITS_card
 export cast_FITS_data
