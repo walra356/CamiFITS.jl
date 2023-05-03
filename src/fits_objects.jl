@@ -124,8 +124,8 @@ julia> record = "SIMPLE  =                    T / file does conform to FITS stan
 
 julia> card = cast_FITS_card(1, record);
 
-julia> card.keyword, card.value
-("SIMPLE", true)
+julia> (card.keyword, card.value, card.comment)
+("SIMPLE", true, "file does conform to FITS standard             ")
 ```
 """
 function cast_FITS_card(cardindex::Int, record::String)
@@ -148,7 +148,6 @@ end
 Object to hold the header information of a [`FITS_HDU`](@ref).
 
 The fields are:
-#* `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
 * `.card`: the array of `cards` (`::Vector{FITS_card}`)
 * `.map`:  Dictionary `keyword => recordindex` (`::Dict{String, Int}`)
 """
@@ -160,11 +159,24 @@ struct FITS_header
 end
 
 # ------------------------------------------------------------------------------
-#                   cast_(record, hduindex)
+#                    cast_FITS_header(record::Vector{String})
 # ------------------------------------------------------------------------------
 @doc raw"""
     cast_FITS_header(record::Vector{String})
 
+Generate [`FITS_header`](@ref) from a block of 36 single-record strings of
+80 printable ASCII characters.
+
+#### Example:
+julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36]
+
+julia> h = cast_FITS_header(record);
+
+julia> h.map["r19"]
+19
+
+julia> h.card[19].record
+"r19     '19                                                                    '"
 """
 function cast_FITS_header(record::Vector{String})
 
@@ -206,6 +218,8 @@ end
 
 raw"""
     cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
+
+#### Example:
 
 """
 function cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)

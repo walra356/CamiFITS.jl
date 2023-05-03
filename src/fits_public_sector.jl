@@ -19,7 +19,7 @@ Metafinformation and data as loaded from `f.hdu[hduindex]`; i.e.,
 * `msg`: print message (::Bool)
 #### Example:
 ```
-Julia> filnam = "minimal.fits";
+julia> filnam = "minimal.fits";
 
 julia> f = fits_create(filnam; protect=false);
 
@@ -55,7 +55,7 @@ Metafinformation of the specified FITS HDU as loaded from `filnam`; i.e.,
 * `msg`: print message (::Bool)
 #### Example:
 ```
-Julia> filnam = "minimal.fits";
+julia> filnam = "minimal.fits";
 
 julia> fits_info(filnam)
 
@@ -285,28 +285,28 @@ end
 Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
 ```
-Julia> filnam = "test_example.fits";
+julia> filnam = "test_example.fits";
 
-Julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
+julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
-Julia> f = fits_create(filnam, data; protect=false);
+julia> f = fits_create(filnam, data; protect=false);
 
-Julia> a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6];
+julia> a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6];
 
-Julia> b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
+julia> b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
 
-Julia> c = [1.23,2.12,3.,4.,5.];
+julia> c = [1.23,2.12,3.,4.,5.];
 
-Julia> d = ['a','b','c','d','e'];
+julia> d = ['a','b','c','d','e'];
 
-Julia> e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"];
+julia> e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"];
 
-Julia> data = [a,b,c,d,e];
+julia> data = [a,b,c,d,e];
 
-Julia> fits_extend!(f, data, "TABLE")
+julia> fits_extend!(f, data, "TABLE")
 
 
-Julia> f.hdu[2].dataobject.data
+julia> f.hdu[2].dataobject.data
   5-element Vector{String}:
    "1.0e-6 1086 1.23 a a                    "
    "2.0e-6 1036 2.12 b bb                   "
@@ -422,19 +422,19 @@ julia> strExample="minimal.fits";
 
 julia> f = fits_create(strExample; protect=false);
 
-Julia> f = fits_add_key(strExample, 1, "KEYNEW1", true, "this is record 5");
+julia> f = fits_add_key(strExample, 1, "KEYNEW1", true, "this is record 5");
 
-Julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
+julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
 9
 
-Julia> keyword = f.hdu[1].header.card[cardindex].keyword
+julia> keyword = f.hdu[1].header.card[cardindex].keyword
 "KEYNEW1"
 
-Julia> f = fits_delete_key(strExample, 1, "KEYNEW1");
+julia> f = fits_delete_key(strExample, 1, "KEYNEW1");
 
-Julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
+julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
 
-Julia> fits_delete_key(strExample, 1, "NAXIS")
+julia> fits_delete_key(strExample, 1, "NAXIS")
  'NAXIS': cannot be deleted (key protected under FITS standard)
 ```
 """
