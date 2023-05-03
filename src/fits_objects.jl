@@ -168,6 +168,7 @@ Generate [`FITS_header`](@ref) from a block of 36 single-record strings of
 80 printable ASCII characters.
 
 #### Example:
+```
 julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36]
 
 julia> h = cast_FITS_header(record);
@@ -177,6 +178,7 @@ julia> h.map["r19"]
 
 julia> h.card[19].record
 "r19     '19                                                                    '"
+```
 """
 function cast_FITS_header(record::Vector{String})
 
@@ -216,7 +218,7 @@ end
 #             cast_FITS_HDU(hduindex, header, dataobject)
 # ------------------------------------------------------------------------------
 
-raw"""
+@doc raw"""
     cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
 
 #### Example:
