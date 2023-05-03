@@ -59,7 +59,7 @@ julia> dataobject.data
  31  23  33
 ```
 """
-function cast_FITS_data(hdutype::String, data) 
+function cast_FITS_data(hdutype::String, data)
 
     return FITS_data(hdutype, data)
 
@@ -155,14 +155,17 @@ The fields are:
 struct FITS_header
 
     card::Vector{FITS_card}
-    map::Dict{String, Int}
+    map::Dict{String,Int}
 
 end
 
 # ------------------------------------------------------------------------------
 #                   cast_(record, hduindex)
 # ------------------------------------------------------------------------------
+@doc raw"""
+    cast_FITS_header(record::Vector{String})
 
+"""
 function cast_FITS_header(record::Vector{String})
 
     remainder = length(record) % 36
@@ -197,7 +200,11 @@ struct FITS_HDU
     dataobject::FITS_data   # FITS_data
 
 end
+raw"""
+    cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
 
+
+"""
 # ------------------------------------------------------------------------------
 #             cast_FITS_HDU(hduindex, header, dataobject)
 # ------------------------------------------------------------------------------
@@ -293,7 +300,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    FITS
+    cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
 Object to hold a single `.fits` file .
 
