@@ -116,7 +116,6 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS_card(cardindex::Int, key::String, value::Any, com::String)
     cast_FITS_card(cardindex::Int, record::String)
 
 Creates the [`FITS_card`](@ref) object for `record` with index `cardindex`.
@@ -133,18 +132,6 @@ julia> card.keyword, card.value
 function cast_FITS_card(cardindex::Int, record::String)
 
     key = Base.strip(record[1:8])
-    val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
-    com = record[34:80]
-
-    return FITS_card(cardindex, record, key, val, com)
-
-end
-function cast_FITS_card1(cardindex::Int, key::String, value::Any, com::String)
-
-    key = _format_keyword(key)
-    val = _format_value(value)
-    com = _format_comment(com)
-
     val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
     com = record[34:80]
 
