@@ -200,15 +200,14 @@ struct FITS_HDU
     dataobject::FITS_data   # FITS_data
 
 end
-raw"""
-    cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
-
-
-"""
 # ------------------------------------------------------------------------------
 #             cast_FITS_HDU(hduindex, header, dataobject)
 # ------------------------------------------------------------------------------
 
+raw"""
+    cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
+
+"""
 function cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
 
     return FITS_HDU(hduindex, header, data)
@@ -318,7 +317,10 @@ end
 # ------------------------------------------------------------------------------
 #                      cast_FITS(filnam, hdu)
 # ------------------------------------------------------------------------------
+@doc raw"""
+    cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
+"""
 function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
     nam = cast_FITS_filnam(filnam)
