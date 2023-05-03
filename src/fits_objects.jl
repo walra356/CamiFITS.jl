@@ -22,7 +22,6 @@ The fields are:
 """
 struct FITS_data
 
-    #hduindex::Int
     hdutype::String
     data
 
@@ -60,9 +59,9 @@ julia> dataobject.data
  31  23  33
 ```
 """
-function cast_FITS_data(hdutype::String, data) # (hduindex::Int, hdutype::String, data)
+function cast_FITS_data(hdutype::String, data) 
 
-    return FITS_data(hdutype, data) # (hduindex, hdutype, data)
+    return FITS_data(hdutype, data)
 
 end
 
@@ -164,7 +163,7 @@ end
 #                   cast_(record, hduindex)
 # ------------------------------------------------------------------------------
 
-function cast_FITS_header(record::Vector{String}) #, hduindex::Int)
+function cast_FITS_header(record::Vector{String})
 
     remainder = length(record) % 36
 

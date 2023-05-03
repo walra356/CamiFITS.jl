@@ -53,13 +53,14 @@ export FITS_card
 export FITS_data
 export FITS_table
 
+
 export cast_FITS
+export cast_FITS_filnam
 export cast_FITS_header
 export cast_FITS_card
 export cast_FITS_data
 
 export cast_FITS_test
-export cast_FITS_filnam
 
 export parse_FITS_TABLE
 
