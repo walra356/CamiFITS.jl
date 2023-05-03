@@ -43,16 +43,15 @@ export fits_keywords
 export fits_mandatory_keyword
 export list_keywords
 
-export FITS_filnam
 export FITS_test
 
 export FITS
+export FITS_filnam
 export FITS_HDU
 export FITS_header
 export FITS_card
 export FITS_data
 export FITS_table
-
 
 export cast_FITS
 export cast_FITS_filnam
