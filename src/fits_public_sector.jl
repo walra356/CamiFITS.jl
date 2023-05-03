@@ -770,7 +770,7 @@ parse_FITS_TABLE(f[2])
 """
 function parse_FITS_TABLE(hdu::FITS_HDU)
 
-    dict = hdu.header.dict
+    dict = hdu.header.map
     thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])
 
     thdu == "TABLE" || return error("Error: $thdu is not an ASCII TABLE HDU")

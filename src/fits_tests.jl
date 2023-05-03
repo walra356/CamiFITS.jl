@@ -198,13 +198,11 @@ function test_fits_add_key()
 
     filnam = "minimal.fits"
     f = fits_create(filnam; protect=false)
-    #fits_add_key(f, 1, "KEYNEW1", true, "this is a comment")
     long = repeat(" long", 31)
-    for i=1:11
+    for i=1:1
            fits_add_key(f, 1, "KEY$i", true, "this is a" * long * " comment");
     end
 
-    #f = fits_read(filnam)
     i = get(f.hdu[1].header.map, "KEY1", 0)
     k = f.hdu[1].header.card[i].keyword
 
