@@ -57,10 +57,11 @@ header describes. Note that an HDU may consist entirely of a header with no
 data blocks.
 ```
 #### Creating a simple FITS file
-Using the command [`fits_create`](@ref) one creates a [`FITS`](@ref) object,
-which is autosaved under the specifified name `filnam`. 
-
-###### Example:
+FITS files can be created using the command [`fits_create`](@ref). This proceeds
+in two steps: (a) first the [`FITS`](@ref) object is constructed starting from 
+the julia data; (b) the [`FITS`](@ref) object is autosaved under the 
+specifified name (e.g., `name.fits`).
+ 
 The minimal file conforming to the FITS standard consists of a single HDU 
 with an empty data field.
 ```
