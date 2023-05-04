@@ -91,6 +91,8 @@ END
 
 Any[]
 ```
+Note how the [`FITS`](@ref) object is inspected using [`fits_info`] tool.
+
 The header of a [`FITS_HDU`](@ref) is contained in an array of *single-record*
 `.card` objects as illustrated above. To find the `cardindex` associated with 
 a keyword (e.g., "NAXIS") we use the `header.map`:
