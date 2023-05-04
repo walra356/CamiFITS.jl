@@ -298,8 +298,8 @@ end
 @doc raw"""
     cast_FITS_filnam(filnam::String)
 
-Decompose the file name `filnam` into its name, prefix, numerator 
-and extension.
+Generate [`FITS_filnam`](@ref) to decompose `filnam` into its `name`, `prefix`, 
+`numerator` and `extension`.
 #### Examples:
 ```
 julia> filnam = "T23.01.fits";
@@ -400,7 +400,7 @@ function Base.showerror(io::IO, err::FITSError)
 end
 
 # ------------------------------------------------------------------------------
-#                             strErr(err::Int)
+#                             msgErr(err::Int)
 # ------------------------------------------------------------------------------
 
 function msgErr(err::Int)

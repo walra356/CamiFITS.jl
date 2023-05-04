@@ -86,9 +86,9 @@ END
 
 Any[]
 ```
-The header of a [`FITS_HDU`](@ref) is contained in an array of `.card` objects 
-as illustrated above. To find the `cardindex` associated with a keyword, e.g.,
-"NAXIS", we use the `header.map`:
+The header of a [`FITS_HDU`](@ref) is contained in an array of *single-record*
+`.card` objects as illustrated above. To find the `cardindex` associated with 
+a keyword (e.g., "NAXIS") we use the `header.map`:
 ```
 julia> i = f.hdu[1].header.map["NAXIS"]
 3
