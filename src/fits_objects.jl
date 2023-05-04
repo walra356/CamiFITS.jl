@@ -353,9 +353,9 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
+    FITS(filnam::String, hdu::Vector{FITS_HDU})
 
-Object to hold a single `.fits` file .
+Object to hold a single `.fits` file.
 
 The fields are
 * `.filnam`:  filename of the corresponding `.fits` file (`::String`)
@@ -374,6 +374,7 @@ end
 @doc raw"""
     cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
+Generate [`FITS`](@ref) to hold a single `.fits` file.
 """
 function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
