@@ -34,7 +34,7 @@ end
 @doc raw"""
     cast_FITS_data(hduindex::Int, hdutype::String, data)
 
-Creates the [`FITS_data`](@ref) object for given `hduindex` constructed from 
+Create the [`FITS_data`](@ref) object for given `hduindex` constructed from 
 the `data` in accordance to the specified `hdutype` (`PRIMARY_HDU`, 
 `IMAGE_HDU`, `TABLE_HDU` and `BINARY_HDU`)
 #### Example:
@@ -119,7 +119,7 @@ end
 @doc raw"""
     cast_FITS_card(cardindex::Int, record::String)
 
-Creates the [`FITS_card`](@ref) object for `record` with index `cardindex`.
+Create the [`FITS_card`](@ref) object for `record` with index `cardindex`.
 #### Example:
 ```
 julia> record = "SIMPLE  =                    T / file does conform to FITS standard             ";
@@ -166,8 +166,8 @@ end
 @doc raw"""
     cast_FITS_header(record::Vector{String})
 
-Generate [`FITS_header`](@ref) from a block of 36 single-record strings of
-80 printable ASCII characters.
+Create the [`FITS_header`](@ref) object from a block of 36 single-record 
+strings (80 printable ASCII characters).
 
 #### Example:
 ```
@@ -231,7 +231,7 @@ end
 @doc raw"""
     cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
 
-Generate [`FITS_HDU`](@ref) from given `hduindex`, `header` and `data`.
+Create the [`FITS_HDU`](@ref) object from given `hduindex`, `header` and `data`.
 
 #### Example:
 ```
@@ -298,8 +298,8 @@ end
 @doc raw"""
     cast_FITS_filnam(filnam::String)
 
-Generate [`FITS_filnam`](@ref) to decompose `filnam` into its `name`, `prefix`, 
-`numerator` and `extension`.
+Create the [`FITS_filnam`](@ref) object to decompose `filnam` into its `name`, 
+`prefix`, `numerator` and `extension`.
 #### Examples:
 ```
 julia> filnam = "T23.01.fits";
@@ -374,7 +374,7 @@ end
 @doc raw"""
     cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
-Generate [`FITS`](@ref) to hold a single `.fits` file.
+Create the [`FITS`](@ref) object to hold a single `.fits` file.
 """
 function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
