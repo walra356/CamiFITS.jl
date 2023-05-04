@@ -126,8 +126,8 @@ julia> record = "SIMPLE  =                    T / file does conform to FITS stan
 
 julia> card = cast_FITS_card(1, record);
 
-julia> (card.keyword, card.value, card.comment)
-("SIMPLE", true, "file does conform to FITS standard             ")
+julia> card.cardindex, card.keyword, card.value, card.comment
+(1, "SIMPLE", true, "file does conform to FITS standard             ")
 ```
 """
 function cast_FITS_card(cardindex::Int, record::String)
