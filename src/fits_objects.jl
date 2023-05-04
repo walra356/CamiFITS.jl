@@ -300,7 +300,7 @@ end
 
 Create the [`FITS_filnam`](@ref) object to decompose `filnam` into its `name`, 
 `prefix`, `numerator` and `extension`.
-#### Examples:
+#### Example:
 ```
 julia> filnam = "T23.01.fits";
 
