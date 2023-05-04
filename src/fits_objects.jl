@@ -296,17 +296,20 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS_filnam(str::String; protect=true))
+    cast_FITS_filnam(filnam::String)
 
-Decompose the FITS filnam 'filnam.fits' into its name, prefix, numerator 
+Decompose the file name `filnam` into its name, prefix, numerator 
 and extension.
 #### Examples:
 ```
-strExample = "T23.01.fits"
-f = cast_FITS_filnam(strExample)
-FITS_filnam("T23.01", "T23.", "01", ".fits")
+julia> filnam = "T23.01.fits";
 
-f.name, f.prefix, f.numerator, f.extension
+julia> nam = cast_FITS_filnam(filnam);
+
+julia> nam = cast_FITS_filnam(filnam)
+FITS_filnam("T23.01.fits", "T23.01", "T23.", "01", ".fits")
+
+julia> nam.name, nam.prefix, nam.numerator, nam.extension
 ("T23.01", "T23.", "01", ".fits")
 ```
 """
