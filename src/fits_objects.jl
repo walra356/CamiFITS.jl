@@ -167,7 +167,7 @@ end
     cast_FITS_header(record::Vector{String})
 
 Create the [`FITS_header`](@ref) object from a block of 36 single-record 
-strings (80 printable ASCII characters).
+strings (of 80 printable ASCII characters).
 
 #### Example:
 ```
