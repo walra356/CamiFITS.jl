@@ -57,7 +57,10 @@ header describes. Note that an HDU may consist entirely of a header with no
 data blocks.
 ```
 #### Creating a simple FITS file
-FITS files can be created using the command [`fits_create`](@ref).
+Using the command [`fits_create`](@ref) one creates a [`FITS`](@ref) object,
+which is autosaved under the specifified name `filnam`. 
+
+###### Example:
 The minimal file conforming to the FITS standard consists of a single HDU 
 with an empty data field.
 ```
@@ -191,7 +194,7 @@ DEFINITION: The value field shall contain an integer.  The absolute value is
 used in computing the sizes of data structures. It shall specify the number of
 bits that represent a data value (using a minus sign for floating point data).
 ```
-Without argument [`fits_keyword`](@ref) provides us with the list of all 
+Without argument [`fits_keyword`](@ref) provides the list of all 
 FITS defined keywords (for the HDU types inplemented).
 ```
 julia> fits_keyword()
@@ -208,7 +211,7 @@ HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
 
 reference: FITS Standard - version 4.0 - Appendix C
 ```
-Specifying the *FITS HDU type* in [`fits_keyword`](@ref) we obtain the 
+Specifying the *FITS HDU type* in [`fits_keyword`](@ref) the user obtains the 
 restricted set of HDU-specific keywords.
 ```
 julia> fits_keyword(hdutype="primary")
@@ -232,7 +235,7 @@ HDU options: 'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'
 
 reference: FITS Standard - version 4.0 - Appendix C
 ```
-By using the keyword "ALL" we can dump the full list of keyword descriptions:
+By using the keyword "ALL" the user can dump the full list of keyword descriptions:
 ```
 julia> fits_keyword("all")
 FITS defined keywords:
