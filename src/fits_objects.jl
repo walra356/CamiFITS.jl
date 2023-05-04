@@ -39,24 +39,26 @@ the `data` in accordance to the specified `hdutype` (`PRIMARY_HDU`,
 `IMAGE_HDU`, `TABLE_HDU` and `BINARY_HDU`)
 #### Example:
 ```
+julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36];
+
+julia> h = cast_FITS_header(record);
+
 julia> data = [11,21,31,12,22,23,13,23,33];
 
-julia> data = reshape(data,(3,3,1))
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
- 11  12  13
- 21  22  23
- 31  23  33 
+julia> data = reshape(data,(3,3,1));
 
-julia> dataobject = cast_FITS_data(3, "IMAGE", data)
-FITS_data(3, "IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
+julia> d = dataobject = cast_FITS_data("IMAGE", data)
+FITS_data("IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
 
-julia> dataobject.data
+julia> d.data
 3×3×1 Array{Int64, 3}:
 [:, :, 1] =
  11  12  13
  21  22  23
  31  23  33
+
+julia> d.hdutype
+"IMAGE"
 ```
 """
 function cast_FITS_data(hdutype::String, data)
@@ -170,14 +172,22 @@ Generate [`FITS_header`](@ref) from a block of 36 single-record strings of
 #### Example:
 ```
 julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36]
+36-element Vector{String}:
+ "r1      '1                     " ⋯ 18 bytes ⋯ "                              '"
+ "r2      '2                     " ⋯ 18 bytes ⋯ "                              '"
+ "r3      '3                     " ⋯ 18 bytes ⋯ "                              '"
+ ⋮
+ "r34     '34                    " ⋯ 18 bytes ⋯ "                              '"
+ "r35     '35                    " ⋯ 18 bytes ⋯ "                              '"
+ "r36     '36                    " ⋯ 18 bytes ⋯ "                              '"
 
 julia> h = cast_FITS_header(record);
 
-julia> h.map["r19"]
-19
+julia> a35 = h.map["r35"]
+35
 
-julia> h.card[19].record
-"r19     '19                                                                    '"
+julia> h.card[35].record
+"r35     '35                                                                    '"
 ```
 """
 function cast_FITS_header(record::Vector{String})
@@ -221,8 +231,33 @@ end
 @doc raw"""
     cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
 
-#### Example:
+Generate [`FITS_HDU`](@ref) from given `hduindex`, `header` and `data`.
 
+#### Example:
+```
+julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36];
+
+julia> h = cast_FITS_header(record);
+
+julia> data = [11,21,31,12,22,23,13,23,33];
+
+julia> data = reshape(data,(3,3,1));
+
+julia> d = dataobject = cast_FITS_data("IMAGE", data)
+FITS_data("IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
+
+julia> hdu = cast_FITS_HDU(1, h, d);
+
+julia> hdu.header.card[35].record
+"r35     '35                                                                    '"
+
+julia> hdu.dataobject.data
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+```
 """
 function cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
 
