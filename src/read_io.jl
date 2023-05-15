@@ -63,14 +63,18 @@ function _read_data(o::IO, hduindex::Int)  # read data using header information
     h = _read_header(o, hduindex) #  FITS_header
 
     hdutype = h.card[1].keyword == "XTENSION" ? h.card[1].value : "'PRIMARY '"
+    hdutype = Base.strip(hdutype)
+    hdutype = Base.Unicode.uppercase(hdutype)
 
-    if (hdutype == "'PRIMARY '") 
+    if     hdutype == "'PRIMARY '"
         data = _read_array_data(o, hduindex)
-    elseif (hdutype == "'IMAGE   '") | (hdutype == "'ARRAY   '")
+    elseif hdutype == "'IMAGE   '"
         data = _read_array_data(o, hduindex)
-    elseif (hdutype == "'TABLE   '")
+    elseif hdutype == "'ARRAY   '"
+        data = _read_array_data(o, hduindex)
+    elseif hdutype == "'TABLE   '"
         data = _read_table_data(o, hduindex)
-    elseif hdutype == "'BINTABLE '"
+    elseif hdutype == "'BINTABLE'"
     else
         Base.throw(FITSError(msgErr(25)))
     end

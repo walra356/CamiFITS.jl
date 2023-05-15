@@ -7,9 +7,10 @@
 
 function test_fits_info()
 
-    filnam = "minimal.fits"
+    filnam = "kanweg.fits"
 
-    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
+    data = reshape(data, (3, 3, 1))
 
     f = fits_create(filnam, data; protect=false)
 
@@ -35,11 +36,12 @@ function test_fits_create()
     rm(filnam)
 
     filnam = "kanweg.fits"
-    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
+    data = reshape(data, (3, 3, 1))
 
     f = fits_create(filnam, data; protect=false)
     p = f.hdu[1].header.card[1].keyword == "SIMPLE"
-    q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
+    q = f.hdu[1].dataobject.data == data
     r = f.hdu[1].header.card[1].value == true
     s = f.hdu[1].header.card[4].value == 3
 
@@ -68,13 +70,14 @@ function test_fits_read()
     rm(filnam)
 
     filnam = "kanweg.fits"
-    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
+    data = reshape(data, (3, 3, 1))
 
     f = fits_create(filnam, data; protect=false)
     f = fits_read(filnam)
 
     p = f.hdu[1].header.card[1].keyword == "SIMPLE"
-    q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
+    q = f.hdu[1].dataobject.data == data
     r = f.hdu[1].header.card[1].value == true
     s = f.hdu[1].header.card[4].value == 3
 
@@ -90,7 +93,7 @@ end
 
 function test_fits_extend!()
 
-    filnam = "test_example.fits"
+    filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
 

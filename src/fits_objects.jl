@@ -277,12 +277,6 @@ julia> hdu.dataobject.data
 """
 function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data)
 
-    # hdutype = dataobject.hdutype
-
-    # if hdutype == "'TABLE   '"
-    #    dataobject = cast_FITS_table(dataobject)
-    # end
-
     return FITS_HDU(hduindex, header, dataobject)
 
 end
@@ -492,7 +486,7 @@ function _header_record_primary(dataobject::FITS_data)
     T = Base.eltype(data)
 
     ndims = Base.ndims(data)
-    ndims ≤ 999 || Base.throw(FITSError(msgErr(21)))
+    ndims ≤ 3 || Base.throw(FITSError(msgErr(38)))
     dims = Base.size(data)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
     nbits = 8 * nbyte
@@ -581,7 +575,7 @@ function _header_record_image(dataobject::FITS_data)
     T = Base.eltype(data)
 
     ndims = Base.ndims(data)
-    ndims ≤ 999 || Base.throw(FITSError(msgErr(21)))
+    ndims ≤ 3 || Base.throw(FITSError(msgErr(38)))
     dims = Base.size(data)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
     nbits = 8 * nbyte
@@ -702,7 +696,9 @@ function _header_record_table(dataobject::FITS_data) # input array of table colu
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
     cols = dataobject.data
-    ndims = 2
+    ndims = eltype(cols) == String ? 1 : Base.ndims(eltype(cols))
+    ndims += Base.ndims(cols)
+    ndims == 2 || Base.throw(FITSError(msgErr(39)))
     ncols = length(cols)
     nrows = length(cols[1])
     nbits = 8

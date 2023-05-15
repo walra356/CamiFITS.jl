@@ -89,7 +89,9 @@ dictErr = Dict(0 => nothing,
     33 => "cannot create table (columns not of equal length)",
     34 => "cannot create table (minimum of one column mandatory)",
     36 => "ASCII table contains non-ASCII character",
-    37 => "hduindex exceeds maximum value"
+    37 => "hduindex exceeds maximum value",
+    38 => "NAXIS ≤ 3 mandatory for PRIMARY and IMAGE HDU types",
+    39 => "NAXIS = 2 mandatory for TABLE HDU types"
 )
 
 # ------------------------------------------------------------------------------
