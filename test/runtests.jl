@@ -24,10 +24,13 @@ using Test
     @test test_fits_edit_key()
     @test test_fits_rename_key()
 
-    fits_create("kanweg.fits"; protect=false)
-    @test fits_verifier("kanweg.fits"; msg=false) == 0
-    @test_throws FITSError fits_create("kanweg.fits")
-    rm("kanweg.fits")
+    filnam = "kanweg.fits"
+    fits_create(filnam; protect=false)
+    r = fits_record_dump(filnam);
+    @test r[9][2][1:3] == "END" 
+    @test fits_verifier(filnam; msg=false) == 0
+    @test_throws FITSError fits_create(filnam)
+    rm(filnam)
     @test_throws FITSError fits_create("kanweg")
     @test_throws FITSError fits_create("kanweg.fit")
     @test_throws FITSError fits_create(" .fits")

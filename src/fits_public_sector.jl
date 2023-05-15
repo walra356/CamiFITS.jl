@@ -176,6 +176,7 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
         end
     end
 
+    record = record == [] ? nothing : record
     return record
 
 end
