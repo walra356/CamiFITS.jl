@@ -372,33 +372,6 @@ function fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
     return f
 
 end
-function fits_extend!1(f::FITS, data_extend, hdutype="IMAGE")
-
-    hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
-    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
-    hdutype = strip(hdutype)
-    hdutype = Base.Unicode.uppercase(hdutype)
-    hdutype = "'" * rpad(hdutype, 8) * "'"
-
-    hdutype == "'IMAGE   '" ? (records, data) = _IMAGE_input(data_extend) :
-    hdutype == "'ARRAY   '" ? (records, data) = _IMAGE_input(data_extend) :
-    hdutype == "'TABLE   '" ? (records, data) = _TABLE_input(data_extend) :
-    hdutype == "'BINTABLE'" ? (records, data) = _BINTABLE_input(data_extend) :
-    Base.throw(FITSError(msgErr(20)))
-
-    filnam = f.filnam.value
-    nhdu = f.hdu[end].hduindex + 1
-
-    rec = cast_FITS_header(records)
-    dat = cast_FITS_data(hdutype, data)
-
-    push!(f.hdu, cast_FITS_HDU(nhdu, rec, dat))
-
-    fits_save(f)
-
-    return f
-
-end
 
 # ------------------------------------------------------------------------------
 #              fits_add_key(filnam, hduindex, key, val, com)
