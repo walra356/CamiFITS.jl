@@ -1,59 +1,108 @@
-function _record_pointers(o::IO)
+# SPDX-License-Identifier: MIT
+
+# ------------------------------------------------------------------------------
+#                          fits_pointersr.jl
+#                         Jook Walraven 13-05-2023
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+#                      _record_pointer(o::IO)
+#           ptr array:   pointer to start of record (80 bytes/record)
+# ------------------------------------------------------------------------------
+
+function _record_pointer(o::IO) # pointer to start of record  (80 bytes/record)
 
     n = o.size ÷ 80               # number of records in IO (36 records/block)
 
-    r = [(i-1)*80 for i=1:n]      # start-of-record pointers (80 bytes/record)
+    ptr = [(i - 1) * 80 for i = 1:n]
 
-    return r
+    return ptr
 
 end
 
-function _block_pointers(o::IO)
+# ------------------------------------------------------------------------------
+#                      _block_pointer(o::IO)
+#         ptr array:   pointer to start of block (2880 bytes/block)
+# ------------------------------------------------------------------------------
+
+function _block_pointer(o::IO) # pointer to start of block
 
     n = o.size ÷ 2880             # number of blocks in IO
 
-    b = [(i-1)*2880 for i=1:n]    # start-of-block pointers (2880 bytes/block)
+    ptr = [(i - 1) * 2880 for i = 1:n]
 
-    return b
+    return ptr
 
 end
 
-function _header_pointers(o::IO)
+# ------------------------------------------------------------------------------
+#                      _header_pointer(o::IO)
+#         ptr array:   pointer to start of header
+# ------------------------------------------------------------------------------
 
-    b = _block_pointers(o::IO)             # b: start-of-block pointers
+function _header_pointer(o::IO)
 
-    h::Array{Int,1} = []                   # h: init start-of-header pointers
+    b = _block_pointer(o::IO)             # b: start-of-block pointers
+
+    ptr::Array{Int,1} = []                   # h: init start-of-header pointers
 
     for i ∈ Base.eachindex(b)              # i: start-of-block pointer
         Base.seek(o, b[i])
         key = String(Base.read(o, 8))
-        key ∈ ["SIMPLE  ", "XTENSION"] ? Base.push!(h,b[i]) : false
+        key ∈ ["SIMPLE  ", "XTENSION"] ? Base.push!(ptr, b[i]) : false
     end
 
-    return h                               # return start-of-header pointers
+    return ptr                               # return start-of-header pointers
 
 end
 
-function _hdu_pointers(o::IO)
+# ------------------------------------------------------------------------------
+#                      _hdu_pointer(o::IO)
+#         ptr array:   pointer to start of hdu
+# ------------------------------------------------------------------------------
 
-    h = _header_pointers(o::IO)  # h: start-of-header pointers
+function _hdu_pointer(o::IO)
 
-    return h                     # return start-of-HDU pointers
+    ptr = _header_pointer(o::IO)  # h: start-of-header pointers
 
-end     
+    return ptr                     # return start-of-HDU pointers
 
-function _data_pointers(o::IO)
+end
 
-    b = _block_pointers(o::IO)   # b: start-of-block pointers
+# ------------------------------------------------------------------------------
+#                      _data_pointer(o::IO)
+#         ptr array:   pointer to start of data block
+# ------------------------------------------------------------------------------
 
-    d::Array{Int,1} = []         # h: init start-of-data pointers
+function _data_pointer(o::IO)
+
+    b = _block_pointer(o::IO)   # b: start-of-block pointers
+
+    ptr::Vector{Int} = []         # h: init start-of-data pointers
 
     for i ∈ eachindex(b)         # i: start-of-block pointer (36 records/block)
-        Base.seek(o,b[i])
-        [(key = String(Base.read(o,8)); key == "END     " ? 
-                         Base.push!(d,b[i]+2880) : Base.skip(o,72)) for j=0:35]
+        Base.seek(o, b[i])
+        [(key = String(Base.read(o, 8));
+        key == "END     " ?
+        Base.push!(ptr, b[i] + 2880) : Base.skip(o, 72)) for j = 0:35]
     end
 
-    return d                                    # return start-of-data pointers
+    return ptr                                    # return start-of-data pointers
 
 end
+
+# ------------------------------------------------------------------------------
+#                      _end_pointer(o::IO)
+#         ptr array:   pointer to end of data block
+# ------------------------------------------------------------------------------
+
+function _end_pointer(o::IO)
+
+    ptrhdu = _hdu_pointer(o)
+    nhdu = length(ptrhdu)
+
+    ptr = [(i < nhdu ? ptrhdu[i+1] : length(o.data)) for i = 1:nhdu]
+
+    return ptr
+
+end 

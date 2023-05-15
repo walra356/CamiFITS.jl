@@ -91,7 +91,7 @@ END
 
 Any[]
 ```
-Note how the [`FITS`](@ref) object is inspected using [`fits_info`] tool.
+Note how the [`FITS`](@ref) object is inspected using the [`fits_info`](@ref) tool.
 
 The header of a [`FITS_HDU`](@ref) is contained in an array of *single-record*
 `.card` objects as illustrated above. To find the `cardindex` associated with 
@@ -107,7 +107,7 @@ julia> f.hdu[1].header.card[i].cardindex
 ```
 The full record is:
 ```
-julia> f.hdu[1].header.card[i].record
+julia> f.hdu[1].header.card[3].record
 "NAXIS   =                    1 / number of data axes  
 ```
 Once ready it is good practice to remove the example: 

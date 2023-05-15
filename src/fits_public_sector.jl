@@ -98,7 +98,7 @@ function fits_info(hdu::FITS_HDU; msg=true)
     strDataType = Base.string(Base.eltype(hdu.dataobject.data))
     strDatasize = Base.string(Base.size(hdu.dataobject.data))
 
-    info = [
+    str = [
         "hdu: " * Base.string(hdu.hduindex),
         "hdutype: " * hdu.dataobject.hdutype,
         "DataType: " * strDataType,
@@ -112,9 +112,9 @@ function fits_info(hdu::FITS_HDU; msg=true)
 
     _rm_blanks!(records)
 
-    Base.append!(info, records)
+    Base.append!(str, records)
 
-    msg && println(Base.join(info .* "\r\n"))
+    msg && println(Base.join(str .* "\r\n"))
 
     return hdu.dataobject.data
 
@@ -125,7 +125,7 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     Base.seekstart(o)
 
-    record = _read_header(o::IO, hduindex)
+    record = _read_header(o, hduindex)
 
     Base.seekstart(o)
 
@@ -138,7 +138,45 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
         str *= record.card[i].record * "\n"
     end
 
-    return msg ? println(str) : str
+    msg && println(str)
+
+    dataobject = _read_data(o, hduindex)
+
+    return dataobject.data
+
+end
+function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
+
+    o = IORead(filnam)
+
+    hduval = hduindex
+    ptrhdu = _hdu_pointer(o)
+    ptrdat = _data_pointer(o)
+    ptrend = _end_pointer(o)
+
+    record = []
+    for hduindex ∈ eachindex(ptrhdu)
+        if (hduindex == hduval) ⊻ iszero(hduval)
+            if hdr
+                Base.seek(o, ptrhdu[hduindex])
+                for i = (ptrhdu[hduindex]÷80+1):(ptrdat[hduindex]÷80)
+                    str = String(Base.read(o, 80))
+                    rec = nr ? (i, str) : str
+                    push!(record, rec)
+                end
+            end
+            if dat
+                Base.seek(o, ptrdat[hduindex])
+                for i = (ptrdat[hduindex]÷80+1):(ptrend[hduindex]÷80)
+                    str = String(Base.read(o, 80))
+                    rec = nr ? (i, str) : str
+                    push!(record, rec)
+                end
+            end
+        end
+    end
+
+    return record
 
 end
 
@@ -203,11 +241,9 @@ function fits_create(filnam::String, data=[]; protect=true)
     end
 
     hduindex = 1
-    hdutype = "PRIMARY"
-
-    dat = cast_FITS_data(hdutype, data) # (hduindex, hdutype, data)
-    rec = cast_FITS_header(_PRIMARY_input(dat)) # , hduindex)
-    hdu = cast_FITS_HDU(hduindex, rec, dat)
+    dataobject = cast_FITS_data("'PRIMARY '", data)
+    header = cast_FITS_header(dataobject)
+    hdu = cast_FITS_HDU(hduindex, header, dataobject)
 
     f = cast_FITS(filnam, [hdu])
 
@@ -319,11 +355,35 @@ rm(strExample); f = data = a = b = c = d = e = nothing
 """
 function fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
 
-    hdutype = Base.Unicode.uppercase(strip(hdutype))
+    hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
+    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
+    hdutype = strip(hdutype)
+    hdutype = Base.Unicode.uppercase(hdutype)
+    hdutype = "'" * rpad(hdutype, 8) * "'"
 
-    hdutype == "IMAGE" ? (records, data) = _IMAGE_input(data_extend) :
-    hdutype == "TABLE" ? (records, data) = _TABLE_input(data_extend) :
-    hdutype == "BINTABLE" ? (records, data) = _BINTABLE_input(data_extend) :
+    hduindex = length(f.hdu) + 1
+    dataobject = cast_FITS_data(hdutype, data_extend)
+    header = cast_FITS_header(dataobject)
+
+    push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))
+
+    fits_save(f)
+
+    return f
+
+end
+function fits_extend!1(f::FITS, data_extend, hdutype="IMAGE")
+
+    hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
+    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
+    hdutype = strip(hdutype)
+    hdutype = Base.Unicode.uppercase(hdutype)
+    hdutype = "'" * rpad(hdutype, 8) * "'"
+
+    hdutype == "'IMAGE   '" ? (records, data) = _IMAGE_input(data_extend) :
+    hdutype == "'ARRAY   '" ? (records, data) = _IMAGE_input(data_extend) :
+    hdutype == "'TABLE   '" ? (records, data) = _TABLE_input(data_extend) :
+    hdutype == "'BINTABLE'" ? (records, data) = _BINTABLE_input(data_extend) :
     Base.throw(FITSError(msgErr(20)))
 
     filnam = f.filnam.value

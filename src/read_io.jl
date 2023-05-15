@@ -35,16 +35,14 @@ end
 
 function _read_header(o::IO, hduindex::Int)
 
-    ptrhdu = _hdu_pointers(o)
-    ptrdat = _data_pointers(o)
+    ptrhdu = _hdu_pointer(o)
+    ptrdat = _data_pointer(o)
 
     Base.seek(o, ptrhdu[hduindex])
 
-    itr = (ptrhdu[hduindex] ÷ 80 + 1) : (ptrdat[hduindex] ÷ 80)
+    record::Vector{String} = []
 
-    record::Array{String,1} = []
-
-    for i = itr
+    for i = (ptrhdu[hduindex]÷80+1):(ptrdat[hduindex]÷80)
         rec = String(Base.read(o, 80))
         Base.push!(record, rec)
     end
@@ -60,94 +58,68 @@ end
 #   - stop after "END" record is reached
 # ------------------------------------------------------------------------------  
 
-function _read_data(o::IO, hduindex::Int)                   # read all data using header information
+function _read_data(o::IO, hduindex::Int)  # read data using header information
 
     h = _read_header(o, hduindex) #  FITS_header
 
     hdutype = h.card[1].keyword == "XTENSION" ? h.card[1].value : "'PRIMARY '"
-    hdutype = Base.strip(hdutype[2:9])
 
-    hdutype == "PRIMARY" && return _read_PRIMARY_data(o, hduindex)
-    hdutype == "IMAGE" && return _read_IMAGE_data(o, hduindex)
-    hdutype == "TABLE" && return _read_TABLE_data(o, hduindex)
-    hdutype == "BINTABLE" && return _read_BINTABLE_data(o, hduindex)
+    if (hdutype == "'PRIMARY '") 
+        data = _read_array_data(o, hduindex)
+    elseif (hdutype == "'IMAGE   '") | (hdutype == "'ARRAY   '")
+        data = _read_array_data(o, hduindex)
+    elseif (hdutype == "'TABLE   '")
+        data = _read_table_data(o, hduindex)
+    elseif hdutype == "'BINTABLE '"
+    else
+        Base.throw(FITSError(msgErr(25)))
+    end
 
-    return error("strError: '$hdutype': not a 'FITS standard extension'")
+    return cast_FITS_data(hdutype, data)
 
 end
 
-function _read_PRIMARY_data(o::IO, hduindex::Int)             # read all data using header information
+function _read_array_data(o::IO, hduindex::Int)
 
     h = _read_header(o, hduindex)            # FITS_header object
 
-    ptrdata = _data_pointers(o)
+    ptrdata = _data_pointer(o)
     Base.seek(o, ptrdata[hduindex])
 
     i = get(h.map, "NAXIS", 0)
     ndims = h.card[i].value
 
-    if ndims > 0
-        dims = Core.tuple([h.card[i+n].value for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
-        ndata = Base.prod(dims)                                                     # number of data points
+    if ndims > 0                           # e.g. dims[1]=(512,512,1)
+        dims = Core.tuple([h.card[i+n].value for n = 1:ndims[1]]...)      
+        ndata = Base.prod(dims)            # number of data points
         i = get(h.map, "BITPIX", 0)
         nbits = h.card[i].value
         i = get(h.map, "BZERO", 0)
         bzero = h.card[i].value
         E = _fits_eltype(nbits, bzero)
         data = [Base.read(o, E) for n = 1:ndata]
-        data = Base.ntoh.(data)                            # change from network to host ordering
-        data = data .+ E(bzero)                            # offset from Int to UInt
+        data = Base.ntoh.(data)  # change from network to host ordering
+        data = data .+ E(bzero)  # offset from Int to UInt
         data = Base.reshape(data, dims)
     else
         data = Any[]
     end
 
-    return FITS_data = cast_FITS_data("PRIMARY", data) # (hduindex, "PRIMARY", data)
-
 end
 
-function _read_IMAGE_data(o::IO, hduindex::Int)             # read all data using header information
+function _read_table_data(o::IO, hduindex::Int)
 
-    h = _read_header(o, hduindex) # FITS_header object
-
-    ptrdata = _data_pointers(o)
-    Base.seek(o, ptrdata[hduindex])
-
-    i = get(h.map, "NAXIS", 0)
-    ndims = h.key[i].val
-
-    if ndims > 0
-
-        dims = Core.tuple([h.card[i+n].value for n = 1:ndims[1]]...)      # e.g. dims[1]=(512,512,1)
-        ndata = Base.prod(dims)                                                     # number of data points
-        i = get(h.map, "BITPIX", 0)
-        nbits = h.card[i].value
-        i = get(h.map, "NAXIS", 0)
-        bzero = h.card[i].value
-        E = _fits_eltype(nbits, bzero)
-        data = [Base.read(o, E) for n = 1:ndata]
-        data = Base.ntoh.(data)                            # change from network to host ordering
-        data = data .+ E(bzero)                            # offset from Int to UInt
-        data = Base.reshape(data, dims)
-    else
-        data = Any[]
-    end
-
-    return FITS_data = _cast_data("IMAGE", data) # (hduindex, "IMAGE", data)
-
-end
-
-function _read_TABLE_data(o::IO, hduindex::Int)
-
-    ptr = _data_pointers(o)
+    ptr = _data_pointer(o)
 
     h = _read_header(o, hduindex) # FITS_header object
 
     Base.seek(o, ptr[hduindex])
-
+println("hduindex = ", hduindex)
     i = get(h.map, "NAXIS1", 0)
+println("NAXIS1 =", i)
     lrecs = h.card[i].value
     i = get(h.map, "NAXIS2", 0)
+println("NAXIS2 =", i)
     nrecs = h.card[i].value
 
     # dicts = FITS_header.dict
@@ -158,6 +130,8 @@ function _read_TABLE_data(o::IO, hduindex::Int)
 
     data = [String(Base.read(o, lrecs)) for i = 1:nrecs]
 
-    return FITS_data = cast_FITS_data(hduindex, "TABLE", data)
+    println(data)
+
+    return FITS_data = cast_FITS_data("TABLE", data)
 
 end

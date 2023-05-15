@@ -4,6 +4,11 @@ import CamiMath
 import Printf
 import Dates           # used in fits_private_sector
 
+export _read_TABLE_data
+export IORead
+export _read_header
+export _read_data
+
 export indices
 
 export dictPass
@@ -35,6 +40,8 @@ export _format_normrecord
 export _format_longrecord
 export _passed_keyword_test
 
+export _table_data_types
+
 export dictDefinedTerms
 export dictDefinedKeywords
 export fits_terminology
@@ -65,6 +72,7 @@ export cast_FITS_test
 export parse_FITS_TABLE
 
 export fits_create
+export fits_record_dump
 export fits_read
 export fits_save
 export fits_save_as

@@ -42,7 +42,7 @@ end
 
 function _fits_bzero(E::DataType)
 
-    return E ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 : E == Int8 ? -128 : 2^(8sizeof(E) - 1)
+    return E ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 : E == Int8 ? -128.0 : 2^(8sizeof(E) - 1)
 
 end
 
@@ -322,7 +322,7 @@ end
 
 function _hdu_count(o::IO)
 
-    h = _header_pointers(o::IO)                 # h: start-of-header pointers
+    h = _header_pointer(o::IO)                 # h: start-of-header pointers
 
     return length(h)                            # number of HDUs
 

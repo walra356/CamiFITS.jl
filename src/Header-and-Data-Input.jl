@@ -15,7 +15,7 @@
 
 function _PRIMARY_input(dataobject::FITS_data)
 
-    dataobject.hdutype == "PRIMARY" || error("strError: FITS_data is not of hdutype 'PRIMARY'")
+    dataobject.hdutype == "'PRIMARY '" || error("strError: FITS_data is not of hdutype 'PRIMARY'")
 
     r::Array{String,1} = []
 
@@ -122,7 +122,7 @@ function _TABLE_input(cols::Vector{})     # input array of table columns
     ncols = ncols < 999 ? ncols : 999
     ncols == 999 && println("FitsWarning: maximum number of columns exceeded (truncated at 999)")
     lcols = [length(cols[i]) for i = 1:ncols]                          # length of columns (number of rows)
-    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)             # equal colum length test
+    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)                # equal colum length test
     pass || error("strError: cannot create ASCII table (columns not of equal length)")
 
     w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
@@ -130,7 +130,9 @@ function _TABLE_input(cols::Vector{})     # input array of table columns
     tbcol = [pcols += w[i] for i = 1:(ncols-1)]                        # field pointers (first column)
     tbcol = prepend!(tbcol, 1)
     tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
+
     tform = _table_data_types(cols)
+
     tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
     tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
     ttype = ["HEAD$i" for i = 1:ncols]

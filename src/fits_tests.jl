@@ -14,7 +14,7 @@ function test_fits_info()
     f = fits_create(filnam, data; protect=false)
 
     a = fits_info(f; msg=false) == data
-    b = fits_info(filnam; msg=false)[1] == '\n'
+    b = fits_info(filnam; msg=false) == data  # [1] == '\n'
     
     rm(filnam)
 
@@ -58,7 +58,7 @@ function test_fits_read()
     filnam = "minimal.fits"
 
     f = fits_create(filnam; protect=false)
-    #f = fits_read(filnam)
+    f = fits_read(filnam)
 
     a = f.hdu[1].header.card[1].keyword == "SIMPLE"
     b = f.hdu[1].dataobject.data == Any[]
@@ -71,7 +71,7 @@ function test_fits_read()
     data = [0x0000043e, 0x0000040c, 0x0000041f]
 
     f = fits_create(filnam, data; protect=false)
-    #f = fits_read(filnam)
+    f = fits_read(filnam)
 
     p = f.hdu[1].header.card[1].keyword == "SIMPLE"
     q = f.hdu[1].dataobject.data == [0x0000043e, 0x0000040c, 0x0000041f]
@@ -94,7 +94,6 @@ function test_fits_extend!()
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
 
-    
     a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
     b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
     c = [1.23, 2.12, 3.0, 4.0, 5.0]

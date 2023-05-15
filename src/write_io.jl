@@ -122,10 +122,11 @@ function IOWrite_data(hdu::FITS_HDU)
 
     hdutype = hdu.dataobject.hdutype
 
-    hdutype == "PRIMARY" && return IOWrite_IMAGE_data(hdu)
-    hdutype == "IMAGE" && return IOWrite_IMAGE_data(hdu)
-    hdutype == "TABLE" && return IOWrite_TABLE_data(hdu)
-    hdutype == "BINTABLE" && return IOWrite_BINTABLE_data(hdu)
+    hdutype == "'PRIMARY '" && return IOWrite_IMAGE_data(hdu)
+    hdutype == "'IMAGE   '" && return IOWrite_IMAGE_data(hdu)
+    hdutype == "'ARRAY   '" && return IOWrite_IMAGE_data(hdu)
+    hdutype == "'TABLE   '" && return IOWrite_TABLE_data(hdu)
+    hdutype == "'BINTABLE'" && return IOWrite_BINTABLE_data(hdu)
 
     return error("strError: '$hdutype': not a 'FITS standard extension'")
 
@@ -141,18 +142,18 @@ function IOWrite_IMAGE_data(hdu::FITS_HDU)
     ndat = Base.length(data)
     ndat ≠ 0 || return o
 
-    E = Base.eltype(data)
-    E <: Real || Base.throw(FITSError(msgErr(5)))
-    # 5 - incorrect DataType (Real type mandatory for image HDUs)
+    T = Base.eltype(data)
 
-    nbyte = sizeof(E)
-    bzero = _fits_bzero(E)
+    i = hdu.header.map["BZERO"]
+    bzero = hdu.header.card[i].value
+    nbyte = T ≠ Any ? Base.sizeof(T) : 8
+
     data = Base.vec(data)
-    data = data .- E(bzero)                                           # change between Int and UInt (if applicable)
-    data = hton.(data)                                                # change from 'host' to 'network' ordering
+    data = data .- T(bzero) # change between Int and UInt (if applicable)
+    data = hton.(data) # change from 'host' to 'network' ordering
 
-    [Base.write(o, data[i]) for i = 1:ndat]                           # write data
-    [Base.write(o, E(0)) for i = 1:((2880÷nbyte)-ndat%(2880÷nbyte))]  # complement with type E zero elements
+    [Base.write(o, data[i]) for i ∈ eachindex(data)] # write data
+    [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat%(2880÷nbyte))]  # complete block with blanks
 
     return o
 
@@ -164,12 +165,12 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     Base.seekstart(o)
 
-    records = join(hdu.dataobject.data)                      # Array of ASCII records
-    nrecs = Base.length(records)                                # number of ASCII records
-    lrecs = Base.length(records[1])                             # length of ASCII records
-    nchar = 2880 - (nrecs * lrecs) % 2880                       # number of blanks to complement last data block
-    blanks = Base.repeat(' ', nchar)                              # complement last data block with blanks
-    nbytes = Base.write(o, Array{UInt8,1}(records * blanks))
+    record = join(hdu.dataobject.data) # Array of ASCII records
+    nrecs = Base.length(record) # number of ASCII records
+    lrecs = Base.length(record[1])  # length of ASCII records
+    nchar = 2880 - (nrecs * lrecs) % 2880  # number of blanks to complement last data block
+    blank = Base.repeat(' ', nchar) # complement last data block with blanks
+    nbyte = Base.write(o, Array{UInt8,1}(record * blank))
 
     return o
 

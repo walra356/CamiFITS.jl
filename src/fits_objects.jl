@@ -5,6 +5,7 @@
 #                      Jook Walraven 15-03-2023
 # ------------------------------------------------------------------------------
 
+
 # ------------------------------------------------------------------------------
 #                               FITS_data
 # ------------------------------------------------------------------------------
@@ -16,27 +17,25 @@ Object to hold the data of the [`FITS_HDU`](@ref) of given `hduindex` and
 `hdutype`.
 
 The fields are:
-* `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
 * `.hdutype`:  accepted types are 'PRIMARY', 'IMAGE' and 'TABLE' (`::String`)
 * `.data`:  in the from appropriate for the `hdutype` (::Any)
 """
 struct FITS_data
 
     hdutype::String
-    data
-
+    data::Any
 end
 
 # ------------------------------------------------------------------------------
-#                    cast_FITS_data(hduindex, hdutype, data)
+#                    cast_FITS_data(hdutype, data)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS_data(hduindex::Int, hdutype::String, data)
+    cast_FITS_data(hdutype::String, data)
 
 Create the [`FITS_data`](@ref) object for given `hduindex` constructed from 
-the `data` in accordance to the specified `hdutype` (`PRIMARY_HDU`, 
-`IMAGE_HDU`, `TABLE_HDU` and `BINARY_HDU`)
+the `data` in accordance to the specified `hdutype`: *PRIMARY*, 
+*IMAGE*, *ARRAY*, *TABLE* (ASCII table) or *BINARRAY* (binary array).
 #### Example:
 ```
 julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36];
@@ -47,8 +46,8 @@ julia> data = [11,21,31,12,22,23,13,23,33];
 
 julia> data = reshape(data,(3,3,1));
 
-julia> d = dataobject = cast_FITS_data("IMAGE", data)
-FITS_data("IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
+julia> d = dataobject = cast_FITS_data("image", data)
+FITS_data("'IMAGE   '", [11 12 13; 21 22 23; 31 23 33;;;])
 
 julia> d.data
 3×3×1 Array{Int64, 3}:
@@ -58,31 +57,26 @@ julia> d.data
  31  23  33
 
 julia> d.hdutype
-"IMAGE"
+"'IMAGE   '"
 ```
 """
 function cast_FITS_data(hdutype::String, data)
 
+    hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
+    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
+    hdutype = Base.strip(hdutype)
+    hdutype = Base.Unicode.uppercase(hdutype)
+    hdutype = "'" * Base.rpad(hdutype, 8) * "'"
+
+    if hdutype == "'TABLE   '"
+        cols = data
+        ncols = length(cols)
+        nrows = length(cols[1])
+        w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
+        data = [join([rpad(string(cols[i][j]), w[i])[1:w[i]] for i = 1:ncols]) for j = 1:nrows]
+    end
+
     return FITS_data(hdutype, data)
-
-end
-
-# ........................................... FITS_table Object ..........................................................
-
-"""
-    FITS_table
-
-Object to hold the data of a `TABLE HDU` (a [`FITS_HDU`](@ref) for ASCII
-tables). It contains the data in the form of records (rows) of ASCII strings.
-
-The fields are:
-* `.hduindex`:  identifier (a file may contain more than one HDU) (`::Int`)
-* `.rows`:  the table formated as an array of rows of ASCII strings (`::Array{String,1}`)
-"""
-struct FITS_table
-
-    hduindex::Int
-    rows::Array{String,1}
 
 end
 
@@ -160,15 +154,38 @@ struct FITS_header
 
 end
 
+# ==============================================================================
+#                       cast_FITS_header()
 # ------------------------------------------------------------------------------
-#                    cast_FITS_header(record::Vector{String})
-# ------------------------------------------------------------------------------
+@doc raw"""
+    cast_FITS_header(dataobject::FITS_data)
+
+Create the [`FITS_header`](@ref) object from the dataobject. The 
+dataobject-input mode is used by [`fits_create`](@ref) to ceate the header
+object as part of creating the [`FITS`](@ref) obhectstarting from Julia data 
+input.
+"""
+function cast_FITS_header(dataobject::FITS_data)
+
+    hdutype = dataobject.hdutype
+
+    record = hdutype == "'PRIMARY '" ? _header_record_primary(dataobject) :
+             hdutype == "'GROUPS  '" ? _header_record_groups(dataobject) :
+             hdutype == "'IMAGE   '" ? _header_record_image(dataobject) :
+             hdutype == "'ARRAY   '" ? _header_record_array(dataobject) :
+             hdutype == "'TABLE   '" ? _header_record_table(dataobject) :
+             hdutype == "'BINTABLE'" ? _header_record_bintable(dataobject) :
+             Base.throw(FITSError(msgErr(25))) # hdutype not recognized
+
+    return cast_FITS_header(record::Vector{String})
+
+end
 @doc raw"""
     cast_FITS_header(record::Vector{String})
 
 Create the [`FITS_header`](@ref) object from a block of 36 single-record 
-strings (of 80 printable ASCII characters).
-
+strings (of 80 printable ASCII characters). The record-input mode is used
+by [`fits_read`](@ref) after reading the header records from disk.
 #### Example:
 ```
 julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36]
@@ -210,7 +227,6 @@ end
 Object to hold a single "Header and Data Unit" (HDU).
 
 The fields are
-* `.filnam`:  name of the corresponding `.fits` file (`::String`)
 * `.hduindex:`:  identifier (a file may contain more than one HDU) (`:Int`)
 * `.header`:  the header object (`::FITS_header`)
 * `.dataobject`:  the data object (`::FITS_data`)
@@ -259,9 +275,15 @@ julia> hdu.dataobject.data
  31  23  33
 ```
 """
-function cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
+function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data)
 
-    return FITS_HDU(hduindex, header, data)
+    # hdutype = dataobject.hdutype
+
+    # if hdutype == "'TABLE   '"
+    #    dataobject = cast_FITS_table(dataobject)
+    # end
+
+    return FITS_HDU(hduindex, header, dataobject)
 
 end
 
@@ -454,5 +476,292 @@ function cast_FITS_test(index::Int, err)
     F = FITS_test(index, err, name, passed, p, f, w, h)
 
     return F
+
+end
+
+# ------------------------------------------------------------------------------
+#                 _primary_header_records(dataobject)
+# ------------------------------------------------------------------------------
+
+function _header_record_primary(dataobject::FITS_data)
+
+    hdutype = dataobject.hdutype
+    hdutype == "'PRIMARY '" || Base.throw(FITSError(msgErr(26)))
+    data = dataobject.data
+
+    T = Base.eltype(data)
+
+    ndims = Base.ndims(data)
+    ndims ≤ 999 || Base.throw(FITSError(msgErr(21)))
+    dims = Base.size(data)
+    nbyte = T ≠ Any ? Base.sizeof(T) : 8
+    nbits = 8 * nbyte
+    bzero = T ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 :
+            T == Int8 ? -128.0 : 2^(nbits - 1)
+    bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
+
+    bitpix = Base.lpad(bitpix, 20)
+    naxis = Base.lpad(ndims, 20)
+    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    bzero = Base.lpad(bzero, 20)
+
+    r::Vector{String} = []
+
+    Base.push!(r, "SIMPLE  =                    T / file does conform to FITS standard             ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    for i = 1:ndims
+        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
+    end
+    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
+    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
+    Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
+
+    return r
+
+end
+
+# ------------------------------------------------------------------------------
+#                 _header_record_groups(dataobject)
+# ------------------------------------------------------------------------------
+
+function _header_record_groups(dataobject::FITS_data)
+
+    hdutype = dataobject.hdutype
+    hdutype == "'GROUPS   '" || Base.throw(FITSError(msgErr(27)))
+    ndims = dataobject.naxis
+    dims = dataobject.dims
+    nbyte = dataobject.nbyte
+    bzero = dataobject.bzero
+    T = dataobject.eltype
+
+    nbits = 8 * nbyte
+    bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
+
+    hdutype = Base.rpad(hdutype, 20)
+    bitpix = Base.lpad(bitpix, 20)
+    naxis = Base.lpad(ndims, 20)
+    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    bzero = Base.lpad(bzero, 20)
+
+    r::Vector{String} = []
+
+    Base.push!(r, "SIMPLE  =                    T / file does conform to FITS standard             ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    Base.push!(r, "NAXIS1  =             0 / length of data axis                                   ")
+    [Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27)) for i = 2:ndims]
+    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
+    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    Base.push!(r, "GROUPS  =                    T / random groups present                          ")
+    Base.push!(r, "PCOUNT  =                    0 / number of parameters per group                 ")
+    Base.push!(r, "GCOUNT  =                    1 / number of groups                               ")
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
+
+    return r
+
+end
+
+# ------------------------------------------------------------------------------
+#                 _header_record_image(dataobject)
+# ------------------------------------------------------------------------------
+
+function _header_record_image(dataobject::FITS_data)
+
+    hdutype = dataobject.hdutype
+    hdutype == "'IMAGE   '" || Base.throw(FITSError(msgErr(28)))
+    data = dataobject.data
+
+    T = Base.eltype(data)
+
+    ndims = Base.ndims(data)
+    ndims ≤ 999 || Base.throw(FITSError(msgErr(21)))
+    dims = Base.size(data)
+    nbyte = T ≠ Any ? Base.sizeof(T) : 8
+    nbits = 8 * nbyte
+    bzero = T ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 :
+            T == Int8 ? -128.0 : 2^(nbits - 1)
+    bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
+
+    hdutype = Base.rpad(hdutype, 20)
+    bitpix = Base.lpad(bitpix, 20)
+    naxis = Base.lpad(ndims, 20)
+    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    bzero = Base.lpad(bzero, 20)
+
+    r::Vector{String} = []
+
+    Base.push!(r, "XTENSION= " * hdutype * " / FITS standard extension                        ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    for i = 1:ndims
+        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
+    end
+    Base.push!(r, "PCOUNT  =                    0 / number of parameters per group                 ")
+    Base.push!(r, "GCOUNT  =                    1 / number of groups                               ")
+    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
+    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
+
+    return r
+
+end
+
+# ------------------------------------------------------------------------------
+#                 _header_record_array(dataobject)
+# ------------------------------------------------------------------------------
+
+function _header_record_array(dataobject::FITS_data)
+
+    hdutype = dataobject.hdutype
+    hdutype == "'ARRAY   '" || Base.throw(FITSError(msgErr(29)))
+    data = dataobject.data
+
+    T = Base.eltype(data)
+
+    ndims = Base.ndims(data)
+    ndims ≤ 999 || Base.throw(FITSError(msgErr(21)))
+    dims = Base.size(data)
+    nbyte = T ≠ Any ? Base.sizeof(T) : 8
+    nbits = 8 * nbyte
+    bzero = T ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 :
+            T == Int8 ? -128.0 : 2^(nbits - 1)
+    bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
+
+    hdutype = Base.rpad(hdutype, 20)
+    bitpix = Base.lpad(bitpix, 20)
+    naxis = Base.lpad(ndims, 20)
+    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    bzero = Base.lpad(bzero, 20)
+
+    r::Vector{String} = []
+
+    Base.push!(r, "XTENSION= " * hdutype * " / FITS standard extension                        ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    for i = 1:ndims
+        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
+    end
+    Base.push!(r, "PCOUNT  =                    0 / number of parameters per group                 ")
+    Base.push!(r, "GCOUNT  =                    1 / number of groups                               ")
+    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
+    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
+
+    return r
+
+end
+
+# ==============================================================================
+#                  _header_record_table(dataobject)
+# ------------------------------------------------------------------------------
+
+function _table_data_types(dataobject::FITS_data)
+
+    cols = dataobject.data
+    ncols = length(cols)
+    nrows = length(cols[1])
+
+    fmtsp = Array{String,1}(undef, ncols)  # format specifier Xw.d
+
+    for i ∈ eachindex(fmtsp)
+        T = eltype(cols[i][1])
+        x = T <: Integer ? "I" : T <: Real ? "E" : T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
+        w = string(maximum([length(string(cols[i][j])) for j = 1:nrows]))
+
+        if T <: Union{Char,String}
+            isascii(join(cols[i])) || Base.throw(FITSError(msgErr(36)))
+        end
+
+        if T <: Union{Float16,Float32,Float64}
+            v = string(cols[i][1])
+            x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
+            v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
+            d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
+        end
+
+        fmtsp[i] = T <: Union{Float16,Float32,Float64} ? (x * w * '.' * d) : x * w
+    end
+
+    return fmtsp
+
+end
+
+function _header_record_table(dataobject::FITS_data) # input array of table columns
+
+    hdutype = dataobject.hdutype
+    hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
+    cols = dataobject.data
+    ndims = 2
+    ncols = length(cols)
+    nrows = length(cols[1])
+    nbits = 8
+
+    pcols = 1  # pointer to starting position of column in table row
+    ncols > 0 || Base.throw(FITSError(msgErr(34)))
+    ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
+    lcols = [length(cols[i]) for i = 1:ncols] # length of columns (number of rows)
+    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)                # equal colum length test
+    pass || Base.throw(FITSError(msgErr(33)))
+
+    w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
+    data = [join([rpad(string(cols[i][j]), w[i])[1:w[i]] for i = 1:ncols]) for j = 1:nrows]
+
+    tbcol = [pcols += w[i] for i = 1:(ncols-1)]                        # field pointers (first column)
+    tbcol = prepend!(tbcol, 1)
+    tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
+
+    tform = _table_data_types(dataobject)
+
+    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
+    tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
+    ttype = ["HEAD$i" for i = 1:ncols]
+    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]          # default column headers
+
+    hdutype = Base.rpad(hdutype, 20)
+    bitpix = Base.lpad(nbits, 20)
+    naxis = Base.rpad(ndims, 20)
+    naxis1 = Base.lpad(sum(w), 20)
+    naxis2 = Base.lpad(nrows, 20)
+    tfields = Base.lpad(ncols, 20)
+
+    r::Array{String,1} = []
+
+    Base.push!(r, "XTENSION= " * hdutype * " / FITS standard extension                        ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    Base.push!(r, "NAXIS1  = " * naxis1 * " / number of bytes/row                            ")
+    Base.push!(r, "NAXIS2  = " * naxis2 * " / number of rows                                 ")
+    Base.push!(r, "PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
+    Base.push!(r, "GCOUNT  =                    1 / data blocks contain single table               ")
+    Base.push!(r, "TFIELDS = " * tfields * " / number of data fields (columns)                ")
+    Base.push!(r, "COLSEP  =                    1 / number of spaces in column separator           ")
+    for i = 1:ncols
+        Base.push!(r, "TTYPE$i  = " * ttype[i] * " / header of column " * rpad(i, 30))
+    end
+    for i = 1:ncols
+        Base.push!(r, "TBCOL$i  = " * tbcol[i] * " / pointer to column " * rpad(i, 29))
+    end
+    for i = 1:ncols
+        Base.push!(r, "TFORM$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
+    end
+    for i = 1:ncols
+        Base.push!(r, "TDISP$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
+    end
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
+
+    return r
 
 end
