@@ -25,9 +25,11 @@ using Test
     @test test_fits_rename_key()
 
     filnam = "kanweg.fits"
-    fits_create(filnam; protect=false)
+    data = [0x0000043e, 0x0000040c, 0x0000041f];
+    fits_create(filnam, data; protect=false)
     r = fits_record_dump(filnam);
     @test r[9][2][1:3] == "END" 
+    @test r[37][2][1:20] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0"
     @test fits_verifier(filnam; msg=false) == 0
     @test_throws FITSError fits_create(filnam)
     rm(filnam)
