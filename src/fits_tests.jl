@@ -189,20 +189,20 @@ function test_fits_keyword()
     a = fits_keyword("end"; msg=false)[1] == 'K'
     b = fits_keyword("ed"; msg=false)[1] == 'E'
     c = fits_keyword(; msg=false)[1]  == 'F'
-    d = fits_keyword(hdutype="primary"; msg=false)[1] == 'F'
+    d = fits_keyword(hdutype="'PRIMARY '"; msg=false)[1] == 'F'
     e = fits_keyword("all"; msg=false)[1] == 'F'
 
     return a & b & c & d & e
 
 end
 
-function test_fits_add_key()
+function test_fits_add_key!()
 
     filnam = "minimal.fits"
     f = fits_create(filnam; protect=false)
     long = repeat(" long", 31)
     for i=1:1
-           fits_add_key(f, 1, "KEY$i", true, "this is a" * long * " comment");
+           fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment");
     end
 
     i = get(f.hdu[1].header.map, "KEY1", 0)
@@ -216,17 +216,17 @@ function test_fits_add_key()
 
 end
 
-function test_fits_rename_key()
+function test_fits_rename_key!()
 
     filnam = "minimal.fits"
     f = fits_create(filnam; protect=false)
-    fits_add_key(f, 1, "KEYNEW1", true, "this is card 9")
+    fits_add_key!(f, 1, "KEYNEW1", true, "this is card 9")
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
     test1 = i == 9
 
-    fits_rename_key(f, 1, "KEYNEW1", "KEYNEW2")
+    fits_rename_key!(f, 1, "KEYNEW1", "KEYNEW2")
 
     i = get(f.hdu[1].header.map, "KEYNEW2", 0)
 
@@ -242,17 +242,17 @@ function test_fits_rename_key()
 
 end
 
-function test_fits_delete_key()
+function test_fits_delete_key!()
 
     filnam = "minimal.fits"
     f = fits_create(filnam; protect=false)
-    fits_add_key(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
     test1 = i == 9
 
-    fits_delete_key(f, 1, "KEYNEW1")
+    fits_delete_key!(f, 1, "KEYNEW1")
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
@@ -264,13 +264,13 @@ function test_fits_delete_key()
 
 end
 
-function test_fits_edit_key()
+function test_fits_edit_key!()
 
     filnam = "minimal.fits"
     f = fits_create(filnam; protect=false)
     
-    fits_add_key(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-    fits_edit_key(f, 1, "KEYNEW1", false, "comment has changed")
+    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+    fits_edit_key!(f, 1, "KEYNEW1", false, "comment has changed")
 
     k = get(f.hdu[1].header.map, "KEYNEW1", 0)
 

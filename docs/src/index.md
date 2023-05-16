@@ -218,7 +218,7 @@ reference: FITS Standard - version 4.0 - Appendix C
 Specifying the *FITS HDU type* in [`fits_keyword`](@ref) the user obtains the 
 restricted set of HDU-specific keywords.
 ```
-julia> fits_keyword(hdutype="primary")
+julia> fits_keyword(hdutype="'PRIMARY '")
 FITS defined keywords:
 HDU type: 'primary'
 - general
@@ -323,10 +323,10 @@ fits_save_as(f::FITS, filnam::String; protect=true)
 ### FITS - Key Methods
 
 ```@docs
-fits_add_key(f::FITS, hduindex::Int, key::String, val::Any, com::String)
-fits_delete_key(f::FITS, hduindex::Int, key::String)
-fits_edit_key(f::FITS, hduindex::Int, key::String, val::Real, com::String)
-fits_rename_key(f::FITS, hduindex::Int, keyold::String, keynew::String)
+fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
+fits_delete_key!(f::FITS, hduindex::Int, key::String)
+fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Real, com::String)
+fits_rename_key!(f::FITS, hduindex::Int, keyold::String, keynew::String)
 ```
 
 ## FORTRAN

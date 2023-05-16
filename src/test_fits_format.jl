@@ -560,7 +560,11 @@ function fits_keyword(; hdutype="all", msg=true)
     end
 
     str *= "\n\nHDU options: "
-    str *= "'primary', 'extension', 'array', 'image', 'ASCII-table', 'bintable'"
+    str *= "'PRIMARY ', "
+    str *= "'IMAGE   ', "
+    str *= "'ARRAY   ', "
+    str *= "'TABLE   ', "
+    str *= "'BINTABLE'"
     str *= "\n\nreference: " * _fits_standard
 
     return msg ? println(str) : str
@@ -569,7 +573,6 @@ end
 function fits_mandatory_keyword(hdu::FITS_HDU)
 
     hdutype = hdu.dataobject.hdutype
-    hdutype = Base.Unicode.lowercase(hdutype)
 
     dict = dictDefinedKeywords
 

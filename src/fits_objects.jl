@@ -46,7 +46,7 @@ julia> data = [11,21,31,12,22,23,13,23,33];
 
 julia> data = reshape(data,(3,3,1));
 
-julia> d = dataobject = cast_FITS_data("image", data)
+julia> d = dataobject = cast_FITS_data("'IMAGE   '", data)
 FITS_data("'IMAGE   '", [11 12 13; 21 22 23; 31 23 33;;;])
 
 julia> d.data
@@ -63,9 +63,9 @@ julia> d.hdutype
 function cast_FITS_data(hdutype::String, data)
 
     hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
-    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
     hdutype = Base.strip(hdutype)
     hdutype = Base.Unicode.uppercase(hdutype)
+    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
     hdutype = "'" * Base.rpad(hdutype, 8) * "'"
 
     if hdutype == "'TABLE   '"

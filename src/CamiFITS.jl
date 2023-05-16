@@ -81,11 +81,11 @@ export fits_info
 export fits_copy
 export fits_collect
 
-export fits_add_key
-export fits_edit_key
-export fits_delete_key
+export fits_add_key!
+export fits_edit_key!
+export fits_delete_key!
 export fits_records
-export fits_rename_key
+export fits_rename_key!
 export fits_verifier
 export name_verifier
 
@@ -101,10 +101,10 @@ export test_fits_collect
 
 export test_fits_info
 export test_fits_keyword
-export test_fits_add_key
-export test_fits_edit_key
-export test_fits_delete_key
-export test_fits_rename_key
+export test_fits_add_key!
+export test_fits_edit_key!
+export test_fits_delete_key!
+export test_fits_rename_key!
 
 #export plot_matrices
 #export plot!
