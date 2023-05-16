@@ -159,17 +159,17 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
         if (hduindex == hduval) ⊻ iszero(hduval)
             if hdr
                 Base.seek(o, ptrhdu[hduindex])
-                for i = (ptrhdu[hduindex]÷80+1):(ptrdat[hduindex]÷80)
+                for ptr = (ptrhdu[hduindex]÷80+1):(ptrdat[hduindex]÷80)
                     str = String(Base.read(o, 80))
-                    rec = nr ? (i, str) : str
+                    rec = nr ? (ptr, str) : str
                     push!(record, rec)
                 end
             end
             if dat
                 Base.seek(o, ptrdat[hduindex])
-                for i = (ptrdat[hduindex]÷80+1):(ptrend[hduindex]÷80)
+                for ptr = (ptrdat[hduindex]÷80+1):(ptrend[hduindex]÷80)
                     str = String(Base.read(o, 80))
-                    rec = nr ? (i, str) : str
+                    rec = nr ? (ptr, str) : str
                     push!(record, rec)
                 end
             end

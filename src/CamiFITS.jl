@@ -98,6 +98,7 @@ export test_fits_extend!
 export test_fits_read
 export test_fits_save_as
 export test_fits_collect
+export test_fits_record_pointer
 
 export test_fits_info
 export test_fits_keyword

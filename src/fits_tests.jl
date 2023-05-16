@@ -282,3 +282,19 @@ function test_fits_edit_key!()
 
 end
 
+function test_fits_record_pointer()
+    
+    filnam = "kanweg.fits"
+    data = [0x0000043e, 0x0000040c, 0x0000041f];
+    f = fits_create(filnam, data; protect=false);
+    fits_extend!(f, data, "'ARRAY   '");
+    fits_extend!(f, data, "'IMAGE   '");
+    o = IORead(filnam)
+    test = (_record_pointer(o) .÷ 80 .+ 1) == Base.OneTo(216)
+
+    rm(filnam)
+
+    return test
+
+end
+
