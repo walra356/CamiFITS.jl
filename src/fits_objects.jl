@@ -62,12 +62,8 @@ julia> d.hdutype
 """
 function cast_FITS_data(hdutype::String, data)
 
-    hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
-    hdutype = Base.strip(hdutype)
-    hdutype = Base.Unicode.uppercase(hdutype)
-    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
-    hdutype = "'" * Base.rpad(hdutype, 8) * "'"
-
+    hdutype = _format_hdutype(hdutype)
+    
     if hdutype == "'TABLE   '"
         cols = data
         ncols = length(cols)

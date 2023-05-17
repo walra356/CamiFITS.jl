@@ -313,11 +313,11 @@ function fits_read(filnam::String)
 end
 
 # ------------------------------------------------------------------------------
-#           fits_extend!(f::FITS, data_extend [, hdutype="IMAGE"])
+#           fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
+    fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
 Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
@@ -340,7 +340,7 @@ julia> e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"];
 
 julia> data = [a,b,c,d,e];
 
-julia> fits_extend!(f, data, "TABLE")
+julia> fits_extend!(f, data; hdutype="TABLE")
 
 
 julia> f.hdu[2].dataobject.data
@@ -354,14 +354,9 @@ julia> f.hdu[2].dataobject.data
 rm(strExample); f = data = a = b = c = d = e = nothing
 ```
 """
-function fits_extend!(f::FITS, data_extend, hdutype="IMAGE")
+function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
-    hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
-    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
-    hdutype = strip(hdutype)
-    hdutype = Base.Unicode.uppercase(hdutype)
-    hdutype = "'" * rpad(hdutype, 8) * "'"
-
+    hdutype = _format_hdutype(hdutype)
     hduindex = length(f.hdu) + 1
     dataobject = cast_FITS_data(hdutype, data_extend)
     header = cast_FITS_header(dataobject)
@@ -383,7 +378,6 @@ function fits_find_keyword(f::FITS, hduindex::Int, keyword::String)
     keyword = Base.strip(keyword)
     keyword = Base.uppercase(keyword)
 
-    # i = get(f.hdu[hduindex].header.map, keyword, 0)
     card = f.hdu[hduindex].header.card
     keys = [card[i].keyword for i ∈ eachindex(card)]
     index = findall(x -> x == keyword, keys)

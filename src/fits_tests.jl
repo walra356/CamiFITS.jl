@@ -104,7 +104,7 @@ function test_fits_extend!()
     e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
     data = [a, b, c, d, e]
 
-    fits_extend!(f, data, "TABLE")
+    fits_extend!(f, data; hdutype="TABLE")
 
     strExample = "1.0e-6 1086 1.23 a a                    "
     a = f.hdu[1].header.card[1].keyword == "SIMPLE"
@@ -287,8 +287,8 @@ function test_fits_pointer()
     filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f];
     f = fits_create(filnam, data; protect=false);
-    fits_extend!(f, data, "'ARRAY   '");
-    fits_extend!(f, data, "'IMAGE   '");
+    fits_extend!(f, data; hdutype="'ARRAY   '")
+    fits_extend!(f, data; hdutype="'IMAGE   '")
 
     o = IORead(filnam)
     a = _row_nr(o)
@@ -320,6 +320,25 @@ function test_fits_pointer()
     o = a & b & c & d & e & f & g & h & i & j
 
     o || println([a, b, c, d, e, f, g, h, i, j])
+
+    return o
+
+end
+
+function test_format_hdutype()
+
+    a = "'TEST    '" == _format_hdutype("test")
+    b = "'TEST    '" == _format_hdutype("'test'")
+    c = "'TEST    '" == _format_hdutype("'test")
+    d = "'TEST    '" == _format_hdutype(" 'test")
+    e = "'TEST    '" == _format_hdutype("' test")
+    f = "'TEST    '" == _format_hdutype("test' ")
+    g = "'TEST    '" == _format_hdutype("test '")
+    h = "'TEST    '" == _format_hdutype("TEST")
+
+    o = a & b & c & d & e & f & g & h
+
+    o || println([a, b, c, d, e, f, g, h])
 
     return o
 

@@ -99,6 +99,7 @@ export test_fits_read
 export test_fits_save_as
 export test_fits_collect
 export test_fits_pointer
+export test_format_hdutype
 
 export test_fits_info
 export test_fits_keyword

@@ -271,6 +271,23 @@ function _format_comment(comment::String; offset=0, linesize=65)
 end
 
 # ==============================================================================
+#                      _format_hdutype(hdutype::String;)::String
+# ------------------------------------------------------------------------------
+
+function _format_hdutype(hdutype::String)::String
+
+    hdutype = Base.strip(hdutype)
+    hdutype = hdutype[1] == ''' ? hdutype[2:end] : hdutype
+    hdutype = Base.strip(hdutype)
+    hdutype = Base.Unicode.uppercase(hdutype)
+    hdutype = hdutype[end] == ''' ? hdutype[1:end-1] : hdutype
+    hdutype = "'" * Base.rpad(hdutype, 8) * "'"
+
+    return hdutype
+
+end
+
+# ==============================================================================
 #            _format_record(key::String, val::Any, com::String)
 # ------------------------------------------------------------------------------
 

@@ -72,9 +72,9 @@ function fits_save_as(f::FITS, filnam::String; protect=true)
         o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data))
     end
 
-    if Base.Filesystem.isfile(filnam) & protect
-        Base.throw(FITSError(msgErr(4)))
-    end
+    isfile = Base.Filesystem.isfile(filnam)
+
+    (isfile & protect) && Base.throw(FITSError(msgErr(4)))
 
     return _fits_write_IO(o, filnam)
 
