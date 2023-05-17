@@ -176,3 +176,20 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
 
 end
 
+function IOWrite_BINTABLE_data(hdu::FITS_HDU)
+
+    o = IOBuffer()
+
+    Base.seekstart(o)
+
+    record = join(hdu.dataobject.data) # Array of ASCII records
+    nrecs = Base.length(record) # number of ASCII records
+    lrecs = Base.length(record[1])  # length of ASCII records
+    nchar = 2880 - (nrecs * lrecs) % 2880  # number of blanks to complement last data block
+    blank = Base.repeat(' ', nchar) # complement last data block with blanks
+    nbyte = Base.write(o, Array{UInt8,1}(record * blank))
+
+    return o
+
+end
+

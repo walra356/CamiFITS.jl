@@ -63,7 +63,7 @@ julia> d.hdutype
 function cast_FITS_data(hdutype::String, data)
 
     hdutype = _format_hdutype(hdutype)
-    
+
     if hdutype == "'TABLE   '"
         cols = data
         ncols = length(cols)
@@ -757,3 +757,75 @@ function _header_record_table(dataobject::FITS_data) # input array of table colu
     return r
 
 end
+
+function _header_record_bintable(dataobject::FITS_data) # input array of table columns
+
+    hdutype = dataobject.hdutype
+    hdutype == "'BINTABLE'" || Base.throw(FITSError(msgErr(30)))
+    cols = dataobject.data
+    ndims = eltype(cols) == String ? 1 : Base.ndims(eltype(cols))
+    ndims += Base.ndims(cols)
+    ndims == 2 || Base.throw(FITSError(msgErr(39)))
+    ncols = length(cols)
+    nrows = length(cols[1])
+    nbits = 8
+
+    pcols = 1  # pointer to starting position of column in table row
+    ncols > 0 || Base.throw(FITSError(msgErr(34)))
+    ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
+    lcols = [length(cols[i]) for i = 1:ncols] # length of columns (number of rows)
+    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)                # equal colum length test
+    pass || Base.throw(FITSError(msgErr(33)))
+
+    w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
+    data = [join([rpad(string(cols[i][j]), w[i])[1:w[i]] for i = 1:ncols]) for j = 1:nrows]
+
+    tbcol = [pcols += w[i] for i = 1:(ncols-1)]                        # field pointers (first column)
+    tbcol = prepend!(tbcol, 1)
+    tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
+
+    tform = _table_data_types(dataobject)
+
+    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
+    tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
+    ttype = ["HEAD$i" for i = 1:ncols]
+    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]          # default column headers
+
+    hdutype = Base.rpad(hdutype, 20)
+    bitpix = Base.lpad(nbits, 20)
+    naxis = Base.rpad(ndims, 20)
+    naxis1 = Base.lpad(sum(w), 20)
+    naxis2 = Base.lpad(nrows, 20)
+    tfields = Base.lpad(ncols, 20)
+
+    r::Array{String,1} = []
+
+    Base.push!(r, "XTENSION= " * hdutype * " / FITS standard extension                        ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    Base.push!(r, "NAXIS1  = " * naxis1 * " / number of bytes/row                            ")
+    Base.push!(r, "NAXIS2  = " * naxis2 * " / number of rows                                 ")
+    Base.push!(r, "PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
+    Base.push!(r, "GCOUNT  =                    1 / data blocks contain single table               ")
+    Base.push!(r, "TFIELDS = " * tfields * " / number of data fields (columns)                ")
+    Base.push!(r, "COLSEP  =                    1 / number of spaces in column separator           ")
+    for i = 1:ncols
+        Base.push!(r, "TTYPE$i  = " * ttype[i] * " / header of column " * rpad(i, 30))
+    end
+    for i = 1:ncols
+        Base.push!(r, "TBCOL$i  = " * tbcol[i] * " / pointer to column " * rpad(i, 29))
+    end
+    for i = 1:ncols
+        Base.push!(r, "TFORM$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
+    end
+    for i = 1:ncols
+        Base.push!(r, "TDISP$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
+    end
+    Base.push!(r, "END                                                                             ")
+
+    _append_blanks!(r)
+
+    return r
+
+end
+
