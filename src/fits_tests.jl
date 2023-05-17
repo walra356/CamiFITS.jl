@@ -200,17 +200,8 @@ function test_fits_add_key!()
 
     filnam = "kanweg.fits";
     f = fits_create(filnam; protect=false);
-
-    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6];
-    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
-    c = [1.23, 2.12, 3.0, 4.0, 5.0];
-    d = ['a', 'b', 'c', 'd', 'e'];
-    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"];
-    data = [a, b, c, d, e];
-
-    fits_extend!(f, data; hdutype="TABLE");
-
-    long = repeat(" long", 31);
+    
+    long = repeat(" long", 71);
     for i=1:5
            fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment");
     end
