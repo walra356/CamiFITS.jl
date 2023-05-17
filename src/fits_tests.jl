@@ -290,31 +290,36 @@ function test_fits_pointer()
     fits_extend!(f, data, "'ARRAY   '");
     fits_extend!(f, data, "'IMAGE   '");
 
-    r = fits_record_dump(filnam)
     o = IORead(filnam)
-
     a = _row_nr(o)
     b = _block_row(o)
-    c = _header_row(o)
-    d = _data_row(o)
-    e = _end_row(o)
+    c = _hdu_row(o)
+    d = _header_row(o)
+    e = _data_row(o)
+    f = _end_row(o)
 
+    r = fits_record_dump(filnam)
+    g = r[9][2][1:3]
+    h = r[37][2][1:15]
+    i = r[109][2][1:15]
+    j = r[181][2][1:15]
 
     a = (a .+1 == Base.OneTo(216))
     b = (b == [0, 36, 72, 108, 144, 180])
     c = (c == [0, 72, 144])
-    d = (d == [36, 108, 180])
-    e = (e == [72, 144, 216])
-    f = (r[9][2][1:3] == "END")
-    g = (r[37][2][1:15] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
-    h = (r[109][2][1:15] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
-    k = (r[181][2][1:15] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
+    d = (d == [0, 72, 144])
+    e = (e == [36, 108, 180])
+    f = (f == [72, 144, 216])
+    g = (g == "END")
+    h = (h == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
+    i = (i == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
+    j = (j == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
 
     rm(filnam)
 
-    o = a & b & c & d & e & f & g & h & k
+    o = a & b & c & d & e & f & g & h & i & j
 
-    o || println([a, b, c, d, e, f, g, h, k])
+    o || println([a, b, c, d, e, f, g, h, i, j])
 
     return o
 
