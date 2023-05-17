@@ -26,11 +26,11 @@ using Test
     @test test_fits_edit_key!()
     @test test_fits_rename_key!()
 
-    filnam = "kanweg.fits"
+    filnam = "kanweg.fits";
     data = [0x0000043e, 0x0000040c, 0x0000041f];
     f = fits_create(filnam, data; protect=false);
-    fits_extend!(f, data; hdutype="ARRAY")
-    fits_extend!(f, data; hdutype="IMAGE")
+    fits_extend!(f, data; hdutype="ARRAY");
+    fits_extend!(f, data; hdutype="IMAGE");
     @test fits_verifier(filnam; msg=false) == 0
     @test_throws FITSError fits_create(filnam)
     rm(filnam)

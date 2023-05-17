@@ -93,18 +93,18 @@ end
 
 function test_fits_extend!()
 
-    filnam = "kanweg.fits"
-    data = [0x0000043e, 0x0000040c, 0x0000041f]
-    f = fits_create(filnam, data; protect=false)
+    filnam = "kanweg.fits";
+    data = [0x0000043e, 0x0000040c, 0x0000041f];
+    f = fits_create(filnam, data; protect=false);
 
-    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
-    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
-    c = [1.23, 2.12, 3.0, 4.0, 5.0]
-    d = ['a', 'b', 'c', 'd', 'e']
-    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data = [a, b, c, d, e]
+    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6];
+    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
+    c = [1.23, 2.12, 3.0, 4.0, 5.0];
+    d = ['a', 'b', 'c', 'd', 'e'];
+    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"];
+    data = [a, b, c, d, e];
 
-    fits_extend!(f, data; hdutype="TABLE")
+    fits_extend!(f, data; hdutype="TABLE");
 
     strExample = "1.0e-6 1086 1.23 a a                    "
     a = f.hdu[1].header.card[1].keyword == "SIMPLE"
@@ -198,10 +198,20 @@ end
 
 function test_fits_add_key!()
 
-    filnam = "minimal.fits"
-    f = fits_create(filnam; protect=false)
-    long = repeat(" long", 31)
-    for i=1:1
+    filnam = "kanweg.fits";
+    f = fits_create(filnam; protect=false);
+
+    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6];
+    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
+    c = [1.23, 2.12, 3.0, 4.0, 5.0];
+    d = ['a', 'b', 'c', 'd', 'e'];
+    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"];
+    data = [a, b, c, d, e];
+
+    fits_extend!(f, data; hdutype="TABLE");
+
+    long = repeat(" long", 31);
+    for i=1:5
            fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment");
     end
 
