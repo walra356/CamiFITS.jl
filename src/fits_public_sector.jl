@@ -370,26 +370,6 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 end
 
 # ------------------------------------------------------------------------------
-#              fits_find_keyword(f::FITS, hduindex::Int, keyword::String)
-# ------------------------------------------------------------------------------
-
-function fits_find_keyword(f::FITS, hduindex::Int, keyword::String)
-
-    keyword = Base.strip(keyword)
-    keyword = Base.uppercase(keyword)
-
-    card = f.hdu[hduindex].header.card
-    keys = [card[i].keyword for i ∈ eachindex(card)]
-    index = findall(x -> x == keyword, keys)
-    
-    i = min(length(index), index[1])
-    i > 0 || error("Error: keyword $(keyword) not found")
-
-    return i
-
-end
-
-# ------------------------------------------------------------------------------
 #              fits_add_key!(f, hduindex, key, val, com)
 # ------------------------------------------------------------------------------
 

@@ -392,7 +392,8 @@ function _suggest_keyword(dict::Dict, keyword::String; msg=true)
 
     o = sort(collect(keys(dict)))
     u = [o[i][1] for i ∈ eachindex(o)]
-    X = Base.Unicode.uppercase(keyword[1])
+    keyword = _format_keyword(keyword)
+    X = keyword[1]
 
     itr = findall(x -> x == X, u)
 
