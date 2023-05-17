@@ -18,7 +18,7 @@ using Test
     @test test_fits_read()
     @test test_fits_save_as()
     @test test_fits_collect()
-    @test test_fits_record_pointer()
+    @test test_fits_pointer()
 
     @test test_fits_add_key!()
     @test test_fits_delete_key!()
@@ -30,11 +30,6 @@ using Test
     f = fits_create(filnam, data; protect=false);
     fits_extend!(f, data, "'ARRAY   '");
     fits_extend!(f, data, "'IMAGE   '");
-    r = fits_record_dump(filnam);
-    @test r[9][2][1:3] == "END" 
-    @test r[37][2][1:20] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0"
-    @test r[109][2][1:20] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0"
-    @test r[181][2][1:20] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0"
     @test fits_verifier(filnam; msg=false) == 0
     @test_throws FITSError fits_create(filnam)
     rm(filnam)

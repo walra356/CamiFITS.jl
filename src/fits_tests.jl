@@ -83,7 +83,7 @@ function test_fits_read()
 
     rm(filnam)
 
-    o = isnothing(findfirst(.![a, b, c, d, p, q, r, s])) ? true : false
+    o = a & b & c & d & p & q & r & s
 
     o || println([a, b, c, d, p, q, r, s])
 
@@ -282,19 +282,40 @@ function test_fits_edit_key!()
 
 end
 
-function test_fits_record_pointer()
+function test_fits_pointer()
     
     filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f];
     f = fits_create(filnam, data; protect=false);
     fits_extend!(f, data, "'ARRAY   '");
     fits_extend!(f, data, "'IMAGE   '");
+
+    r = fits_record_dump(filnam)
     o = IORead(filnam)
-    test = (_record_pointer(o) .÷ 80 .+ 1) == Base.OneTo(216)
+
+    a = _row_nr(o)
+    b = _block_row(o)
+    c = _header_row(o)
+    d = _data_row(o)
+    e = _end_row(o)
+
+
+    a = (a .+1 == Base.OneTo(216))
+    b = (b == [0, 36, 72, 108, 144, 180])
+    c = (c == [0, 72, 144])
+    d = (d == [36, 108, 180])
+    e = (e == [72, 144, 216])
+    f = (r[9][2][1:3] == "END")
+    g = (r[37][2][1:15] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
+    h = (r[109][2][1:15] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
+    k = (r[181][2][1:15] == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
 
     rm(filnam)
 
-    return test
+    o = a & b & c & d & e & f & g & h & k
+
+    o || println([a, b, c, d, e, f, g, h, k])
+
+    return o
 
 end
-

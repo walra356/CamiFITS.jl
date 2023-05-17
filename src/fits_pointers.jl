@@ -21,6 +21,19 @@ function _record_pointer(o::IO) # pointer to start of record  (80 bytes/record)
 end
 
 # ------------------------------------------------------------------------------
+#                      _row(o::IO)
+#         nr array:   row numbers = single-line-record numbers (80 bytes/record)
+# ------------------------------------------------------------------------------
+
+function _row_nr(o::IO) # pointer to start of record  (80 bytes/record)
+
+    nr = _record_pointer(o) .÷ 80
+
+    return nr
+
+end
+
+# ------------------------------------------------------------------------------
 #                      _block_pointer(o::IO)
 #         ptr array:   pointer to start of block (2880 bytes/block)
 # ------------------------------------------------------------------------------
@@ -36,23 +49,49 @@ function _block_pointer(o::IO) # pointer to start of block
 end
 
 # ------------------------------------------------------------------------------
+#                      _block_rows(o::IO)
+#         nr array:   start-of-block rows (36 rows/block)
+# ------------------------------------------------------------------------------
+
+function _block_row(o::IO) # pointer to start of block
+
+    nr = _block_pointer(o) .÷ 80
+
+    return nr
+
+end
+
+# ------------------------------------------------------------------------------
 #                      _header_pointer(o::IO)
-#         ptr array:   pointer to start of header
+#         ptr array:   start-of-header pointers
 # ------------------------------------------------------------------------------
 
 function _header_pointer(o::IO)
 
-    b = _block_pointer(o::IO)             # b: start-of-block pointers
+    b = _block_pointer(o::IO)    # b: start-of-block pointers
 
-    ptr::Array{Int,1} = []                   # h: init start-of-header pointers
+    ptr::Array{Int,1} = []       # ptr: init start-of-header pointers
 
-    for i ∈ Base.eachindex(b)              # i: start-of-block pointer
+    for i ∈ Base.eachindex(b)    # i: start-of-block pointer
         Base.seek(o, b[i])
         key = String(Base.read(o, 8))
         key ∈ ["SIMPLE  ", "XTENSION"] ? Base.push!(ptr, b[i]) : false
     end
 
-    return ptr                               # return start-of-header pointers
+    return ptr  # return start-of-header pointers
+
+end
+
+# ------------------------------------------------------------------------------
+#                      _header_row(o::IO)
+#          nr array:   start-of-header rows
+# ------------------------------------------------------------------------------
+
+function _header_row(o::IO)
+
+    nr = _header_pointer(o) .÷ 80
+
+    return nr
 
 end
 
@@ -66,6 +105,19 @@ function _hdu_pointer(o::IO)
     ptr = _header_pointer(o::IO)  # h: start-of-header pointers
 
     return ptr                     # return start-of-HDU pointers
+
+end
+
+# ------------------------------------------------------------------------------
+#                      _hdu_row(o::IO)
+#          nr array:   start-of-hdu rows
+# ------------------------------------------------------------------------------
+
+function _hdu_row(o::IO)
+
+    nr = _hdu_pointer(o) .÷ 80
+
+    return nr
 
 end
 
@@ -92,6 +144,19 @@ function _data_pointer(o::IO)
 end
 
 # ------------------------------------------------------------------------------
+#                      _data_row(o::IO)
+#          nr array:   start-of-data rows
+# ------------------------------------------------------------------------------
+
+function _data_row(o::IO)
+
+    nr = _data_pointer(o) .÷ 80
+
+    return nr
+
+end
+
+# ------------------------------------------------------------------------------
 #                      _end_pointer(o::IO)
 #         ptr array:   pointer to end of data block
 # ------------------------------------------------------------------------------
@@ -105,4 +170,17 @@ function _end_pointer(o::IO)
 
     return ptr
 
-end 
+end
+
+# ------------------------------------------------------------------------------
+#                      _end_row(o::IO)
+#          nr array:   end-of-data = end-of-hdu rows
+# ------------------------------------------------------------------------------
+
+function _end_row(o::IO)
+
+    nr = _end_pointer(o) .÷ 80
+
+    return nr
+
+end
