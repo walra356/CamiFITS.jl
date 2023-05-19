@@ -166,8 +166,6 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     record = join(join.(hdu.dataobject.data))
     nchars = length(record)
-    #   nrecs = Base.length(record) # number of ASCII records
-    #   lrecs = Base.length(record[1])  # length of ASCII records
     nblank = 2880 - nchars % 2880  # number of blanks to complement last data block
     blanks = Base.repeat(' ', nblank) # complement last data block with blanks
     nbyte = Base.write(o, Array{UInt8,1}(record * blanks))

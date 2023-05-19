@@ -4,7 +4,7 @@ FITS stands for *Flexible Image Transport System*. This is an open standard orig
 
 CamiFITS offers the *basic FITS functionality* for scientific users not requiring celestal coordinates. Optional *Conforming Extensions* are under development. The user can create, read and extend .fits files as well as create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-05-15:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
+*Disclaimer 2023-05-19:* The author is currently writing the manual. In this process the code is tested, both with regard to FITS conformance and runtest coverage. Known issues remain to be solved and the package certainly did not reach a stable form.
 
 # Table of contents
 
@@ -26,8 +26,8 @@ julia> using CamiFITS
 A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) of records with metainformation.
 
 Among the *STANDARD HDU data types* We distinguish between *IMAGE*, 
-*ASCII_TABLE* and *BINTABLE* HDU types. The first HDU in a `.fits` file is 
-called the *PRIMARY HDU*.
+*TABLE* (= *ASCII_TABLE*) and *BINTABLE* HDU types. The first HDU in 
+a `.fits` file is called the *PRIMARY HDU*.
 
 Let "example.fits" be an *existing* `.fits` file. By the commands 
 
