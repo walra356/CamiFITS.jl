@@ -110,7 +110,7 @@ function test_fits_extend!()
     a = f.hdu[1].header.card[1].keyword == "SIMPLE"
     b = f.hdu[1].dataobject.data[1][1] == 0x0000043e
     c = f.hdu[2].header.card[1].keyword == "XTENSION"
-    d = f.hdu[2].dataobject.data[1] == strExample
+    d = join(f.hdu[2].dataobject.data[1]) == strExample
     e = get(Dict(f.hdu[2].header.map), "NAXIS", 0) == 3
 
     rm(filnam)

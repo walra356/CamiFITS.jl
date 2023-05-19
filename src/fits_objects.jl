@@ -65,7 +65,6 @@ function cast_FITS_data(hdutype::String, data)
     hdutype = _format_hdutype(hdutype)
 
     if (hdutype == "'TABLE   '") & (eltype(data) ≠ Vector{String})
-        println("string data")
         # data input as Any array of table COLUMNS
         cols = data 
         ncols = length(cols)
@@ -673,7 +672,6 @@ function _table_data_types(dataobject::FITS_data)
         T = eltype(data[1][col])
         x = T <: Integer ? "I" : T <: Real ? "E" : T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
         w = string(maximum([length(string(data[row][col])) for row = 1:nrows]))
-println("w = $w")
 
         if T <: Union{Char,String}
             isascii(join(data[1])) || Base.throw(FITSError(msgErr(36)))
