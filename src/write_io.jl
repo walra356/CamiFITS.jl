@@ -158,14 +158,30 @@ function IOWrite_IMAGE_data(hdu::FITS_HDU)
     return o
 
 end
-
 function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     o = IOBuffer()
 
     Base.seekstart(o)
 
-    record = join(hdu.dataobject.data) # Array of ASCII records
+    record = join(join.(hdu.dataobject.data))
+    nchars = length(record)
+    #   nrecs = Base.length(record) # number of ASCII records
+    #   lrecs = Base.length(record[1])  # length of ASCII records
+    nblank = 2880 - nchars % 2880  # number of blanks to complement last data block
+    blanks = Base.repeat(' ', nblank) # complement last data block with blanks
+    nbyte = Base.write(o, Array{UInt8,1}(record * blanks))
+
+    return o
+
+end
+function IOWrite_TABLE_data1(hdu::FITS_HDU)
+
+    o = IOBuffer()
+
+    Base.seekstart(o)
+
+    record = join(join.(hdu.dataobject.data)) # Array of ASCII records
     nrecs = Base.length(record) # number of ASCII records
     lrecs = Base.length(record[1])  # length of ASCII records
     nchar = 2880 - (nrecs * lrecs) % 2880  # number of blanks to complement last data block

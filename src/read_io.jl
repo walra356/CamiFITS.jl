@@ -109,6 +109,8 @@ function _read_array_data(o::IO, hduindex::Int)
         data = Any[]
     end
 
+    return data
+
 end
 
 function _read_table_data(o::IO, hduindex::Int)
@@ -118,24 +120,20 @@ function _read_table_data(o::IO, hduindex::Int)
     h = _read_header(o, hduindex) # FITS_header object
 
     Base.seek(o, ptr[hduindex])
-println("hduindex = ", hduindex)
-    i = get(h.map, "NAXIS1", 0)
-println("NAXIS1 =", i)
-    lrecs = h.card[i].value
-    i = get(h.map, "NAXIS2", 0)
-println("NAXIS2 =", i)
-    nrecs = h.card[i].value
-
-    # dicts = FITS_header.dict
-    # lrecs = Base.get(dicts, "NAXIS1", 0)
-    # nrecs = Base.get(dicts, "NAXIS2", 0)
+    lrow = h.card[h.map["NAXIS1"]].value
+    nrow = h.card[h.map["NAXIS2"]].value
+    tfields = h.card[h.map["TFIELDS"]].value
+    tbcol = [h.card[h.map["TBCOL$i"]].value for i=1:tfields]
 
     Base.seek(o, ptr[hduindex])
 
-    data = [String(Base.read(o, lrecs)) for i = 1:nrecs]
+    data = [String(Base.read(o, lrow)) for i = 1:nrow]
 
-    println(data)
+    itr = [tbcol[i]:tbcol[i+1]-1 for i=1:tfields-1]
+    itr = push!(itr, tbcol[tfields]:lrow)
 
-    return FITS_data = cast_FITS_data("TABLE", data)
+    data = [[data[i][itr[j]] for j ∈ eachindex(itr)] for i = 1:nrow]
+
+    return data
 
 end

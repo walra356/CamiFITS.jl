@@ -64,14 +64,19 @@ function cast_FITS_data(hdutype::String, data)
 
     hdutype = _format_hdutype(hdutype)
 
-    if hdutype == "'TABLE   '"
-        cols = data
+    if (hdutype == "'TABLE   '") & (eltype(data) ≠ Vector{String})
+        println("string data")
+        # data input as Any array of table COLUMNS
+        cols = data 
         ncols = length(cols)
         nrows = length(cols[1])
         w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
-        data = [join([rpad(string(cols[i][j]), w[i])[1:w[i]] for i = 1:ncols]) for j = 1:nrows]
+        # w = required widths of fits data fields
+        data = [[rpad(string(cols[i][j]), w[i]) for i = 1:ncols] for j = 1:nrows]
+        # data output as Vector{String} of table ROWS (of equal size fields)
+        # NB. the table has been transposed
     end
-
+    
     return FITS_data(hdutype, data)
 
 end
@@ -658,29 +663,30 @@ end
 
 function _table_data_types(dataobject::FITS_data)
 
-    cols = dataobject.data
-    ncols = length(cols)
-    nrows = length(cols[1])
+    data = dataobject.data
+    nrows = length(data)
+    ncols = length(data[1])
 
     fmtsp = Array{String,1}(undef, ncols)  # format specifier Xw.d
 
-    for i ∈ eachindex(fmtsp)
-        T = eltype(cols[i][1])
+    for col ∈ eachindex(fmtsp)
+        T = eltype(data[1][col])
         x = T <: Integer ? "I" : T <: Real ? "E" : T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
-        w = string(maximum([length(string(cols[i][j])) for j = 1:nrows]))
+        w = string(maximum([length(string(data[row][col])) for row = 1:nrows]))
+println("w = $w")
 
         if T <: Union{Char,String}
-            isascii(join(cols[i])) || Base.throw(FITSError(msgErr(36)))
+            isascii(join(data[1])) || Base.throw(FITSError(msgErr(36)))
         end
 
         if T <: Union{Float16,Float32,Float64}
-            v = string(cols[i][1])
+            v = string(data[row][1])
             x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
             v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
             d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
         end
 
-        fmtsp[i] = T <: Union{Float16,Float32,Float64} ? (x * w * '.' * d) : x * w
+        fmtsp[col] = T <: Union{Float16,Float32,Float64} ? (x * w * '.' * d) : x * w
     end
 
     return fmtsp
@@ -691,27 +697,24 @@ function _header_record_table(dataobject::FITS_data) # input array of table colu
 
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
-    cols = dataobject.data
-    ndims = eltype(cols) == String ? 1 : Base.ndims(eltype(cols))
-    ndims += Base.ndims(cols)
+    data = dataobject.data
+    ndims = eltype(data) == String ? 1 : Base.ndims(eltype(data))
+    ndims += Base.ndims(data)
     ndims == 2 || Base.throw(FITSError(msgErr(39)))
-    ncols = length(cols)
-    nrows = length(cols[1])
+    nrows = length(data)
+    ncols = length(data[1])
     nbits = 8
-
+    
     pcols = 1  # pointer to starting position of column in table row
     ncols > 0 || Base.throw(FITSError(msgErr(34)))
     ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
-    lcols = [length(cols[i]) for i = 1:ncols] # length of columns (number of rows)
-    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)                # equal colum length test
+    lcols = [length(data[row]) for row = 1:nrows] # length of columns (number of rows)
+    pass = sum(lcols .- ncols) == 0               # equal colum length test
     pass || Base.throw(FITSError(msgErr(33)))
 
-    w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
-    data = [join([rpad(string(cols[i][j]), w[i])[1:w[i]] for i = 1:ncols]) for j = 1:nrows]
-
-    tbcol = [pcols += w[i] for i = 1:(ncols-1)]                        # field pointers (first column)
-    tbcol = prepend!(tbcol, 1)
-    tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
+    w = [length(string(data[1][col])) for col = 1:ncols]
+    tbcol = [sum(w[1:i-1])+1 for i=1:ncols]
+    lrows = sum([length(string(data[1][col])) for col = 1:ncols])
 
     tform = _table_data_types(dataobject)
 
@@ -722,10 +725,11 @@ function _header_record_table(dataobject::FITS_data) # input array of table colu
 
     hdutype = Base.rpad(hdutype, 20)
     bitpix = Base.lpad(nbits, 20)
-    naxis = Base.rpad(ndims, 20)
-    naxis1 = Base.lpad(sum(w), 20)
+    naxis = Base.lpad(ndims, 20)
+    naxis1 = Base.lpad(lrows, 20) 
     naxis2 = Base.lpad(nrows, 20)
     tfields = Base.lpad(ncols, 20)
+    tbcol = [Base.lpad(tbcol[i], 20) for i ∈ eachindex(tbcol)]
 
     r::Array{String,1} = []
 
@@ -740,24 +744,21 @@ function _header_record_table(dataobject::FITS_data) # input array of table colu
     Base.push!(r, "COLSEP  =                    1 / number of spaces in column separator           ")
     for i = 1:ncols
         Base.push!(r, "TTYPE$i  = " * ttype[i] * " / header of column " * rpad(i, 30))
-    end
-    for i = 1:ncols
         Base.push!(r, "TBCOL$i  = " * tbcol[i] * " / pointer to column " * rpad(i, 29))
-    end
-    for i = 1:ncols
         Base.push!(r, "TFORM$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
-    end
-    for i = 1:ncols
         Base.push!(r, "TDISP$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
     end
     Base.push!(r, "END                                                                             ")
+
+    pass = sum(length.(r) .- 80) == false
+
+    pass || println([length.(r)])
 
     _append_blanks!(r)
 
     return r
 
 end
-
 function _header_record_bintable(dataobject::FITS_data) # input array of table columns
 
     hdutype = dataobject.hdutype
@@ -774,13 +775,13 @@ function _header_record_bintable(dataobject::FITS_data) # input array of table c
     ncols > 0 || Base.throw(FITSError(msgErr(34)))
     ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
     lcols = [length(cols[i]) for i = 1:ncols] # length of columns (number of rows)
-    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0)                # equal colum length test
+    pass = (sum(.!(lcols .== fill(nrows, ncols))) == 0) # equal colum length test
     pass || Base.throw(FITSError(msgErr(33)))
 
     w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
     data = [join([rpad(string(cols[i][j]), w[i])[1:w[i]] for i = 1:ncols]) for j = 1:nrows]
 
-    tbcol = [pcols += w[i] for i = 1:(ncols-1)]                        # field pointers (first column)
+    tbcol = [pcols += w[i] for i = 1:(ncols-1)] # field pointers (first column)
     tbcol = prepend!(tbcol, 1)
     tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
 

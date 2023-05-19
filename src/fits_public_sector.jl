@@ -145,6 +145,62 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
     return dataobject.data
 
 end
+
+# ------------------------------------------------------------------------------
+#       fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true]]]])
+
+Metafinformation and data as loaded from `f.hdu[hduindex]`; i.e.,
+*after casting of the FITS object*.
+
+* `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
+* `hdr`: show header (::Bool - default: true)
+* `dat`: show data (::Bool - default: true)
+* `nr`: include record numbers (::Bool - default: true)
+#### Example:
+```
+julia> filnam = "minimal.fits";
+
+julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
+
+julia> fits_create(filnam, data; protect=false);
+
+julia> fits_record_dump(filnam; dat=false)
+36-element Vector{Any}:
+ (1, "SIMPLE  =                    T / file does conform to FITS standard             ")
+ (2, "BITPIX  =                   32 / number of bits per data pixel                  ")
+ (3, "NAXIS   =                    1 / number of data axes                            ")
+ (4, "NAXIS1  =                    3 / length of data axis 1                          ")
+ (5, "BZERO   =           2147483648 / offset data range to that of unsigned integer  ")
+ (6, "BSCALE  =                  1.0 / default scaling factor                         ")
+ (7, "EXTEND  =                    T / FITS dataset may contain extensions            ")
+ (8, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
+ (9, "END                                                                             ")
+ (10, "                                                                                ")
+ (11, "                                                                                ")
+ (12, "                                                                                ")
+ ⋮
+ (34, "                                                                                ")
+ (35, "                                                                                ")
+ (36, "                                                                                ")
+
+julia> fits_record_dump(filnam; hdr=false)
+36-element Vector{Any}:
+ (37, "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ (38, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ (39, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ (40, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ ⋮
+ (70, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ (71, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ (72, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+
+julia> rm(filnam); f = nothing
+```
+"""
 function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
 
     o = IORead(filnam)
@@ -302,8 +358,9 @@ function fits_read(filnam::String)
     Base.seekstart(o)
 
     rec = [_read_header(o::IO, i) for i = 1:nhdu]
+    
     Base.seekstart(o)
-
+    
     dat = [_read_data(o, i) for i = 1:nhdu]
     hdu = [cast_FITS_HDU(i, rec[i], dat[i]) for i = 1:nhdu]
 
