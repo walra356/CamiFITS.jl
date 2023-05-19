@@ -117,7 +117,7 @@ julia> rm(filnam); f = nothing
 
 #### The FITS file for a single image
 
-Rather than inspecting the [`FITS`](@ref) object CamiFITS offers the
+Rather than inspecting the [`FITS`](@ref) object directly CamiFITS offers the
 [`fits_info`](@ref) and [`fits_record_dump`](@ref) tools. To demonstrate these 
 tools we first create the image data field in the form of a 3x3 matrix:
 ```
