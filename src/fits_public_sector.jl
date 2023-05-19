@@ -12,8 +12,8 @@
 @doc raw"""
     fits_info(f::FITS [, hduindex=1 [; msg=true]])
 
-Metafinformation and data as loaded from `f.hdu[hduindex]`; i.e.,
-*after casting of the FITS object*.
+Metafinformation and daya of the FITS_HDU object `f.hdu[hduindex]`. 
+The fits object `f` has to be created seperately.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `msg`: print message (::Bool)
@@ -47,8 +47,8 @@ julia> rm(filnam); f = nothing
 ```
     fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
 
-Metafinformation of the specified FITS HDU as loaded from `filnam`; i.e., 
-*without casting of the FITS object*.
+As above but reading the fits object from `filnam` from disc. Additional is 
+the record numbering.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `nr`: include cardindex (::Bool - default: `true`)
@@ -154,7 +154,7 @@ end
     fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true]]]])
 
 Metafinformation and data as loaded from `f.hdu[hduindex]`; i.e.,
-*after casting of the FITS object*.
+*without casting of the FITS object*.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `hdr`: show header (::Bool - default: true)
