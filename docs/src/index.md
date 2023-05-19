@@ -161,7 +161,7 @@ END
  21  22  23
  31  23  33
 
-julia> rm(filnam); f = nothing
+julia> f = nothing
 ```
 The keywords `NAXIS1`, `NAXIS2` and `NAXIS3` represent the dimensions 
 of the ``x, y`` data matrix stacked in the ``z`` direction. 
@@ -170,7 +170,10 @@ The matrix elements are referred to as `pixels` and their bit size is
 represented by the keyword `BITPIX`. In the above example the pixel value 
 is used to indicate the matrix indices.
 
-To access the data of the file `filnam` on dics we use
+THe fits object `f` has been closed but its contents has been autosaved
+under the name `filnam` = 'Matrix.fits' to disk. To rapidly access the data 
+of `filnam` we can [`fits_read`](@ref) the fitsobject from disk or directly
+access its data (using [`fits_info`](@ref)) for image processing in Julia:
 
 ```
 julia> data = fits_info(filnam; msg=false)
