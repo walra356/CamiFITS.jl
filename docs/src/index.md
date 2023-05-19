@@ -95,7 +95,7 @@ Note how the [`FITS`](@ref) object is inspected using the [`fits_info`](@ref) to
 
 The header of a [`FITS_HDU`](@ref) is contained in an array of *single-record*
 `.card` objects as illustrated in the figure above. To find the `cardindex` 
-associated with a keyword (e.g., "NAXIS") we use the `header.map`:
+associated with a keyword (e.g., "NAXIS") we can use the `header.map`:
 ```
 julia> i = f.hdu[1].header.map["NAXIS"]
 3
@@ -117,7 +117,9 @@ julia> rm(filnam); f = nothing
 
 #### The FITS file for a single image
 
-We first create the data field in the form of a 3x3 matrix:
+Rather than inspecting the [`FITS`](@ref) object CamiFITS offers the
+[`fits_info`](@ref) and [`fits_record_dump`](@ref) tools. To demonstrate these 
+tools we first create the image data field in the form of a 3x3 matrix:
 ```
 julia> filnam = "matrix.fits";
 
