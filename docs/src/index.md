@@ -117,7 +117,7 @@ julia> rm(filnam); f = nothing
 
 #### The FITS file for a single image
 
-Rather than inspecting the [`FITS`](@ref) object directly CamiFITS offers the
+Rather than inspecting the [`FITS`](@ref) object directly, CamiFITS offers the
 [`fits_info`](@ref) and [`fits_record_dump`](@ref) tools. To demonstrate these 
 tools we first create the image data field in the form of a 3x3 matrix:
 ```
@@ -175,8 +175,8 @@ is used to indicate the matrix indices.
 The [`FITS`](@ref) object `f` has been closed above but its contents has been 
 *autosaved* under the name `filnam` = 'matrix.fits' to disk. To access 
 the image data of `filnam` we can [`fits_read`](@ref) the [`FITS`](@ref) object 
-from disk or directly access its data for image processing in Julia using
-[`fits_info`](@ref) :
+from disk but it is simpler to access its data for image processing in Julia 
+using [`fits_info`](@ref):
 
 ```
 julia> data = fits_info(filnam; msg=false)
