@@ -170,10 +170,11 @@ The matrix elements are referred to as `pixels` and their bit size is
 represented by the keyword `BITPIX`. In the above example the pixel value 
 is used to indicate the matrix indices.
 
-THe fits object `f` has been closed but its contents has been autosaved
-under the name `filnam` = 'Matrix.fits' to disk. To rapidly access the data 
-of `filnam` we can [`fits_read`](@ref) the fitsobject from disk or directly
-access its data (using [`fits_info`](@ref)) for image processing in Julia:
+The [`FITS`](@ref) object `f` has been closed above but its contents has been 
+*autosaved* under the name `filnam` = 'matrix.fits' to disk. To access 
+the image data of `filnam` we can [`fits_read`](@ref) the [`FITS`](@ref) object 
+from disk or directly access its data for image processing in Julia using
+[`fits_info`](@ref) :
 
 ```
 julia> data = fits_info(filnam; msg=false)
