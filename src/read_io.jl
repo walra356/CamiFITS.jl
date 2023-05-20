@@ -96,10 +96,8 @@ function _read_array_data(o::IO, hduindex::Int)
     if ndims > 0                           # e.g. dims[1]=(512,512,1)
         dims = Core.tuple([h.card[i+n].value for n = 1:ndims[1]]...)      
         ndata = Base.prod(dims)            # number of data points
-        i = get(h.map, "BITPIX", 0)
-        nbits = h.card[i].value
-        i = get(h.map, "BZERO", 0)
-        bzero = h.card[i].value
+        nbits = h.card[h.map["BITPIX"]].value
+        bzero = h.card[h.map["BZERO"]].value
         E = _fits_eltype(nbits, bzero)
         data = [Base.read(o, E) for n = 1:ndata]
         data = Base.ntoh.(data)  # change from network to host ordering

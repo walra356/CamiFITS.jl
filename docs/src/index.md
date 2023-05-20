@@ -56,6 +56,8 @@ Header and Data Unit. A data structure consisting of a header and the data the
 header describes. Note that an HDU may consist entirely of a header with no 
 data blocks.
 ```
+The interpretation of the words *must*, *shall*, *may*, *recommended*, 
+*required* and *optional* is defined in the [IETF standard - RFC 2119](https://www.rfc-editor.org/info/rfc2119)
 #### Creating a simple FITS file
 FITS files can be created using the command [`fits_create`](@ref). This process
 proceeds in two steps: (a) first a [`FITS`](@ref) object is constructed 

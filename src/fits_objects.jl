@@ -761,7 +761,7 @@ function _header_record_table(dataobject::FITS_data)
 end
 
 # ==============================================================================
-#                  _header_record_table(dataobject)
+#                  _header_record_bintable(dataobject)
 # ------------------------------------------------------------------------------
 
 function _header_record_bintable(dataobject::FITS_data) 
