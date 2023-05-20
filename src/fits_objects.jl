@@ -74,6 +74,7 @@ function cast_FITS_data(hdutype::String, data)
         data = [[rpad(string(cols[i][j]), w[i]) for i = 1:ncols] for j = 1:nrows]
         # data output as Vector{String} of table ROWS (of equal size fields)
         # NB. the table has been transposed
+        ##### data = Base.Unicode.uppercase(data)
     end
     
     return FITS_data(hdutype, data)
@@ -525,7 +526,7 @@ end
 function _header_record_groups(dataobject::FITS_data)
 
     hdutype = dataobject.hdutype
-    hdutype == "'GROUPS   '" || Base.throw(FITSError(msgErr(27)))
+    hdutype == "'GROUPS   '" && error("hdutype $(hdutype) not implemented")
     ndims = dataobject.naxis
     dims = dataobject.dims
     nbyte = dataobject.nbyte
@@ -659,6 +660,7 @@ end
 #                  _header_record_table(dataobject)
 # ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
 function _table_data_types(dataobject::FITS_data)
 
     data = dataobject.data
@@ -669,7 +671,8 @@ function _table_data_types(dataobject::FITS_data)
 
     for col ∈ eachindex(fmtsp)
         T = eltype(data[1][col])
-        x = T <: Integer ? "I" : T <: Real ? "E" : T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
+        x = T <: Integer ? "I" : T <: Real ? "E" : 
+            T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
         w = string(maximum([length(string(data[row][col])) for row = 1:nrows]))
 
         if T <: Union{Char,String}
@@ -689,8 +692,8 @@ function _table_data_types(dataobject::FITS_data)
     return fmtsp
 
 end
-
-function _header_record_table(dataobject::FITS_data) # input array of table columns
+# ------------------------------------------------------------------------------
+function _header_record_table(dataobject::FITS_data)
 
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
@@ -756,10 +759,15 @@ function _header_record_table(dataobject::FITS_data) # input array of table colu
     return r
 
 end
-function _header_record_bintable(dataobject::FITS_data) # input array of table columns
+
+# ==============================================================================
+#                  _header_record_table(dataobject)
+# ------------------------------------------------------------------------------
+
+function _header_record_bintable(dataobject::FITS_data) 
 
     hdutype = dataobject.hdutype
-    hdutype == "'BINTABLE'" || Base.throw(FITSError(msgErr(30)))
+    hdutype == "'BINTABLE'" && error("hdutype $(hdutype) not implemented")
     cols = dataobject.data
     ndims = eltype(cols) == String ? 1 : Base.ndims(eltype(cols))
     ndims += Base.ndims(cols)

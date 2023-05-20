@@ -6,6 +6,7 @@ import Dates           # used in fits_private_sector
 
 export _read_TABLE_data
 export IORead
+export IOWrite
 export _read_header
 export _read_data
 

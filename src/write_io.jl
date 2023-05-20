@@ -20,7 +20,7 @@ function fits_save(f::FITS)
         o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data))
     end
 
-    return _fits_write_IO(o, f.filnam.value)
+    return IOWrite(o, f.filnam.value)
 
 end
 
@@ -76,15 +76,15 @@ function fits_save_as(f::FITS, filnam::String; protect=true)
 
     (isfile & protect) && Base.throw(FITSError(msgErr(4)))
 
-    return _fits_write_IO(o, filnam)
+    return IOWrite(o, filnam)
 
 end
 
 # ------------------------------------------------------------------------------
-#                        _fits_write_IO(o, filnam)
+#                        IOWrite(o, filnam)
 # ------------------------------------------------------------------------------
 
-function _fits_write_IO(o::IO, filnam::String)
+function IOWrite(o::IO, filnam::String)
 
     s = Base.open(filnam, "w")
     Base.write(s, o.data)

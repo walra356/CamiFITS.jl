@@ -720,28 +720,18 @@ fits_copy("T01.fits", "T01a.fits"; protect=false)
 """
 function fits_copy(filnam1::String, filnam2=" "; protect=true, msg=true)
 
-    f = fits_read(filnam1)
+    filnam = filnam2 == " " ? (filnam1 * "- Copy.fits") : filnam2
+    
+    if Base.Filesystem.isfile(filnam2) & protect
+        str = filnam2 * " allready exists - set 'protect=false' to replace it."
+        return println(str)
+    end
 
-    filnam2 = filnam2 == " " ? "$(f.filnam.name) - Copy.fits" : filnam2
+    o = IORead(filnam1)
 
-    Base.Filesystem.isfile(filnam2) && Base.throw(FITSError(msgErr(1)))
+    IOWrite(o, filnam2)
 
-    n = cast_FITS_filnam(filnam2)
-    f.filnam.value = n.value
-    f.filnam.name = n.name
-    f.filnam.prefix = n.prefix
-    f.filnam.numerator = n.numerator
-    f.filnam.extension = n.extension
-
-    # fits_save_as(f, filnam2; protect)
-
-    #f = fits_read(filnam2)
-
-    msg && println("'$(filnam1)' was copied under the name '$(filnam2)'")
-
-    fits_save(f)
-
-    return f
+    return msg && println("'$(filnam1)' was copied under the name '$(filnam2)'")
 
 end
 

@@ -145,8 +145,9 @@ function test_fits_copy()
     filnam1="filnam1.fits"
     filnam2="filnam2.fits"
 
-    f = fits_create(filnam1; protect=false)
-    f = fits_copy(filnam1, filnam2; protect=false, msg=false);
+    fits_create(filnam1; protect=false)
+    fits_copy(filnam1, filnam2; protect=false, msg=false);
+    f = fits_read(filnam2)
 
     o = f.filnam.value == filnam2
     
