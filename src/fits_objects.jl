@@ -164,23 +164,7 @@ Create the [`FITS_header`](@ref) object from the dataobject. The
 dataobject-input mode is used by [`fits_create`](@ref) to ceate the header
 object as part of creating the [`FITS`](@ref) obhectstarting from Julia data 
 input.
-"""
-function cast_FITS_header(dataobject::FITS_data)
 
-    hdutype = dataobject.hdutype
-
-    record = hdutype == "'PRIMARY '" ? _header_record_primary(dataobject) :
-             hdutype == "'GROUPS  '" ? _header_record_groups(dataobject) :
-             hdutype == "'IMAGE   '" ? _header_record_image(dataobject) :
-             hdutype == "'ARRAY   '" ? _header_record_array(dataobject) :
-             hdutype == "'TABLE   '" ? _header_record_table(dataobject) :
-             hdutype == "'BINTABLE'" ? _header_record_bintable(dataobject) :
-             Base.throw(FITSError(msgErr(25))) # hdutype not recognized
-
-    return cast_FITS_header(record::Vector{String})
-
-end
-@doc raw"""
     cast_FITS_header(record::Vector{String})
 
 Create the [`FITS_header`](@ref) object from a block of 36 single-record 
@@ -207,6 +191,21 @@ julia> h.card[35].record
 "r35     '35                                                                    '"
 ```
 """
+function cast_FITS_header(dataobject::FITS_data)
+
+    hdutype = dataobject.hdutype
+
+    record = hdutype == "'PRIMARY '" ? _header_record_primary(dataobject) :
+             hdutype == "'GROUPS  '" ? _header_record_groups(dataobject) :
+             hdutype == "'IMAGE   '" ? _header_record_image(dataobject) :
+             hdutype == "'ARRAY   '" ? _header_record_array(dataobject) :
+             hdutype == "'TABLE   '" ? _header_record_table(dataobject) :
+             hdutype == "'BINTABLE'" ? _header_record_bintable(dataobject) :
+             Base.throw(FITSError(msgErr(25))) # hdutype not recognized
+
+    return cast_FITS_header(record::Vector{String})
+
+end
 function cast_FITS_header(record::Vector{String})
 
     remainder = length(record) % 36
