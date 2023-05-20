@@ -25,8 +25,8 @@ julia> using CamiFITS
 
 A FITS file consists of a sequence of one or more *Header and Data Units* ([`FITS_HDU`](@ref)s), each containing a [`FITS_data`](@ref) block (containing one or more images) preceeded by a [`FITS_header`](@ref) of records with metainformation.
 
-Among the *STANDARD HDU data types* we distinguish between *IMAGE*, *ARRAY*,
-*ASCII_TABLE* and *BINTABLE* HDU types. The first HDU in 
+Among the *STANDARD HDU types* we distinguish between *IMAGE*, *ARRAY*,
+*ASCII TABLE* and *BINTABLE* HDU types. The first HDU in 
 a `.fits` file is called the *PRIMARY HDU*.
 
 Let "example.fits" be an *existing* `.fits` file. By the commands 
@@ -56,8 +56,8 @@ Header and Data Unit. A data structure consisting of a header and the data the
 header describes. Note that an HDU may consist entirely of a header with no 
 data blocks.
 ```
-The interpretation of the words *must*, *shall*, *may*, *recommended*, 
-*required* and *optional* is defined in the [IETF standard - RFC 2119](https://www.rfc-editor.org/info/rfc2119)
+The words *must*, *shall*, *may*, *recommended*, *required* and *optional* are 
+to be interprete as described in the [IETF standard - RFC 2119](https://www.rfc-editor.org/info/rfc2119).
 #### Creating a simple FITS file
 FITS files can be created using the command [`fits_create`](@ref). This process
 proceeds in two steps: (a) first a [`FITS`](@ref) object is constructed 
