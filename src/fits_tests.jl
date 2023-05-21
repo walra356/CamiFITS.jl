@@ -23,6 +23,20 @@ function test_fits_info()
 
 end
 
+function test_get_card()
+
+    filnam = "minimal.fits";
+
+    f = fits_create(filnam; protect=false)
+    i = get_card(f.hdu[1].header, "NAXIS").cardindex
+    a = i == 3
+
+    rm(filnam); f = nothing
+
+    return a
+
+end
+
 function test_fits_create()
 
     filnam = "minimal.fits"

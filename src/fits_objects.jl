@@ -288,7 +288,7 @@ end
 @doc raw"""
     FITS_filnam
 
-FITS object to hold the decomposed name of a `.fits` file.
+mutable FITS object to hold the decomposed name of a `.fits` file.
 
 The fields are:
 " `    .value`:  for `p#.fits` this is `p#.fits` (`::String`)

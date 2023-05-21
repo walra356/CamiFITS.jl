@@ -39,7 +39,7 @@ julia> f = fits_read(filnam);
 ```
 we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on disc) 
 to the variable `f`. All information of a given `.fits` file is stored in 
-the [`FITS`](@ref) object, its structure is shown in the flow chard below.
+the [`FITS`](@ref) object, its structure is shown in the diagram below.
 
 ![Image](./assets/flowchart.png)
 
@@ -321,6 +321,7 @@ FITS_card
 FITS_data
 ```
 #### Type casting
+The casting of the FITS object is illustrated in the flow diagram below.
 ![Image](./assets/fits_casting.png)
 
 ```@docs
@@ -337,6 +338,7 @@ cast_FITS_data(hdutype::String, data)
 
 ```@docs
 fits_info(f::FITS, hduindex=1; msg=true)
+get_card(h::FITS_header, keyword::String)
 fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```

@@ -147,6 +147,35 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 end
 
 # ------------------------------------------------------------------------------
+#             get_card(f::FITS_HDU, keyword::String)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    get_card(h::FITS_header, keyword::String)
+
+Draw card with given keyword from [`FITS_header`](@ref)
+#### Example:
+```
+julia> filnam = "minimal.fits";
+
+julia> f = fits_create(filnam; protect=false);
+
+julia> get_card(f.hdu[1].header, "NAXIS").cardindex
+3
+
+julia> rm(filnam); f = nothing
+```
+"""
+function get_card(h::FITS_header, keyword::String)
+
+    i = get(h.map, keyword, 0)
+    card = i > 0 ? h.card[i] : nothing
+
+    return card
+
+end
+
+# ------------------------------------------------------------------------------
 #       fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
 # ------------------------------------------------------------------------------
 
