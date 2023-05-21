@@ -122,9 +122,9 @@ function IOWrite_data(hdu::FITS_HDU)
 
     hdutype = hdu.dataobject.hdutype
 
-    hdutype == "'PRIMARY '" && return IOWrite_IMAGE_data(hdu)
-    hdutype == "'IMAGE   '" && return IOWrite_IMAGE_data(hdu)
-    hdutype == "'ARRAY   '" && return IOWrite_IMAGE_data(hdu)
+    hdutype == "'PRIMARY '" && return IOWrite_ARRAY_data(hdu)
+    hdutype == "'IMAGE   '" && return IOWrite_ARRAY_data(hdu)
+    hdutype == "'ARRAY   '" && return IOWrite_ARRAY_data(hdu)
     hdutype == "'TABLE   '" && return IOWrite_TABLE_data(hdu)
     hdutype == "'BINTABLE'" && return IOWrite_BINTABLE_data(hdu)
 
@@ -132,7 +132,7 @@ function IOWrite_data(hdu::FITS_HDU)
 
 end
 
-function IOWrite_IMAGE_data(hdu::FITS_HDU)
+function IOWrite_ARRAY_data(hdu::FITS_HDU)
 
     o = IOBuffer()
 
@@ -144,17 +144,20 @@ function IOWrite_IMAGE_data(hdu::FITS_HDU)
 
     T = Base.eltype(data)
 
-    i = hdu.header.map["BZERO"]
+    i = get(h.map, "BZERO", 0)
     bzero = hdu.header.card[i].value
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
 
     data = Base.vec(data)
-    data = data .- T(bzero) # change between Int and UInt (if applicable)
-    data = hton.(data) # change from 'host' to 'network' ordering
+    # change between Int and UInt (if applicable):
+    data = data .- T(bzero)
+    # change from 'host' to 'network' ordering: 
+    data = hton.(data) 
 
-    [Base.write(o, data[i]) for i ∈ eachindex(data)] # write data
-    [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat%(2880÷nbyte))]  # complete block with blanks
-
+    # write data:
+    [Base.write(o, data[i]) for i ∈ eachindex(data)] 
+    # complete block with blanks:
+    [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat%(2880÷nbyte))]  
     return o
 
 end
@@ -166,8 +169,10 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     record = join(join.(hdu.dataobject.data))
     nchars = length(record)
-    nblank = 2880 - nchars % 2880  # number of blanks to complement last data block
-    blanks = Base.repeat(' ', nblank) # complement last data block with blanks
+    # number of blanks to complement last data block:
+    nblank = 2880 - nchars % 2880
+    # complement last data block with blanks:
+    blanks = Base.repeat(' ', nblank)
     nbyte = Base.write(o, Array{UInt8,1}(record * blanks))
 
     return o
