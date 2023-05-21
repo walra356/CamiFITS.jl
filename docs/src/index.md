@@ -321,7 +321,7 @@ FITS_card
 FITS_data
 ```
 #### Type casting
-![Image](./assets/fits)casting.png)
+![Image](./assets/fits_casting.png)
 
 ```@docs
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
