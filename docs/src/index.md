@@ -321,7 +321,8 @@ FITS_card
 FITS_data
 ```
 #### Type casting
-The casting of the FITS object is illustrated in the flow diagram below.
+The casting of the FITS object is illustrated in the flow diagram below
+
 ![Image](./assets/fits_casting.png)
 
 ```@docs
