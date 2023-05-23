@@ -57,7 +57,7 @@ header describes. Note that an HDU may consist entirely of a header with no
 data blocks.
 ```
 The words *must*, *shall*, *may*, *recommended*, *required* and *optional* are 
-to be interprete as described in the [IETF standard - RFC 2119](https://www.rfc-editor.org/info/rfc2119).
+to be interpretedas described in the [IETF standard - RFC 2119](https://www.rfc-editor.org/info/rfc2119).
 #### Creating a simple FITS file
 FITS files can be created using the command [`fits_create`](@ref). This process
 proceeds in two steps: (a) first a [`FITS`](@ref) object is constructed 
@@ -94,7 +94,7 @@ Any[]
 Note how the [`FITS`](@ref) object is inspected using the [`fits_info`](@ref) tool.
 
 The header of a [`FITS_HDU`](@ref) is contained in an array of *single-record*
-`.card` objects as illustrated in the figure above. To find the `cardindex` 
+`.card` objects as illustrated in the flow diagram above. To find the `cardindex` 
 associated with a keyword (e.g., "NAXIS") we can use the `header.map`:
 ```
 julia> i = f.hdu[1].header.map["NAXIS"]
