@@ -85,8 +85,6 @@ SIMPLE  =                    T / file does conform to FITS standard
 BITPIX  =                   64 / number of bits per data pixel
 NAXIS   =                    1 / number of data axes
 NAXIS1  =                    0 / length of data axis 1
-BZERO   =                  0.0 / offset data range to that of unsigned integer  
-BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
 COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
@@ -155,8 +153,6 @@ NAXIS   =                    3 / number of data axes
 NAXIS1  =                    3 / length of data axis 1
 NAXIS2  =                    3 / length of data axis 2
 NAXIS3  =                    1 / length of data axis 3
-BZERO   =                  0.0 / offset data range to that of unsigned integer
-BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
 COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
 END
@@ -337,7 +333,6 @@ cast_FITS_data(hdutype::String, data)
 
 ```@docs
 fits_info(f::FITS, hduindex=1; msg=true)
-get_card(h::FITS_header, keyword::String)
 fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```

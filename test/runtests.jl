@@ -11,7 +11,6 @@ using Test
     @test step125.([5, 10, 21.3, 50, 100.1]) == [1, 2, 5, 10, 20]
 
     @test test_fits_info()
-    @test test_get_card()
     @test test_fits_copy()
     @test test_fits_create()
     @test test_fits_extend!()

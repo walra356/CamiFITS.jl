@@ -73,7 +73,6 @@ export cast_FITS_test
 export parse_FITS_TABLE
 
 export fits_create
-export get_card
 export fits_record_dump
 export fits_read
 export fits_save
@@ -104,7 +103,6 @@ export test_fits_pointer
 export test_format_hdutype
 
 export test_fits_info
-export test_get_card
 export test_fits_keyword
 export test_fits_add_key!
 export test_fits_edit_key!

@@ -23,20 +23,6 @@ function test_fits_info()
 
 end
 
-function test_get_card()
-
-    filnam = "minimal.fits";
-
-    f = fits_create(filnam; protect=false)
-    i = get_card(f.hdu[1].header, "NAXIS").cardindex
-    a = i == 3
-
-    rm(filnam); f = nothing
-
-    return a
-
-end
-
 function test_fits_create()
 
     filnam = "minimal.fits"
@@ -240,13 +226,13 @@ function test_fits_rename_key!()
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
-    test1 = i == 9
+    test1 = i == 7
 
     fits_rename_key!(f, 1, "KEYNEW1", "KEYNEW2")
 
     i = get(f.hdu[1].header.map, "KEYNEW2", 0)
 
-    test2 = i == 9
+    test2 = i == 7
 
     # test = .![test1, test2]
 
@@ -266,7 +252,7 @@ function test_fits_delete_key!()
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
-    test1 = i == 9
+    test1 = i == 7
 
     fits_delete_key!(f, 1, "KEYNEW1")
 

@@ -145,7 +145,7 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
     T = Base.eltype(data)
 
     i = get(hdu.header.map, "BZERO", 0)
-    bzero = hdu.header.card[i].value
+    bzero = i > 0 ? hdu.header.card[i].value : 0.0
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
 
     data = Base.vec(data)

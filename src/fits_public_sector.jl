@@ -147,35 +147,6 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 end
 
 # ------------------------------------------------------------------------------
-#             get_card(f::FITS_HDU, keyword::String)
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    get_card(h::FITS_header, keyword::String)
-
-Draw card with given keyword from [`FITS_header`](@ref)
-#### Example:
-```
-julia> filnam = "minimal.fits";
-
-julia> f = fits_create(filnam; protect=false);
-
-julia> get_card(f.hdu[1].header, "NAXIS").cardindex
-3
-
-julia> rm(filnam); f = nothing
-```
-"""
-function get_card(h::FITS_header, keyword::String)
-
-    i = get(h.map, keyword, 0)
-    card = i > 0 ? h.card[i] : nothing
-
-    return card
-
-end
-
-# ------------------------------------------------------------------------------
 #       fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
 # ------------------------------------------------------------------------------
 
@@ -588,7 +559,7 @@ function fits_delete_key!(f::FITS, hduindex::Int, key::String)
     nrec = length(card)
 
     n = k
-    while (card[n].keyword == keyword) | (card[n].keyword == "CONTINUE")
+    while (card[n].keyword == keyword) ⊻ (card[n].keyword == "CONTINUE")
         n += 1
     end
     n -= k
@@ -597,8 +568,13 @@ function fits_delete_key!(f::FITS, hduindex::Int, key::String)
         f.hdu[hduindex].header.card[i] = card[i+n]
     end
 
+    for i=nrec-n+1:nrec
+        blank = Base.repeat(' ', 80)
+        f.hdu[hduindex].header.card[i] = cast_FITS_card(i, blank)
+    end
+
     card = f.hdu[hduindex].header.card
-    map = Dict([card[i].keyword => i for i ∈ eachindex(card)])
+    map = Dict(card[i].keyword => i for i=1:nrec) # ∈ eachindex(card)])
 
     dataobject = f.hdu[hduindex].dataobject
     header = FITS_header(card, map)

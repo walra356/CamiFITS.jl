@@ -493,21 +493,23 @@ function _header_record_primary(dataobject::FITS_data)
             T == Int8 ? -128.0 : 2^(nbits - 1)
     bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
 
-    bitpix = Base.lpad(bitpix, 20)
-    naxis = Base.lpad(ndims, 20)
-    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
-    bzero = Base.lpad(bzero, 20)
+    strbitpix = Base.lpad(bitpix, 20)
+    strnaxis = Base.lpad(ndims, 20)
+    strdims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    strbzero = Base.lpad(bzero, 20)
 
     r::Vector{String} = []
 
     Base.push!(r, "SIMPLE  =                    T / file does conform to FITS standard             ")
-    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
-    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    Base.push!(r, "BITPIX  = " * strbitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * strnaxis * " / number of data axes                            ")
     for i = 1:ndims
-        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
+        Base.push!(r, "NAXIS$i  = " * strdims[i] * " / length of data axis " * rpad(i, 27))
     end
-    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
-    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    if !iszero(bzero)
+        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
+        Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    end
     Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
     Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
     Base.push!(r, "END                                                                             ")
@@ -582,23 +584,23 @@ function _header_record_image(dataobject::FITS_data)
     bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
 
     hdutype = Base.rpad(hdutype, 20)
-    bitpix = Base.lpad(bitpix, 20)
-    naxis = Base.lpad(ndims, 20)
-    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
-    bzero = Base.lpad(bzero, 20)
+    strbitpix = Base.lpad(bitpix, 20)
+    strnaxis = Base.lpad(ndims, 20)
+    strdims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    strbzero = Base.lpad(bzero, 20)
 
     r::Vector{String} = []
 
     Base.push!(r, "XTENSION= " * hdutype * " / FITS standard extension                        ")
-    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
-    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
+    Base.push!(r, "BITPIX  = " * strbitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * strnaxis * " / number of data axes                            ")
     for i = 1:ndims
-        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
+        Base.push!(r, "NAXIS$i  = " * strdims[i] * " / length of data axis " * rpad(i, 27))
     end
-    Base.push!(r, "PCOUNT  =                    0 / number of parameters per group                 ")
-    Base.push!(r, "GCOUNT  =                    1 / number of groups                               ")
-    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
-    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    if !iszero(bzero)
+        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
+        Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+    end
     Base.push!(r, "END                                                                             ")
 
     _append_blanks!(r)
