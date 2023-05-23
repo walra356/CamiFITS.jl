@@ -67,11 +67,9 @@ function _read_data(o::IO, hduindex::Int)  # read data using header information
     hdutype = Base.Unicode.uppercase(hdutype)
 
     if     hdutype == "'PRIMARY '"
-        data = _read_array_data(o, hduindex)
+        data = _read_image_data(o, hduindex)
     elseif hdutype == "'IMAGE   '"
-        data = _read_array_data(o, hduindex)
-    elseif hdutype == "'ARRAY   '"
-        data = _read_array_data(o, hduindex)
+        data = _read_image_data(o, hduindex)
     elseif hdutype == "'TABLE   '"
         data = _read_table_data(o, hduindex)
     elseif hdutype == "'BINTABLE'"
@@ -83,7 +81,7 @@ function _read_data(o::IO, hduindex::Int)  # read data using header information
 
 end
 
-function _read_array_data(o::IO, hduindex::Int)
+function _read_image_data(o::IO, hduindex::Int)
 
     h = _read_header(o, hduindex)            # FITS_header object
 

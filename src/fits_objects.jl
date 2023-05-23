@@ -199,7 +199,6 @@ function cast_FITS_header(dataobject::FITS_data)
     record = hdutype == "'PRIMARY '" ? _header_record_primary(dataobject) :
              hdutype == "'GROUPS  '" ? _header_record_groups(dataobject) :
              hdutype == "'IMAGE   '" ? _header_record_image(dataobject) :
-             hdutype == "'ARRAY   '" ? _header_record_array(dataobject) :
              hdutype == "'TABLE   '" ? _header_record_table(dataobject) :
              hdutype == "'BINTABLE'" ? _header_record_bintable(dataobject) :
              Base.throw(FITSError(msgErr(25))) # hdutype not recognized
@@ -575,54 +574,6 @@ function _header_record_image(dataobject::FITS_data)
     T = Base.eltype(data)
 
     ndims = Base.ndims(data)
-    ndims ≤ 3 || Base.throw(FITSError(msgErr(38)))
-    dims = Base.size(data)
-    nbyte = T ≠ Any ? Base.sizeof(T) : 8
-    nbits = 8 * nbyte
-    bzero = T ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 :
-            T == Int8 ? -128.0 : 2^(nbits - 1)
-    bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
-
-    hdutype = Base.rpad(hdutype, 20)
-    bitpix = Base.lpad(bitpix, 20)
-    naxis = Base.lpad(ndims, 20)
-    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
-    bzero = Base.lpad(bzero, 20)
-
-    r::Vector{String} = []
-
-    Base.push!(r, "XTENSION= " * hdutype * " / FITS standard extension                        ")
-    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
-    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
-    for i = 1:ndims
-        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
-    end
-    Base.push!(r, "PCOUNT  =                    0 / number of parameters per group                 ")
-    Base.push!(r, "GCOUNT  =                    1 / number of groups                               ")
-    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
-    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
-    Base.push!(r, "END                                                                             ")
-
-    _append_blanks!(r)
-
-    return r
-
-end
-
-# ------------------------------------------------------------------------------
-#                 _header_record_array(dataobject)
-# ------------------------------------------------------------------------------
-
-function _header_record_array(dataobject::FITS_data)
-
-    hdutype = dataobject.hdutype
-    hdutype == "'ARRAY   '" || Base.throw(FITSError(msgErr(29)))
-    data = dataobject.data
-
-    T = Base.eltype(data)
-
-    ndims = Base.ndims(data)
-    ndims ≤ 999 || Base.throw(FITSError(msgErr(21)))
     dims = Base.size(data)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
     nbits = 8 * nbyte

@@ -30,7 +30,7 @@ using Test
     filnam = "kanweg.fits";
     data = [0x0000043e, 0x0000040c, 0x0000041f];
     f = fits_create(filnam, data; protect=false);
-    fits_extend!(f, data; hdutype="ARRAY");
+    fits_extend!(f, data; hdutype="Image");
     fits_extend!(f, data; hdutype="IMAGE");
     @test fits_verifier(filnam; msg=false) == 0
     @test_throws FITSError fits_create(filnam)

@@ -303,7 +303,7 @@ function test_fits_pointer()
     filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f];
     f = fits_create(filnam, data; protect=false);
-    fits_extend!(f, data; hdutype="'ARRAY   '")
+    fits_extend!(f, data; hdutype="'IMAGE   '")
     fits_extend!(f, data; hdutype="'IMAGE   '")
 
     o = IORead(filnam)
