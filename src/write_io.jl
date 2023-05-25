@@ -174,6 +174,9 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
     # complement last data block with blanks:
     blanks = Base.repeat(' ', nblank)
     nbyte = Base.write(o, Array{UInt8,1}(record * blanks))
+    remain = nbyte % 2880                      # remainder (incomplete block)
+
+    remain > 0 && Base.throw(FITSError(msgErr(6)))
 
     return o
 

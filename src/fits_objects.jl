@@ -72,9 +72,10 @@ function cast_FITS_data(hdutype::String, data)
         w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
         # w = required widths of fits data fields
         data = [[rpad(string(cols[i][j]), w[i]) for i = 1:ncols] for j = 1:nrows]
-        # data output as Vector{String} of table ROWS (of equal size fields)
-        # NB. the table has been transposed
-        ##### data = Base.Unicode.uppercase(data)
+        # data output as Vector{Vector{String}} 
+        # this is a Vector{String} of table ROWS (equal-size fields)
+        # NB. the table was transposed in the process
+        ###### data = Base.Unicode.uppercase(data)
     end
     
     return FITS_data(hdutype, data)
@@ -507,8 +508,8 @@ function _header_record_primary(dataobject::FITS_data)
         Base.push!(r, "NAXIS$i  = " * strdims[i] * " / length of data axis " * rpad(i, 27))
     end
     if !iszero(bzero)
-        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
         Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
     end
     Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
     Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
@@ -528,38 +529,6 @@ function _header_record_groups(dataobject::FITS_data)
 
     hdutype = dataobject.hdutype
     hdutype == "'GROUPS   '" && error("hdutype $(hdutype) not implemented")
-    ndims = dataobject.naxis
-    dims = dataobject.dims
-    nbyte = dataobject.nbyte
-    bzero = dataobject.bzero
-    T = dataobject.eltype
-
-    nbits = 8 * nbyte
-    bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
-
-    hdutype = Base.rpad(hdutype, 20)
-    bitpix = Base.lpad(bitpix, 20)
-    naxis = Base.lpad(ndims, 20)
-    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
-    bzero = Base.lpad(bzero, 20)
-
-    r::Vector{String} = []
-
-    Base.push!(r, "SIMPLE  =                    T / file does conform to FITS standard             ")
-    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
-    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
-    Base.push!(r, "NAXIS1  =             0 / length of data axis                                   ")
-    [Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27)) for i = 2:ndims]
-    Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
-    Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
-    Base.push!(r, "GROUPS  =                    T / random groups present                          ")
-    Base.push!(r, "PCOUNT  =                    0 / number of parameters per group                 ")
-    Base.push!(r, "GCOUNT  =                    1 / number of groups                               ")
-    Base.push!(r, "END                                                                             ")
-
-    _append_blanks!(r)
-
-    return r
 
 end
 
@@ -598,8 +567,8 @@ function _header_record_image(dataobject::FITS_data)
         Base.push!(r, "NAXIS$i  = " * strdims[i] * " / length of data axis " * rpad(i, 27))
     end
     if !iszero(bzero)
-        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
         Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
     end
     Base.push!(r, "END                                                                             ")
 
@@ -616,6 +585,8 @@ end
 # ------------------------------------------------------------------------------
 function _table_data_types(dataobject::FITS_data)
 
+    hdutype = dataobject.hdutype
+    hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
     data = dataobject.data
     nrows = length(data)
     ncols = length(data[1])

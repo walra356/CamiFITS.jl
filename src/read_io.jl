@@ -131,6 +131,7 @@ function _read_table_data(o::IO, hduindex::Int)
     itr = push!(itr, tbcol[tfields]:lrow)
 
     data = [[data[i][itr[j]] for j ∈ eachindex(itr)] for i = 1:nrow]
+    data = [join(data[i]) for i = 1:nrow]
 
     return data
 
