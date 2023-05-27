@@ -48,16 +48,16 @@ exponent; `N`/`S` (optional) indicates engineering/scientific formating of
 the `E` type.
 #### Examples:
 ```
-f = cast_FORTRAN_format("I10")
+julia> cast_FORTRAN_format("I10")
   FORTRAN_format("Iw", 'I', nothing, 10, 0, 0, 0)
 
-f = cast_FORTRAN_format("I10.12")
+julia> cast_FORTRAN_format("I10.12")
   FORTRAN_format("Iw.m", 'I', nothing, 10, 12, 0, 0)
 
-f = cast_FORTRAN_format("E10.5E3")
+julia> F = cast_FORTRAN_format("E10.5E3")
   FORTRAN_format("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
 
-f.Type, f.TypeChar, f.EngSci, f.width, f.nmin, f.ndec, f.nexp
+F.Type, F.TypeChar, F.EngSci, F.width, F.nmin, F.ndec, F.nexp
   ("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
 ```
 """
@@ -106,61 +106,5 @@ function cast_FORTRAN_format(str::String)
     end
 
     return FORTRAN_format(t,X,ns,w,m,d,e)
-
-end
-
-
-"""
-    cast_FORTRAN_datatype(format::String)
-
-Decompose the format specifier `format` into its fields and cast this into the
-[`FORTRAN_format`](@ref) object. Allowed format specifiers are of the types:
-`Aw`, `Iw`, `Fw.d`, `Ew.d`, `Dw.d`, where: `w` - width, `d` - number of digits
-to right of decimal point.
-#### Examples:
-```
-f = cast_FORTRAN_datatype("I10")
-  FORTRAN_format("Iw", 'I', nothing, 10, 0, 0, 0)
-
-f = cast_FORTRAN_datatypet("F10.4")
-  FORTRAN_format("Fw.d", 'F', nothing, 10, 0, 4, 0)
-
-f = cast_FORTRAN_datatype("E10.5")
-  FORTRAN_format("Ew.d", 'E', nothing, 10, 0, 5, 0)
-
-f.Type, f.TypeChar, f.EngSci, f.width, f.nmin, f.ndec, f.nexp
-  ("Ew.d", 'E', nothing, 10, 0, 5, 0)
-```
-"""
-function cast_FORTRAN_datatype(str::String)
-
-    s = strip(str,['\'',' ']); w = d = 0
-
-    strErr = "strError: $s: not a valid FORTRAN datatype "
-    accept = ['A','I','F','E','D','.','1','2','3','4','5','6','7','8','9','0']
-
-    sum([s[i] ∉ accept for i ∈ eachindex(s)]) == 0 ? n=length(s) : return error(strErr * "(unknown type character)")
-    n > 1 ?  X = s[1] : return error(strErr * " (width field not specified)")
-    rst = s[2:end]; length(rst) < 1 && return error(strErr * "(decimal side not specified)")
-
-    if !occursin('.', rst)
-        sum(.!isnumeric.(collect(rst))) > 0 && return error(strErr)
-        X ∈ ['A','I'] ? (t = X * "w"; w = parse(Int,rst)) : 0
-        X ∈ ['F','E','D'] && return error(strErr * "(decimal field not specified)")
-    else
-        X ∈ ['A','I'] && return error(strErr * "(decimal point incompatible with $X type)")
-        spl = split(rst,'.'); length(spl) > 2 && return error(strErr * "(two decimal points not allowed)")
-        lhs = spl[1]
-        rhs = spl[2]
-        length(lhs) < 1 && return error(strErr * "(width field not specified)")
-        length(rhs) < 1 && return error(strErr * "(decimal side not specified)")
-        sum(.!isnumeric.(collect(lhs))) > 0 && return error(strErr * "(width field not numeric)")
-
-        sum(.!isnumeric.(collect(rhs))) > 0 && return error(strErr * "(decimal field not numeric)")
-        X ∈ ['E','D'] ? (t = X * "w.d"; w = parse(Int,lhs); d = parse(Int,rhs)) : 0
-        X ∈ ['F'] ? (t = X * "w.d"; w = parse(Int,lhs); d = parse(Int,rhs)) : 0
-    end
-
-    return FORTRAN_format(t,X,nothing,w,0,d,0)
 
 end

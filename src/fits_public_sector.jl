@@ -95,16 +95,19 @@ function fits_info(hdu::FITS_HDU; msg=true)
 
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
-    strDataType = Base.string(Base.eltype(hdu.dataobject.data))
-    strDatasize = Base.string(Base.size(hdu.dataobject.data))
+    hdutype = hdu.dataobject.hdutype
 
-    str = [
-        "hdu: " * Base.string(hdu.hduindex),
-        "hdutype: " * hdu.dataobject.hdutype,
-        "DataType: " * strDataType,
-        "Datasize: " * strDatasize,
-        "\r\nMetainformation:"
-    ]
+    str = "hdu: " * Base.string(hdu.hduindex)
+    str *= "\nhdutype: " * hdu.dataobject.hdutype
+    if (hdutype ≠ "'TABLE   '") & (hdutype ≠ "'BINTABLE'")
+        strDatasize = Base.string(Base.size(hdu.dataobject.data))
+        strDataType = Base.string(Base.eltype(hdu.dataobject.data))
+        str *= "\nDataType: " * strDataType
+        str *= "\nDatasize: " * strDatasize
+    end
+    str *= "\n\nMetainformation:"
+
+    str = [str]
 
     card = hdu.header.card
 
@@ -140,11 +143,38 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     msg && println(str)
 
-    dataobject = _read_data(o, hduindex)
+    hdu = _read_hdu(o, hduindex)
+
+    return hdu.dataobject.data
+
+end
+function fits_info1(filnam::String, hduindex=1; nr=true, msg=true)
+
+    o = IORead(filnam)
+
+    Base.seekstart(o)
+
+    record = _read_header(o, hduindex)
+
+    Base.seekstart(o)
+
+    str = "\nFile: " * filnam * "\n"
+    str *= "hdu: " * string(hduindex) * "\n\n"
+    str *= nr ? "nr  " : ""
+    str *= "Metainformation:\n"
+    for i ∈ eachindex(record.card)
+        str *= nr ? rpad("$i", 4) : ""
+        str *= record.card[i].record * "\n"
+    end
+
+    msg && println(str)
+
+    dataobject = _read_hdu(o, hduindex)
 
     return dataobject.data
 
 end
+
 
 # ------------------------------------------------------------------------------
 #       fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
@@ -354,15 +384,10 @@ function fits_read(filnam::String)
     o = IORead(filnam)
 
     nhdu = _hdu_count(o)
-
-    Base.seekstart(o)
-
-    rec = [_read_header(o::IO, i) for i = 1:nhdu]
     
     Base.seekstart(o)
     
-    dat = [_read_data(o, i) for i = 1:nhdu]
-    hdu = [cast_FITS_HDU(i, rec[i], dat[i]) for i = 1:nhdu]
+    hdu = [_read_hdu(o, i) for i = 1:nhdu]
 
     f = cast_FITS(filnam, hdu)
 

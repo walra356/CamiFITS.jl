@@ -63,20 +63,6 @@ julia> d.hdutype
 function cast_FITS_data(hdutype::String, data)
 
     hdutype = _format_hdutype(hdutype)
-
-    if (hdutype == "'TABLE   '") & (eltype(data) ≠ Vector{String})
-        # data input as Any array of table COLUMNS
-        cols = data 
-        ncols = length(cols)
-        nrows = length(cols[1])
-        w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
-        # w = required widths of fits data fields
-        data = [[rpad(string(cols[i][j]), w[i]) for i = 1:ncols] for j = 1:nrows]
-        # data output as Vector{Vector{String}} 
-        # this is a Vector{String} of table ROWS (equal-size fields)
-        # NB. the table was transposed in the process
-        ###### data = Base.Unicode.uppercase(data)
-    end
     
     return FITS_data(hdutype, data)
 
@@ -277,7 +263,52 @@ julia> hdu.dataobject.data
 """
 function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data)
 
+    hdutype = dataobject.hdutype
+    data = dataobject.data
+
+    if (hdutype == "'TABLE   '") & (eltype(data) ≠ Vector{String})
+        # data input as Any array of table COLUMNS
+        cols = data
+        ncols = length(cols)
+        nrows = length(cols[1])
+        w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
+        # w = required widths of fits data fields
+        data = [join([rpad(string(cols[i][j]), w[i]) for i = 1:ncols]) for j = 1:nrows]
+        # data output as Vector{Vector{String}} 
+        # this is a Vector{String} of table ROWS (equal-size fields)
+        # NB. the table was transposed in the process
+        ###### data = Base.Unicode.uppercase(data)
+        dataobject = FITS_data(hdutype, data)
+    end
+
     return FITS_HDU(hduindex, header, dataobject)
+
+end
+
+# ------------------------------------------------------------------------------
+#                               cast_FITS_table
+# ------------------------------------------------------------------------------
+
+function cast_FITS_table(hdu::FITS_HDU)
+
+    hdutype = hdu.dataobject.hdutype
+    hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
+    data = hdu.dataobject.data
+
+    # data input as Any array of table COLUMNS
+    cols = data
+    ncols = length(cols)
+    nrows = length(cols[1])
+
+    w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
+    # w = required widths of fits data fields
+    data = [join([rpad(string(cols[i][j]), w[i]) for i = 1:ncols]) for j = 1:nrows]
+    # data output as Vector{Vector{String}} 
+    # this is a Vector{String} of table ROWS (equal-size fields)
+    # NB. the table was transposed in the process
+    ###### data = Base.Unicode.uppercase(data)
+
+    return data
 
 end
 
@@ -552,7 +583,6 @@ function _header_record_image(dataobject::FITS_data)
             T == Int8 ? -128.0 : 2^(nbits - 1)
     bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
 
-    hdutype = Base.rpad(hdutype, 20)
     strbitpix = Base.lpad(bitpix, 20)
     strnaxis = Base.lpad(ndims, 20)
     strdims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
@@ -560,7 +590,7 @@ function _header_record_image(dataobject::FITS_data)
 
     r::Vector{String} = []
 
-    Base.push!(r, "XTENSION= " * hdutype * " / FITS standard extension                        ")
+    Base.push!(r, "XTENSION= 'IMAGE   '           / FITS standard extension                        ")
     Base.push!(r, "BITPIX  = " * strbitpix * " / number of bits per data pixel                  ")
     Base.push!(r, "NAXIS   = " * strnaxis * " / number of data axes                            ")
     for i = 1:ndims
@@ -588,23 +618,23 @@ function _table_data_types(dataobject::FITS_data)
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
     data = dataobject.data
-    nrows = length(data)
-    ncols = length(data[1])
+    ncols = length(data) # number of columns in table (= rows in data !!!!)
+    nrows = length(data[1]) # number of rows in table (= columns in data !!!!)
 
     fmtsp = Array{String,1}(undef, ncols)  # format specifier Xw.d
 
     for col ∈ eachindex(fmtsp)
-        T = eltype(data[1][col])
+        T = eltype(data[col][1])
         x = T <: Integer ? "I" : T <: Real ? "E" : 
             T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
-        w = string(maximum([length(string(data[row][col])) for row = 1:nrows]))
+        w = string(maximum([length(string(data[col][row])) for row = 1:nrows]))
 
         if T <: Union{Char,String}
             isascii(join(data[1])) || Base.throw(FITSError(msgErr(36)))
         end
 
         if T <: Union{Float16,Float32,Float64}
-            v = string(data[row][1])
+            v = string(data[col][1])
             x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
             v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
             d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
@@ -622,22 +652,82 @@ function _header_record_table(dataobject::FITS_data)
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
     data = dataobject.data
+
+    # data input as Any array of table COLUMNS
+    ncols = length(data) # number of columns in table (= rows in data)
+    nrows = length(data[1]) # number of rows in table (= columns in data)
+    ncols > 0 || Base.throw(FITSError(msgErr(34)))
+    ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
+    equal = sum(length.(data) .- nrows) == 0 # equal colum length test
+    equal || Base.throw(FITSError(msgErr(33)))
+
+    width = [maximum([length(string(data[col][row])) + 1 for row = 1:nrows]) for col = 1:ncols]
+    tbcol = [sum(width[1:i-1])+1 for i=1:ncols]
+    lrows = sum(width[col] for col = 1:ncols)
+
+    tform = _table_data_types(dataobject)
+
+    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
+    tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
+    ttype = ["HEAD$i" for i = 1:ncols]
+    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]          # default column headers
+
+    naxis1 = Base.lpad(lrows, 20) 
+    naxis2 = Base.lpad(nrows, 20)
+    tfields = Base.lpad(ncols, 20)
+    tbcol = [Base.lpad(tbcol[i], 20) for i ∈ eachindex(tbcol)]
+
+    r::Array{String,1} = []
+
+    Base.push!(r, "XTENSION= 'TABLE   '           / FITS standard extension                        ")
+    Base.push!(r, "BITPIX  =                    8 / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   =                    2 / number of data axes                            ")
+    Base.push!(r, "NAXIS1  = " * naxis1 * " / number of bytes/row                            ")
+    Base.push!(r, "NAXIS2  = " * naxis2 * " / number of rows                                 ")
+    Base.push!(r, "PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
+    Base.push!(r, "GCOUNT  =                    1 / data blocks contain single table               ")
+    Base.push!(r, "TFIELDS = " * tfields * " / number of data fields (columns)                ")
+    Base.push!(r, "COLSEP  =                    1 / number of spaces in column separator           ")
+    for i = 1:ncols
+        Base.push!(r, "TTYPE$i  = " * ttype[i] * " / header of column " * rpad(i, 30))
+        Base.push!(r, "TBCOL$i  = " * tbcol[i] * " / pointer to column " * rpad(i, 29))
+        Base.push!(r, "TFORM$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
+        Base.push!(r, "TDISP$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
+    end
+    Base.push!(r, "END                                                                             ")
+
+    pass = sum(length.(r) .- 80) == false
+
+    pass || println([length.(r)])
+
+    _append_blanks!(r)
+
+    return r
+
+end
+# ------------------------------------------------------------------------------
+function _header_record_table1(dataobject::FITS_data)
+
+    hdutype = dataobject.hdutype
+    hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
+    data = dataobject.data
     ndims = eltype(data) == String ? 1 : Base.ndims(eltype(data))
     ndims += Base.ndims(data)
     ndims == 2 || Base.throw(FITSError(msgErr(39)))
     nrows = length(data)
     ncols = length(data[1])
     nbits = 8
-    
+
     pcols = 1  # pointer to starting position of column in table row
     ncols > 0 || Base.throw(FITSError(msgErr(34)))
     ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
     lcols = [length(data[row]) for row = 1:nrows] # length of columns (number of rows)
     pass = sum(lcols .- ncols) == 0               # equal colum length test
     pass || Base.throw(FITSError(msgErr(33)))
+    
 
     w = [length(string(data[1][col])) for col = 1:ncols]
-    tbcol = [sum(w[1:i-1])+1 for i=1:ncols]
+    tbcol = [sum(w[1:i-1]) + 1 for i = 1:ncols]
     lrows = sum([length(string(data[1][col])) for col = 1:ncols])
 
     tform = _table_data_types(dataobject)
@@ -650,7 +740,7 @@ function _header_record_table(dataobject::FITS_data)
     hdutype = Base.rpad(hdutype, 20)
     bitpix = Base.lpad(nbits, 20)
     naxis = Base.lpad(ndims, 20)
-    naxis1 = Base.lpad(lrows, 20) 
+    naxis1 = Base.lpad(lrows, 20)
     naxis2 = Base.lpad(nrows, 20)
     tfields = Base.lpad(ncols, 20)
     tbcol = [Base.lpad(tbcol[i], 20) for i ∈ eachindex(tbcol)]
@@ -740,15 +830,9 @@ function _header_record_bintable(dataobject::FITS_data)
     Base.push!(r, "TFIELDS = " * tfields * " / number of data fields (columns)                ")
     Base.push!(r, "COLSEP  =                    1 / number of spaces in column separator           ")
     for i = 1:ncols
-        Base.push!(r, "TTYPE$i  = " * ttype[i] * " / header of column " * rpad(i, 30))
-    end
-    for i = 1:ncols
         Base.push!(r, "TBCOL$i  = " * tbcol[i] * " / pointer to column " * rpad(i, 29))
-    end
-    for i = 1:ncols
+        Base.push!(r, "TTYPE$i  = " * ttype[i] * " / header of column " * rpad(i, 30))
         Base.push!(r, "TFORM$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
-    end
-    for i = 1:ncols
         Base.push!(r, "TDISP$i  = " * tform[i] * " / data type of column " * rpad(i, 27))
     end
     Base.push!(r, "END                                                                             ")

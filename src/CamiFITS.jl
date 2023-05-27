@@ -8,7 +8,7 @@ export _read_TABLE_data
 export IORead
 export IOWrite
 export _read_header
-export _read_data
+export _read_hdu
 
 export indices
 
@@ -70,6 +70,10 @@ export cast_FITS_data
 
 export cast_FITS_test
 
+export FORTRAN_format
+
+export cast_FORTRAN_format
+
 export parse_FITS_TABLE
 
 export fits_create
@@ -101,6 +105,7 @@ export test_fits_save_as
 export test_fits_collect
 export test_fits_pointer
 export test_format_hdutype
+export test_FORTRAN_format
 
 export test_fits_info
 export test_fits_keyword

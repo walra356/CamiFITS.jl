@@ -52,13 +52,13 @@ function _read_header(o::IO, hduindex::Int)
 end
 
 # ------------------------------------------------------------------------------
-#                   _read_data(o::IO, hduindex::Int)
+#                   _read_hdu(o::IO, hduindex::Int)
 #
 #   - reads non-blank records from header 
 #   - stop after "END" record is reached
 # ------------------------------------------------------------------------------  
 
-function _read_data(o::IO, hduindex::Int)  # read data using header information
+function _read_hdu(o::IO, hduindex::Int)  # read data using header information
 
     h = _read_header(o, hduindex) #  FITS_header
 
@@ -73,11 +73,14 @@ function _read_data(o::IO, hduindex::Int)  # read data using header information
     elseif hdutype == "'TABLE   '"
         data = _read_table_data(o, hduindex)
     elseif hdutype == "'BINTABLE'"
+        data = _read_bintable_data(o, hduindex)
     else
         Base.throw(FITSError(msgErr(25)))
     end
 
-    return cast_FITS_data(hdutype, data)
+    dataobject = FITS_data(hdutype, data)
+
+    return FITS_HDU(hduindex, h, dataobject)
 
 end
 
@@ -128,6 +131,32 @@ function _read_table_data(o::IO, hduindex::Int)
     data = [String(Base.read(o, lrow)) for i = 1:nrow]
 
     itr = [tbcol[i]:tbcol[i+1]-1 for i=1:tfields-1]
+    itr = push!(itr, tbcol[tfields]:lrow)
+
+    data = [[data[i][itr[j]] for j ∈ eachindex(itr)] for i = 1:nrow]
+    data = [join(data[i]) for i = 1:nrow]
+
+    return data
+
+end
+
+function _read_bintable_data(o::IO, hduindex::Int)
+
+    ptr = _data_pointer(o)
+
+    h = _read_header(o, hduindex) # FITS_header object
+
+    Base.seek(o, ptr[hduindex])
+    lrow = h.card[h.map["NAXIS1"]].value
+    nrow = h.card[h.map["NAXIS2"]].value
+    tfields = h.card[h.map["TFIELDS"]].value
+    tbcol = [h.card[h.map["TBCOL$i"]].value for i = 1:tfields]
+
+    Base.seek(o, ptr[hduindex])
+
+    data = [String(Base.read(o, lrow)) for i = 1:nrow]
+
+    itr = [tbcol[i]:tbcol[i+1]-1 for i = 1:tfields-1]
     itr = push!(itr, tbcol[tfields]:lrow)
 
     data = [[data[i][itr[j]] for j ∈ eachindex(itr)] for i = 1:nrow]

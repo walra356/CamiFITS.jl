@@ -110,7 +110,7 @@ function test_fits_extend!()
     a = f.hdu[1].header.card[1].keyword == "SIMPLE"
     b = f.hdu[1].dataobject.data[1][1] == 0x0000043e
     c = f.hdu[2].header.card[1].keyword == "XTENSION"
-    d = join(f.hdu[2].dataobject.data[1]) == strExample
+    d = f.hdu[2].dataobject.data[1] == strExample
     e = get(Dict(f.hdu[2].header.map), "NAXIS", 0) == 3
 
     rm(filnam)
@@ -343,5 +343,33 @@ function test_format_hdutype()
     o || println([a, b, c, d, e, f, g, h])
 
     return o
+
+end
+
+function test_FORTRAN_format()
+
+    a1 = cast_FORTRAN_format("I10")
+    a2 = FORTRAN_format("Iw", 'I', nothing, 10, 0, 0, 0)
+
+    b1 = cast_FORTRAN_format("I10.12")
+    b2 = FORTRAN_format("Iw.m", 'I', nothing, 10, 12, 0, 0)
+
+    c1 = cast_FORTRAN_format("E10.5E3")
+    c2 = FORTRAN_format("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
+
+    F = cast_FORTRAN_format("E10.5E3")
+
+    d1 = (F.Type, F.TypeChar, F.EngSci, F.width, F.nmin, F.ndec, F.nexp)
+    d2 = ("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
+
+    a = a1 == a2
+    b = b1 == b2
+    c = c1 == c2
+    d = d1 == d2
+
+    o = a & b & c & d
+
+    o || println([a, b, c, d])
+
 
 end

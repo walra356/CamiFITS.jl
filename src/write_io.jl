@@ -167,7 +167,7 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     Base.seekstart(o)
 
-    record = join(join.(hdu.dataobject.data))
+    record = join(hdu.dataobject.data)
     nchars = length(record)
     # number of blanks to complement last data block:
     nblank = 2880 - nchars % 2880
