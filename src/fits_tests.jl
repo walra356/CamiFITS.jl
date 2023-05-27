@@ -74,18 +74,29 @@ function test_fits_read()
     data = reshape(data, (3, 3, 1))
 
     f = fits_create(filnam, data; protect=false)
+
+    t = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
+    u = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
+    v = [1.23, 2.12, 3.0, 4.0, 5.0]
+    w = ['a', 'b', 'c', 'd', 'e']
+    x = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
+    data1 = [t,u,v,w,x]
+
+    fits_extend!(f, data1; hdutype="TABLE")
+
     f = fits_read(filnam)
 
     p = f.hdu[1].header.card[1].keyword == "SIMPLE"
     q = f.hdu[1].dataobject.data == data
     r = f.hdu[1].header.card[1].value == true
     s = f.hdu[1].header.card[4].value == 3
+    x = f.hdu[2].dataobject.data[1] == "1.0e-6 1086 1.23 a a                    "
 
     rm(filnam)
 
-    o = a & b & c & d & p & q & r & s
+    o = a & b & c & d & p & q & r & s & x
 
-    o || println([a, b, c, d, p, q, r, s])
+    o || println([a, b, c, d, p, q, r, s, x])
 
     return o
 
