@@ -1,4 +1,13 @@
-# ....................................................... FORTRAN-format object .............................................................................
+# SPDX-License-Identifier: MIT
+
+# ------------------------------------------------------------------------------
+#                               FORTRAN.jl
+#                         Jook Walraven 26-05-2023
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+#                             FORTRAN_format
+# ------------------------------------------------------------------------------
 
 """
     FORTRAN_format
@@ -34,7 +43,9 @@ struct FORTRAN_format
 
 end
 
-# ................... cast format or datatype string 'format' into FORTRAN_format object ...........................
+# ------------------------------------------------------------------------------
+#                       cast_FORTRAN_format(format)
+# ------------------------------------------------------------------------------
 
 """
     cast_FORTRAN_format(format::String)
@@ -49,16 +60,16 @@ the `E` type.
 #### Examples:
 ```
 julia> cast_FORTRAN_format("I10")
-  FORTRAN_format("Iw", 'I', nothing, 10, 0, 0, 0)
+FORTRAN_format("Iw", 'I', nothing, 10, 0, 0, 0)
 
 julia> cast_FORTRAN_format("I10.12")
-  FORTRAN_format("Iw.m", 'I', nothing, 10, 12, 0, 0)
+FORTRAN_format("Iw.m", 'I', nothing, 10, 12, 0, 0)
 
 julia> F = cast_FORTRAN_format("E10.5E3")
-  FORTRAN_format("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
+FORTRAN_format("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
 
-F.Type, F.TypeChar, F.EngSci, F.width, F.nmin, F.ndec, F.nexp
-  ("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
+julia> F.Type, F.TypeChar, F.EngSci, F.width, F.nmin, F.ndec, F.nexp
+("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
 ```
 """
 function cast_FORTRAN_format(str::String)
