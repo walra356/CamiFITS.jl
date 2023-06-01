@@ -119,3 +119,126 @@ function cast_FORTRAN_format(str::String)
     return FORTRAN_format(t,X,ns,w,m,d,e)
 
 end
+
+# ------------------------------------------------------------------------------
+#                             FORTRAN_
+# ------------------------------------------------------------------------------
+
+function _FORTRAN_integer_type(T::Type)
+
+    T == Bool && return 'L'
+    T == UInt8 && return 'B'
+    T == Int16 && return 'I'
+    T == UInt16 && return 'I'
+    T == Int32 && return 'J'
+    T == UInt32 && return 'J'
+    T == Int64 && return 'K'
+    T == UInt64 && return 'K'
+
+    println("$T: integer type not included in the FITS standard")
+
+    return '-'
+
+end
+# ------------------------------------------------------------------------------
+function _FORTRAN_real_type(T::Type)
+
+    T == Float32 && return 'E'
+    T == Float64 && return 'D'
+
+    println("$T: real type not included in the FITS standard")
+
+    return '-'
+
+end
+# ------------------------------------------------------------------------------
+function _FORTRAN_complex_type(T::Type)
+
+    T == ComplexF32 && return 'C'
+    T == ComplexF64 && return 'M'
+
+    println("$T: complex type not included in the FITS standard")
+
+    return '-'
+
+end
+
+# ------------------------------------------------------------------------------
+#                 FORTRAN_primitive_typechar(T::Type)
+# ------------------------------------------------------------------------------
+@doc raw"""
+    FORTRAN_primitive_typechar(T::Type)
+
+FORTRAN datatype description character. The character '-' is returned for
+non-primitive datatypes and for description characters not included in the 
+FITS standard.
+#### Examples:
+```
+julia> T = Type[Char, Bool, Int8]; 
+
+julia> append!(T, [UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64]);
+
+julia> append!(T, [Float16, Float32, Float64, ComplexF32, ComplexF64,]);
+
+julia> append!(T, [Vector{Char}, FITS]);
+
+julia> o = [FORTRAN_primitive_typechar(T[i]) for i ∈ eachindex(T)];
+Int8: integer type not included in the FITS standard
+Float16: real type not included in the FITS standard
+Vector{Char}: not a primitive type
+FITS: not a primitive type
+    
+julia> x = join(o) == "AL-BIIJJKK-EDCM--"
+```
+"""
+function FORTRAN_primitive_typechar(T::Type)
+
+    if T == Char
+        o = 'A'
+    elseif T <: Integer
+        o = _FORTRAN_integer_type(T)
+    elseif T <: Real
+        o = _FORTRAN_real_type(T)
+    elseif T <: Complex
+        o = _FORTRAN_complex_type(T)
+    else
+        o = '-'
+        println("$T: not a primitive type")
+    end
+
+    return o
+
+end
+# ------------------------------------------------------------------------------
+function FORTRAN_datatype_char(T::Type; msg=true)
+
+    if T <: Vector
+        T′ = eltype(T)
+        if iszero(ndims(T′))
+            o = _FORTRAN_primitive_type(T′; msg)
+            o = o ∈ [' ']
+        else
+            o = '-'
+            println("$T: variable-length array must be onedimensional")
+        end
+    else
+        o = _FORTRAN_primitive_type(T; msg)
+    end
+
+    return o
+
+end
+# ------------------------------------------------------------------------------
+function test_FORTRAN_primitive_type()
+
+    T = Type[Char, Bool, Int8]; 
+    append!(T, [UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64]);
+    append!(T, [Float16, Float32, Float64, ComplexF32, ComplexF64,]);
+    append!(T, [Vector{Char}, FITS]);
+
+    o = [FORTRAN_primitive_typechar(T[i]) for i ∈ eachindex(T)];
+    x = join(o) == "AL-BIIJJKK-EDCM--"
+
+    return x
+
+end

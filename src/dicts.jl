@@ -91,7 +91,8 @@ dictErr = Dict(0 => nothing,
     36 => "ASCII table contains non-ASCII character",
     37 => "hduindex exceeds maximum value",
     38 => "NAXIS ≤ 3 mandatory for PRIMARY HDU",
-    39 => "NAXIS = 2 mandatory for TABLE HDU types"
+    39 => "NAXIS = 2 mandatory for TABLE HDU types",
+    40 => "datatype not included in the FITS standard"
 )
 
 # ------------------------------------------------------------------------------

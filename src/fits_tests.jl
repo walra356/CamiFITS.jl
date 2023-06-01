@@ -47,7 +47,7 @@ function test_fits_create()
 
     rm(filnam)
 
-    o = isnothing(findfirst(.![a, b, c, d, p, q, r, s])) ? true : false
+    o = a & b & c & d & p & q & r & s
 
     o || println([a, b, c, d, p, q, r, s])
 
@@ -75,12 +75,12 @@ function test_fits_read()
 
     f = fits_create(filnam, data; protect=false)
 
-    t = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
+    t = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
     u = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
     v = [1.23, 2.12, 3.0, 4.0, 5.0]
     w = ['a', 'b', 'c', 'd', 'e']
     x = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data1 = [t,u,v,w,x]
+    data1 = (t,u,v,w,x)
 
     fits_extend!(f, data1; hdutype="TABLE")
 
@@ -90,7 +90,7 @@ function test_fits_read()
     q = f.hdu[1].dataobject.data == data
     r = f.hdu[1].header.card[1].value == true
     s = f.hdu[1].header.card[4].value == 3
-    x = f.hdu[2].dataobject.data[1] == "1.0e-6 1086 1.23 a a                    "
+    x = f.hdu[2].dataobject.data[1] == " 1.01e-6 1086 1.23 a                    a"
 
     rm(filnam)
 
@@ -108,16 +108,16 @@ function test_fits_extend!()
     data = [0x0000043e, 0x0000040c, 0x0000041f];
     f = fits_create(filnam, data; protect=false);
 
-    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6];
+    a = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6];
     b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
     c = [1.23, 2.12, 3.0, 4.0, 5.0];
     d = ['a', 'b', 'c', 'd', 'e'];
     e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"];
-    data = [a, b, c, d, e];
+    data = (a, b, c, d, e);
 
     fits_extend!(f, data; hdutype="TABLE");
 
-    strExample = "1.0e-6 1086 1.23 a a                    "
+    strExample = " 1.01e-6 1086 1.23 a                    a"
     a = f.hdu[1].header.card[1].keyword == "SIMPLE"
     b = f.hdu[1].dataobject.data[1][1] == 0x0000043e
     c = f.hdu[2].header.card[1].keyword == "XTENSION"
@@ -126,7 +126,7 @@ function test_fits_extend!()
 
     rm(filnam)
 
-    o = isnothing(findfirst(.![a, b, c, d, e])) ? true : false
+    o = a & b & c & d & e
 
     o || println([a, b, c, d, e])
 
@@ -381,6 +381,58 @@ function test_FORTRAN_format()
     o = a & b & c & d
 
     o || println([a, b, c, d])
+
+    return o
+    
+end
+
+function test_fits_tform()
+
+    filnam = "kanweg.fits"
+    f = fits_create(filnam; protect=false)
+
+    a1 = Bool[1, 0, 1, 0, 1]
+    a2 = UInt8[108, 108, 108, 108, 108]
+    a3 = Int16[1081, 1082, 1083, 1084, 1085]
+    a4 = UInt16[1081, 1082, 1083, 1084, 1085]
+    a5 = Int32[1081, 1082, 1083, 1084, 10850]
+    a6 = UInt32[1081, 10820, 1083, 1084, 10850]
+    a7 = Int64[1081, 1082, 1083, 1084, 108500]
+    a8 = UInt64[1081, 1082, 1083, 1084, 108500]
+    a9 = [1.23, 2.12, 3.0, 4.0, 5.0]
+    a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
+    a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
+    a12 = ['a', 'b', 'c', 'd', 'e']
+    a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
+    data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+
+    d = FITS_data("'TABLE   '", data)
+
+    fits_tform(d) == ["L1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F1.2", "E1.5", "D1.5", "A1", "A20"]
+
+end
+
+function test_table_data_types()
+
+    filnam = "kanweg.fits";
+    f = fits_create(filnam; protect=false);
+
+    a = Float16[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6]
+    b = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6]
+    c = Float64[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6]
+    d = [1.23, 2.12, 3.0, 4.0, 5.0, 6.0, 7.0]
+    a1 = [convert(Int8, Int(2^i) - 1) for i = 1:7];
+    a2 = [convert(Int16, Int(2^i) - 1) for i = 8:14];
+    a3 = [convert(Int32, Int(2^i) - 1) for i = 15:21];
+    a1 = [convert(Int64, Int(2^i) - 1) for i = 22:28];
+    b1 = [convert(UInt8, Int(2^i) - 1) for i = 1:7];
+    b2 = [convert(UInt16, Int(2^i) - 1) for i = 8:14];
+    b3 = [convert(UInt32, Int(2^i) - 1) for i = 15:21];
+    b4 = [convert(UInt64, Int(2^i) - 1) for i = 22:28];
+    data = [a, b, c, d, a1, a2, a3, a4, b1, b2, b3, b4];
+
+    fits_extend!(f, data; hdutype="TABLE");
+
 
 
 end

@@ -20,6 +20,7 @@ using Test
     @test test_fits_collect()
     @test test_fits_pointer()
     @test test_format_hdutype()
+    @test test_fits_tform()
 
     @test test_fits_add_key!()
     @test test_fits_delete_key!()
