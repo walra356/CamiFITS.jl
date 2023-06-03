@@ -119,23 +119,6 @@ function fits_info(hdu::FITS_HDU; msg=true)
 
     msg && println(Base.join(str .* "\r\n"))
 
-
-
-
-    hdutype = hdu.dataobject.hdutype
-    h = hdu.header
-    data = hdu.dataobject.data
-
-    if msg & (hdutype == "'TABLE   '")
-        i = get(h.map, "TFIELDS", 0)
-        tfields = h.card[i].value
-        ttype = [get(h.map, "TTYPE$t", 0) for t = 1:tfields]
-        tbcol = [get(h.map, "TBCOL$t", 0) for t = 1:tfields]
-        heads = [h.card[ttype[t]].value[2:19] for t = 1:tfields]
-        print.(heads)
-    end
-
-
     return hdu.dataobject.data
 
 end
@@ -145,41 +128,24 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     Base.seekstart(o)
 
-    record = _read_header(o, hduindex)
-
-    Base.seekstart(o)
+    card = _read_header(o, hduindex).card
 
     str = "\nFile: " * filnam * "\n"
     str *= "hdu: " * string(hduindex) * "\n\n"
     str *= nr ? "nr  " : ""
     str *= "Metainformation:\n"
-    for i ∈ eachindex(record.card)
+    for i ∈ eachindex(card)
         str *= nr ? rpad("$i", 4) : ""
-        str *= record.card[i].record * "\n"
+        str *= card[i].record * "\n"
     end
 
     msg && println(str)
 
     hdu = _read_hdu(o, hduindex)
-    hdutype = hdu.dataobject.hdutype
-    h = hdu.header
-    data = hdu.dataobject.data
-
-    if msg & (hdutype == "'TABLE   '")
-        i = get(h.map, "TFIELDS",0)
-        tfields = h.card[i].value
-        ttype = [get(h.map, "TTYPE$t", 0) for t=1:tfields]
-        heads = [h.card[ttype[t]].value for t = 1:tfields]
-        println("Hoi")
-
-println.(heads)
-
-    end
 
     return hdu.dataobject.data
 
 end
-
 
 # ------------------------------------------------------------------------------
 #       fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)

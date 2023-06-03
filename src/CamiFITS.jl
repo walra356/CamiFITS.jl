@@ -71,7 +71,7 @@ export cast_FITS_data
 export cast_FITS_test
 
 export FORTRAN_format
-export FORTRAN_primitive_typechar
+export FORTRAN_type_char
 
 export cast_FORTRAN_format
 

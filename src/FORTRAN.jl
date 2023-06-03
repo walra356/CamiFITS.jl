@@ -116,7 +116,7 @@ function cast_FORTRAN_format(str::String)
         X ∈ ['F'] ? (t = X * "w.d"; w = parse(Int,lhs); d = parse(Int,rhs)) : 0
     end
 
-    return FORTRAN_format(t,X,ns,w,m,d,e)
+    return FORTRAN_format(t, X, ns, w, m, d, e)
 
 end
 
@@ -164,25 +164,20 @@ function _FORTRAN_complex_type(T::Type)
 end
 
 # ------------------------------------------------------------------------------
-#                 FORTRAN_primitive_typechar(T::Type)
+#                 FORTRAN_type_char(T::Type)
 # ------------------------------------------------------------------------------
 @doc raw"""
-    FORTRAN_primitive_typechar(T::Type)
+    FORTRAN_type_char(T::Type)
 
-FORTRAN datatype description character. The character '-' is returned for
-non-primitive datatypes and for description characters not included in the 
-FITS standard.
+FORTRAN primitive type description character. The character '-' is returned for
+non-primitive types and for primitive types not included in the FITS standard.
 #### Examples:
 ```
-julia> T = Type[Char, Bool, Int8]; 
+julia> T = Type[Char, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64]);
 
-julia> append!(T, [UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64]);
+julia> append!(T, [Float16, Float32, Float64, ComplexF32, ComplexF64, Vector{Char}, FITS]);
 
-julia> append!(T, [Float16, Float32, Float64, ComplexF32, ComplexF64,]);
-
-julia> append!(T, [Vector{Char}, FITS]);
-
-julia> o = [FORTRAN_primitive_typechar(T[i]) for i ∈ eachindex(T)];
+julia> o = [FORTRAN_type_char(T[i]) for i ∈ eachindex(T)];
 Int8: integer type not included in the FITS standard
 Float16: real type not included in the FITS standard
 Vector{Char}: not a primitive type
@@ -191,7 +186,7 @@ FITS: not a primitive type
 julia> x = join(o) == "AL-BIIJJKK-EDCM--"
 ```
 """
-function FORTRAN_primitive_typechar(T::Type)
+function FORTRAN_type_char(T::Type)
 
     if T == Char
         o = 'A'
@@ -215,28 +210,28 @@ function FORTRAN_datatype_char(T::Type; msg=true)
     if T <: Vector
         T′ = eltype(T)
         if iszero(ndims(T′))
-            o = _FORTRAN_primitive_type(T′; msg)
+            o = FORTRAN_type_char(T′; msg)
             o = o ∈ [' ']
         else
             o = '-'
             println("$T: variable-length array must be onedimensional")
         end
     else
-        o = _FORTRAN_primitive_type(T; msg)
+        o = FORTRAN_type_char(T; msg)
     end
 
     return o
 
 end
 # ------------------------------------------------------------------------------
-function test_FORTRAN_primitive_type()
+function testFORTRAN_type_char()
 
     T = Type[Char, Bool, Int8]; 
     append!(T, [UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64]);
-    append!(T, [Float16, Float32, Float64, ComplexF32, ComplexF64,]);
+    append!(T, [Float16, Float32, Float64, ComplexF32, ComplexF64]);
     append!(T, [Vector{Char}, FITS]);
 
-    o = [FORTRAN_primitive_typechar(T[i]) for i ∈ eachindex(T)];
+    o = [FORTRAN_type_char(T[i]) for i ∈ eachindex(T)];
     x = join(o) == "AL-BIIJJKK-EDCM--"
 
     return x

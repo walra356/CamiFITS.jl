@@ -268,16 +268,34 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
 
     if (hdutype == "'TABLE   '") & (eltype(data) ≠ Vector{String})
         # data input as array of table COLUMNS
-        cols = data
-        ncols = length(cols)
-        nrows = length(cols[1])
-        w = [maximum([length(string(cols[i][j])) + 1 for j = 1:nrows]) for i = 1:ncols]
+        col = data
+        ncols = length(col)
+        nrows = length(col[1])
+        strcol = [Vector{String}(undef, nrows) for i = 1:ncols]
+
+        # convert data to fortran strings
+        for i=1:ncols
+            T = typeof(col[i][1])
+            T = T == String ? Char : T
+            x = FORTRAN_type_char(T)
+            if x == 'L'
+                strcol[i] = [(col[i][j] ? "T" : "F") for j=1:nrows]
+            elseif x == 'E'
+                strcol[i] = replace.(string.(col[i]), "e" => "E")
+            elseif x == 'D' 
+                strcol[i] = replace.(string.(col[i]), "e" => "D")
+            else 
+                strcol[i] = string.(col[i])
+            end
+        end
+
         # w = required widths of fits data fields
-        data = [join([lpad(string(cols[i][j]), w[i]) for i = 1:ncols]) for j = 1:nrows]
-        # data output as Vector{Vector{String}} 
-        # this is a Vector{String} of table ROWS (equal-size fields)
-        # NB. the table was transposed in the process
-        ###### data = Base.Unicode.uppercase(data)
+        w = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
+
+        # transpose matrix and join data into vector of strings
+        data = [join([lpad(strcol[i][j], w[i]) for i = 1:ncols]) for j = 1:nrows]
+        # data output as Vector{String}
+        # this is the Vector{String} of table ROWS (equal-size fields)
         dataobject = FITS_data(hdutype, data)
     end
 
@@ -585,36 +603,6 @@ end
 #                      fits_tform(dataobject::FITS_data)
 # ------------------------------------------------------------------------------
 
-function fits_tform(dataobject::FITS_data)
-
-    hdutype = dataobject.hdutype
-    data = dataobject.data
-    ncols = length(data) # number of columns in table (= rows in input data !)
-    nrows = length(data[1]) # number of rows in table (= columns in data !!!!)
-
-    tform = Array{String,1}(undef, ncols)  # table format descriptor Xw.d
-
-    tform = String[]
-    if hdutype == "'TABLE   '"
-        for i ∈ eachindex(data)
-            col = data[i]
-            T = eltype(col[1])
-            x = FORTRAN_primitive_typechar(T)
-            x = x ∈ ('B', 'I', 'J', 'K') ? 'I' : x
-            push!(tform, _tform_table(col, x))
-        end
-    elseif hdutype == "'BINTABLE'"
-    else
-    end
-
-    return tform
-
-end
-
-# ==============================================================================
-#                  _header_record_table(dataobject)
-# ------------------------------------------------------------------------------
-
 function _tform_table(tcol::Vector{}, x::Char)
 
     w = d = 0
@@ -647,59 +635,74 @@ function _tform_table(tcol::Vector{}, x::Char)
     return tform
 
 end
-
 # ------------------------------------------------------------------------------
-function _table_data_types(dataobject::FITS_data)
+function fits_tform(dataobject::FITS_data)
 
+    hdutype = dataobject.hdutype
     data = dataobject.data
-    ncols = length(data) # number of columns in table (= rows in data !!!!)
+    ncols = length(data) # number of columns in table (= rows in input data !)
     nrows = length(data[1]) # number of rows in table (= columns in data !!!!)
 
-    fmtsp = Array{String,1}(undef, ncols)  # format specifier Xw.d
+    tform = Vector{String}(undef, ncols)  # table format descriptor Xw.d
 
-    for col ∈ eachindex(fmtsp)
-        T = eltype(data[col][1])
-        x = T <: Integer ? "I" : T <: Real ? "E" : 
-            T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
-        w = string(maximum([length(string(data[col][row])) for row = 1:nrows]))
-
-        if T <: Union{Char,String}
-            isascii(join(data[1])) || Base.throw(FITSError(msgErr(36)))
+    tform = String[]
+    if hdutype == "'TABLE   '"
+        for i ∈ eachindex(data)
+            col = data[i]
+            T = eltype(col[1])
+            x = FORTRAN_type_char(T)
+            x = x ∈ ('B', 'I', 'J', 'K') ? 'I' : x
+            push!(tform, _tform_table(col, x))
         end
-
-        if T <: Union{Float16,Float32,Float64}
-            v = string(data[col][1])
-            x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
-            v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
-            d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
-        end
-
-        fmtsp[col] = T <: Union{Float16,Float32,Float64} ? (x * w * '.' * d) : x * w
+    elseif hdutype == "'BINTABLE'"
+    else
     end
 
-    return fmtsp
+    return tform
 
 end
+
+# ==============================================================================
+#                  _header_record_table(dataobject)
+# ------------------------------------------------------------------------------
+
 
 function _header_record_table(dataobject::FITS_data)
 
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
-    data = dataobject.data
+    col = dataobject.data
 
     # data input as Any array of table COLUMNS
-    ncols = length(data) # number of columns in table (= rows in data)
-    nrows = length(data[1]) # number of rows in table (= columns in data)
+    ncols = length(col) # number of columns in table (= rows in data)
+    nrows = length(col[1]) # number of rows in table (= columns in data)
     ncols > 0 || Base.throw(FITSError(msgErr(34)))
     ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
-    equal = sum(length.(data) .- nrows) == 0 # equal colum length test
+    equal = sum(length.(col) .- nrows) == 0 # equal column length test
     equal || Base.throw(FITSError(msgErr(33)))
 
     tform = fits_tform(dataobject)
+    strcol = [Vector{String}(undef, nrows) for i = 1:ncols]
+    # convert data to array of fortran strings
+    for i = 1:ncols
+        T = typeof(col[i][1])
+        T = T == String ? Char : T
+        x = FORTRAN_type_char(T)
+        if x == 'L'
+            strcol[i] = [(col[i][j] ? "T" : "F") for j = 1:nrows]
+        elseif x == 'E'
+            strcol[i] = replace.(string.(col[i]), "e" => "E")
+        elseif x == 'D'
+            strcol[i] = replace.(string.(col[i]), "e" => "D")
+        else
+            strcol[i] = string.(col[i])
+        end
+    end
 
-    width = [maximum([length(string(data[col][row])) + 1 for row = 1:nrows]) for col = 1:ncols]
+    # width = required widths of fits data fields
+    width = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
     tbcol = [sum(width[1:i-1])+1 for i=1:ncols]
-    lrows = sum(width[col] for col = 1:ncols)
+    lrows = sum(width[i] for i = 1:ncols)
 
     tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
     tform = [Base.rpad(tform[i], 20) for i = 1:ncols]

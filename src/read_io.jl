@@ -47,7 +47,7 @@ function _read_header(o::IO, hduindex::Int)
         Base.push!(record, rec)
     end
 
-    return cast_FITS_header(record) #, hduindex)
+    return cast_FITS_header(record)
 
 end
 
