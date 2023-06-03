@@ -1,7 +1,7 @@
 name = "CamiFITS"
 uuid = "e3d38e7e-66c0-4598-81c1-d1e9bcf43bf0"
 authors = ["Jook Walraven <69215586+walra356@users.noreply.github.com> and contributors"]
-version = "0.2.5"
+version = "0.2.6"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
@@ -15,7 +15,6 @@ BenchmarkTools = "1"
 CamiMath = "0.1"
 LaTeXStrings = "1"
 julia = "1"
-
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
