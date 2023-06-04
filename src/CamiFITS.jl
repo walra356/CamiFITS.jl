@@ -86,6 +86,7 @@ export fits_extend!
 export fits_info
 export fits_copy
 export fits_collect
+export fits_tform
 
 export fits_add_key!
 export fits_edit_key!

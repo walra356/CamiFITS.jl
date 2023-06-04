@@ -607,11 +607,9 @@ function _tform_table(tcol::Vector{}, x::Char)
 
     w = d = 0
     tform = '-'
-    if x == 'L'
-        tform = "L1"
-    elseif x == 'I'
+    if x == 'I' # NB. hdutype table does not accept the 'L' descriptor
         col = string.(tcol)
-        w = maximum(length.(col))
+        w = eltype(tcol) == Bool ? 1 : maximum(length.(col))
         tform = x * string(w)
     elseif x ∈ ('E', 'D')
         col = string.(tcol)
@@ -651,7 +649,7 @@ function fits_tform(dataobject::FITS_data)
             col = data[i]
             T = eltype(col[1])
             x = FORTRAN_type_char(T)
-            x = x ∈ ('B', 'I', 'J', 'K') ? 'I' : x
+            x = x ∈ ('L', 'B', 'I', 'J', 'K') ? 'I' : x
             push!(tform, _tform_table(col, x))
         end
     elseif hdutype == "'BINTABLE'"
@@ -688,9 +686,7 @@ function _header_record_table(dataobject::FITS_data)
         T = typeof(col[i][1])
         T = T == String ? Char : T
         x = FORTRAN_type_char(T)
-        if x == 'L'
-            strcol[i] = [(col[i][j] ? "T" : "F") for j = 1:nrows]
-        elseif x == 'E'
+        if x == 'E'
             strcol[i] = replace.(string.(col[i]), "e" => "E")
         elseif x == 'D'
             strcol[i] = replace.(string.(col[i]), "e" => "D")

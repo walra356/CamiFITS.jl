@@ -408,7 +408,7 @@ function test_fits_tform()
 
     d = FITS_data("'TABLE   '", data)
 
-    fits_tform(d) == ["L1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F1.2", "E1.5", "D1.5", "A1", "A20"]
+    fits_tform(d) == ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F1.2", "E1.5", "D1.5", "A1", "A20"]
 
 end
 
