@@ -260,7 +260,6 @@ function _str_table_column(col::Vector{T}, tform::String) where {T}
             l = findfirst('e', strcol[j])
             s = [strcol[j][1:k-1], strcol[j][k+1:l-1], strcol[j][l+1:end]]
             Δ = d - length(s[2])
-println("s = $s Δ = $Δ")
             if Δ > 0
                 s[2] = s[2] * repeat('0', Δ)
             end
