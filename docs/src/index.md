@@ -303,7 +303,6 @@ fits_terminology(term::String; test=false)
 fits_keyword(keyword::String; msg=true)
 ```
 
-
 ### FITS 
 
 #### Types
