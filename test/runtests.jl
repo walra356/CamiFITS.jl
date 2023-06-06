@@ -20,13 +20,13 @@ using Test
     @test test_fits_collect()
     @test test_fits_pointer()
     @test test_format_hdutype()
-    @test test_fits_tform()
 
     @test test_fits_add_key!()
     @test test_fits_delete_key!()
     @test test_fits_edit_key!()
     @test test_fits_rename_key!()
     @test test_FORTRAN_format()
+    @test test_FORTRAN_fits_table_tform()
 
     filnam = "kanweg.fits";
     data = [0x0000043e, 0x0000040c, 0x0000041f];

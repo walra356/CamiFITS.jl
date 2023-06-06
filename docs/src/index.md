@@ -362,7 +362,8 @@ fits_rename_key!(f::FITS, hduindex::Int, keyold::String, keynew::String)
 ```@docs
 FORTRAN_format
 cast_FORTRAN_format(str::String)
-FORTRAN_type_char(T::Type)
+FORTRAN_eltype_char(T::Type)
+FORTRAN_fits_table_tform(col::Vector{T})
 ```
 
 ## Plotting

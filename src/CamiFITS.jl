@@ -71,7 +71,8 @@ export cast_FITS_data
 export cast_FITS_test
 
 export FORTRAN_format
-export FORTRAN_type_char
+export FORTRAN_eltype_char
+export FORTRAN_fits_table_tform
 
 export cast_FORTRAN_format
 
@@ -108,7 +109,7 @@ export test_fits_collect
 export test_fits_pointer
 export test_format_hdutype
 export test_FORTRAN_format
-export test_fits_tform
+export test_FORTRAN_fits_table_tform
 
 export test_fits_info
 export test_fits_keyword
