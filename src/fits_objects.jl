@@ -829,35 +829,3 @@ function zeroffset(T::Type)
     return nbyte, bzero
 
 end
-
-function fmtsp(x)
-
-    data = dataobject.data
-    ncols = length(data) # number of columns in table (= rows in input data !!)
-    nrows = length(data[1]) # number of rows in table (= columns in input data !!!!)
-
-    fmtsp = Array{String,1}(undef, ncols)  # format specifier Xw.d
-
-    for col ∈ eachindex(fmtsp)
-        T = eltype(data[col][1])
-        x = T <: Integer ? "I" : T <: Real ? "E" :
-            T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
-        w = string(maximum([length(string(data[col][row])) for row = 1:nrows]))
-
-        if T <: Union{Char,String}
-            isascii(join(data[1])) || Base.throw(FITSError(msgErr(36)))
-        end
-
-        if T <: Union{Float16,Float32,Float64}
-            v = string(data[col][1])
-            x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
-            v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
-            d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
-        end
-
-        fmtsp[col] = T <: Union{Float16,Float32,Float64} ? (x * w * '.' * d) : x * w
-    end
-
-    return fmtsp
-
-end
