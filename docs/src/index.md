@@ -366,17 +366,6 @@ FORTRAN_eltype_char(T::Type)
 FORTRAN_fits_table_tform(col::Vector{T}) where {T}
 ```
 
-## Plotting
-
-```@docs
-step125(x::Real)
-select125(x)
-steps(x::Vector{T} where T<:Real)
-stepcenters(x::Vector{T} where T<:Real)
-stepedges(x::Vector{T} where T<:Real)
-edges(px, Δx=1.0, x0=0.0)
-```
-
 ## Index
 
 ```@index

@@ -118,19 +118,6 @@ export test_fits_edit_key!
 export test_fits_delete_key!
 export test_fits_rename_key!
 
-#export plot_matrices
-#export plot!
-export step125
-export select125
-export edges
-export steps
-export stepcenters
-export stepedges
-#export centerticks
-#export edgeticks
-#export centers
-#export edges
-
 export FORTRAN_format
 export cast_FORTRAN_format
 export cast_FORTRAN_datatype
