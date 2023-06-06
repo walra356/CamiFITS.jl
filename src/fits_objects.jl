@@ -329,7 +329,6 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         
         # convert data to array of fortran strings
         strcol = [_str_table_column(col[i], tform[i]) for i ∈ eachindex(col)]
-println("strcol = $(strcol)")
 
         # w = required widths of fits data fields
         w = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]

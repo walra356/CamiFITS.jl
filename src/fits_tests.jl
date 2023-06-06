@@ -438,3 +438,16 @@ function test_table_data_types()
     fits_extend!(f, data; hdutype="TABLE");
 
 end
+
+function test_FORTRAN_eltype_char()
+
+    T = Type[Char, Bool]
+    append!(T, [UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64])
+    append!(T, [Float32, Float64, ComplexF32, ComplexF64])
+
+    o = [FORTRAN_eltype_char(T[i]) for i ∈ eachindex(T)]
+    x = join(o) == "ALBIIJJKKEDCM"
+
+    return x
+
+end

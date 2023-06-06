@@ -324,16 +324,3 @@ function FORTRAN_datatype_char(T::Type; msg=true)
 end
 # ------------------------------------------------------------------------------
 
-function testFORTRAN_eltype_char()
-
-    T = Type[Char, Bool, Int8]; 
-    append!(T, [UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64]);
-    append!(T, [Float16, Float32, Float64, ComplexF32, ComplexF64]);
-    append!(T, [Vector{Char}, FITS]);
-
-    o = [FORTRAN_eltype_char(T[i]) for i ∈ eachindex(T)];
-    x = join(o) == "AL-BIIJJKK-EDCM--"
-
-    return x
-
-end

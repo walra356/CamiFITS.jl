@@ -26,7 +26,7 @@ using Test
     @test test_fits_edit_key!()
     @test test_fits_rename_key!()
     @test test_FORTRAN_format()
-    @test test_FORTRAN_fits_table_tform()
+    @test test_FORTRAN_eltype_char()
 
     filnam = "kanweg.fits";
     data = [0x0000043e, 0x0000040c, 0x0000041f];

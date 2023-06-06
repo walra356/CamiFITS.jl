@@ -110,6 +110,7 @@ export test_fits_pointer
 export test_format_hdutype
 export test_FORTRAN_format
 export test_FORTRAN_fits_table_tform
+export test_FORTRAN_eltype_char
 
 export test_fits_info
 export test_fits_keyword
