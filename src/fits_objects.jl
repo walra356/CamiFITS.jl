@@ -436,7 +436,6 @@ Object to hold a single `.fits` file.
 The fields are
 * `.filnam`:  filename of the corresponding `.fits` file (`::String`)
 * `.hdu`:  array of [`FITS_HDU`](@ref)s (`::Vector{FITS_HDU}`)
-"""
 #### Example:
 ```
 julia> data = [11 21 31; 12 22 23; 13 23 33];
@@ -455,6 +454,7 @@ julia> f.hdu[1].dataobject.data
  12  22  23
  13  23  33
 ```
+"""
 struct FITS
 
     filnam::FITS_filnam
