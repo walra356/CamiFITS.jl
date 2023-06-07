@@ -5,6 +5,86 @@
 #                      Jook Walraven 15-03-2023
 # ------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+#                            FITS_filnam
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    FITS_filnam
+
+mutable FITS object to hold the decomposed name of a `.fits` file.
+
+The fields are:
+" `    .value`:  for `p#.fits` this is `p#.fits` (`::String`)
+* `     .name`:  for `p#.fits` this is `p#` (`::String`)
+* `   .prefix`:  for `p#.fits` this is `p` (`::String`)
+* `.numerator`:  for `p#.fits` this is `#`, a serial number (e.g., '3') or a range (e.g., '3-7') (`::String`)
+* `.extension`:  for `p#.fits` this is `.fits` (`::String`)
+"""
+mutable struct FITS_filnam
+
+    value::String
+    name::String
+    prefix::String
+    numerator::String
+    extension::String
+
+end
+
+# ------------------------------------------------------------------------------
+#                      cast_FITS_filnam(filnam; protect=true))
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    cast_FITS_filnam(filnam::String)
+
+Create the [`FITS_filnam`](@ref) object to decompose `filnam` into its `name`, 
+`prefix`, `numerator` and `extension`.
+#### Example:
+```
+julia> filnam = "T23.01.fits";
+
+julia> n = cast_FITS_filnam(filnam);
+
+julia> n.name, n.prefix, n.numerator, n.extension
+("T23.01", "T23.", "01", ".fits")
+```
+"""
+function cast_FITS_filnam(filnam::String)
+
+    filnam = Base.strip(filnam)
+
+    nl = Base.length(filnam)      # nl: length of file name including extension
+    ne = Base.findlast('.', filnam)              # ne: first digit of extension
+
+    !isnothing(ne) || Base.throw(FITSError(msgErr(2)))
+    !isone(ne) || Base.throw(FITSError(msgErr(3)))
+
+    strExt = filnam[ne:nl]
+    strExt = Base.Unicode.lowercase(strExt)
+
+    strExt == ".fits" || Base.throw(FITSError(msgErr(2)))
+
+    strNam = filnam[1:ne-1]
+
+    n = ne - 1                       # n: last digit of numerator (if existent)
+
+    if !isnothing(n)
+        strNum = ""
+        while Base.Unicode.isdigit(filnam[n])
+            strNum = filnam[n] * strNum
+            n -= 1
+        end
+        strPre = filnam[1:n]
+    else
+        strPre = strNam
+        strNum = " "
+    end
+
+    return FITS_filnam(filnam, strNam, strPre, strNum, strExt)
+
+end
+
 
 # ------------------------------------------------------------------------------
 #                               FITS_dataobject
@@ -34,23 +114,18 @@ end
 
 Create the [`FITS_dataobject`](@ref) object for given `hduindex` constructed from 
 the `data` in accordance to the specified `hdutype`: *PRIMARY*, 
-*IMAGE*, *ARRAY*, *TABLE* (ASCII table) or *BINARRAY* (binary array).
+*IMAGE*, *ARRAY*, *TABLE* (ASCII table) or *BINTABLE* (binary table).
 #### Example:
 ```
-julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36];
-
-julia> h = cast_FITS_header(record);
-
 julia> data = [11,21,31,12,22,23,13,23,33];
 
-julia> data = reshape(data,(3,3,1));
+julia> data = reshape(data,(3,3));
 
-julia> d = dataobject = cast_FITS_dataobject("'IMAGE   '", data)
-FITS_dataobject("'IMAGE   '", [11 12 13; 21 22 23; 31 23 33;;;])
+julia> d = cast_FITS_dataobject("image", data)
+FITS_dataobject("'IMAGE   '", [11 12 13; 21 22 23; 31 23 33])
 
 julia> d.data
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
+3×3 Matrix{Int64}:
  11  12  13
  21  22  23
  31  23  33
@@ -62,7 +137,7 @@ julia> d.hdutype
 function cast_FITS_dataobject(hdutype::String, data)
 
     hdutype = _format_hdutype(hdutype)
-    
+
     return FITS_dataobject(hdutype, data)
 
 end
@@ -288,28 +363,19 @@ Create the [`FITS_HDU`](@ref) object from given `hduindex`, `header` and `data`.
 
 #### Example:
 ```
-julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36];
+julia> data = [11 21 31; 12 22 23; 13 23 33];
 
-julia> h = cast_FITS_header(record);
+julia> d = cast_FITS_dataobject("image", data);
 
-julia> data = [11,21,31,12,22,23,13,23,33];
-
-julia> data = reshape(data,(3,3,1));
-
-julia> d = dataobject = cast_FITS_dataobject("IMAGE", data)
-FITS_dataobject("IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
+julia> h = cast_FITS_header(d);
 
 julia> hdu = cast_FITS_HDU(1, h, d);
 
-julia> hdu.header.card[35].record
-"r35     '35                                                                    '"
-
 julia> hdu.dataobject.data
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
- 11  12  13
- 21  22  23
- 31  23  33
+3×3 Matrix{Int64}:
+ 11  21  31
+ 12  22  23
+ 13  23  33
 ```
 """
 function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_dataobject)
@@ -340,89 +406,6 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
     end
 
     return FITS_HDU(hduindex, header, dataobject)
-
-end
-
-# ------------------------------------------------------------------------------
-#                            FITS_filnam
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    FITS_filnam
-
-mutable FITS object to hold the decomposed name of a `.fits` file.
-
-The fields are:
-" `    .value`:  for `p#.fits` this is `p#.fits` (`::String`)
-* `     .name`:  for `p#.fits` this is `p#` (`::String`)
-* `   .prefix`:  for `p#.fits` this is `p` (`::String`)
-* `.numerator`:  for `p#.fits` this is `#`, a serial number (e.g., '3') or a range (e.g., '3-7') (`::String`)
-* `.extension`:  for `p#.fits` this is `.fits` (`::String`)
-"""
-mutable struct FITS_filnam
-
-    value::String
-    name::String
-    prefix::String
-    numerator::String
-    extension::String
-
-end
-
-# ------------------------------------------------------------------------------
-#                      cast_FITS_filnam(filnam; protect=true))
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    cast_FITS_filnam(filnam::String)
-
-Create the [`FITS_filnam`](@ref) object to decompose `filnam` into its `name`, 
-`prefix`, `numerator` and `extension`.
-#### Example:
-```
-julia> filnam = "T23.01.fits";
-
-julia> nam = cast_FITS_filnam(filnam);
-
-julia> nam = cast_FITS_filnam(filnam)
-FITS_filnam("T23.01.fits", "T23.01", "T23.", "01", ".fits")
-
-julia> nam.name, nam.prefix, nam.numerator, nam.extension
-("T23.01", "T23.", "01", ".fits")
-```
-"""
-function cast_FITS_filnam(filnam::String)
-
-    filnam = Base.strip(filnam)
-
-    nl = Base.length(filnam)      # nl: length of file name including extension
-    ne = Base.findlast('.', filnam)              # ne: first digit of extension
-
-    !isnothing(ne) || Base.throw(FITSError(msgErr(2)))
-    !isone(ne) || Base.throw(FITSError(msgErr(3)))
-
-    strExt = filnam[ne:nl]
-    strExt = Base.Unicode.lowercase(strExt)
-
-    strExt == ".fits" || Base.throw(FITSError(msgErr(2)))
-
-    strNam = filnam[1:ne-1]
-
-    n = ne - 1                       # n: last digit of numerator (if existent)
-
-    if !isnothing(n)
-        strNum = ""
-        while Base.Unicode.isdigit(filnam[n])
-            strNum = filnam[n] * strNum
-            n -= 1
-        end
-        strPre = filnam[1:n]
-    else
-        strPre = strNam
-        strNum = " "
-    end
-
-    return FITS_filnam(filnam, strNam, strPre, strNum, strExt)
 
 end
 

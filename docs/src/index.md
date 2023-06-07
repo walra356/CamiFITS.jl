@@ -305,7 +305,7 @@ fits_keyword(keyword::String; msg=true)
 
 ### FITS 
 
-#### FITS object types
+#### FITS-object types
 
 ```@docs
 FITS
@@ -320,15 +320,15 @@ The casting of the FITS object is illustrated in the flow diagram below.
 ![Image](./assets/fits_casting.png)
 
 ```@docs
-cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 cast_FITS_filnam(filnam::String)
-cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
+cast_FITS_dataobject(hdutype::String, data)
 cast_FITS_header(dataobject::FITS_dataobject)
 cast_FITS_card(cardindex::Int, record::String)
-cast_FITS_dataobject(hdutype::String, data)
+cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
+cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ```
 
-### FITS - HDU Methods
+### FITS-HDU Methods
 
 ```@docs
 fits_info(f::FITS, hduindex=1; msg=true)
@@ -347,7 +347,7 @@ fits_read(filnam::String)
 fits_save_as(f::FITS, filnam::String; protect=true)
 ```
 
-### FITS - Key Methods
+### FITS-Key Methods
 
 ```@docs
 fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
