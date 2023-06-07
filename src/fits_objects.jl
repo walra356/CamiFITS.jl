@@ -359,7 +359,7 @@ end
 @doc raw"""
     cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 
-Create the [`FITS_HDU`](@ref) object from given `hduindex`, `header` and `data`.
+Create the [`FITS_HDU`](@ref) object for given `hduindex`, `header` and `data`.
 
 #### Example:
 ```
