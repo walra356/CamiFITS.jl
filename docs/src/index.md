@@ -305,7 +305,7 @@ fits_keyword(keyword::String; msg=true)
 
 ### FITS 
 
-#### FITS-object types
+#### FITS objects (types)
 
 ```@docs
 FITS
