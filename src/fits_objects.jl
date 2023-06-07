@@ -7,33 +7,32 @@
 
 
 # ------------------------------------------------------------------------------
-#                               FITS_data
+#                               FITS_dataobject
 # ------------------------------------------------------------------------------
 
 """
-    FITS_data
+    FITS_dataobject
 
-Object to hold the data of the [`FITS_HDU`](@ref) of given `hduindex` and
-`hdutype`.
+Object to hold the data of the [`FITS_HDU`](@ref) of given `hdutype`.
 
 The fields are:
 * `.hdutype`:  accepted types are 'PRIMARY', 'IMAGE' and 'TABLE' (`::String`)
 * `.data`:  in the from appropriate for the `hdutype` (::Any)
 """
-struct FITS_data
+struct FITS_dataobject
 
     hdutype::String
     data::Any
 end
 
 # ------------------------------------------------------------------------------
-#                    cast_FITS_data(hdutype, data)
+#                    cast_FITS_dataobject(hdutype, data)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    cast_FITS_data(hdutype::String, data)
+    cast_FITS_dataobject(hdutype::String, data)
 
-Create the [`FITS_data`](@ref) object for given `hduindex` constructed from 
+Create the [`FITS_dataobject`](@ref) object for given `hduindex` constructed from 
 the `data` in accordance to the specified `hdutype`: *PRIMARY*, 
 *IMAGE*, *ARRAY*, *TABLE* (ASCII table) or *BINARRAY* (binary array).
 #### Example:
@@ -46,8 +45,8 @@ julia> data = [11,21,31,12,22,23,13,23,33];
 
 julia> data = reshape(data,(3,3,1));
 
-julia> d = dataobject = cast_FITS_data("'IMAGE   '", data)
-FITS_data("'IMAGE   '", [11 12 13; 21 22 23; 31 23 33;;;])
+julia> d = dataobject = cast_FITS_dataobject("'IMAGE   '", data)
+FITS_dataobject("'IMAGE   '", [11 12 13; 21 22 23; 31 23 33;;;])
 
 julia> d.data
 3×3×1 Array{Int64, 3}:
@@ -60,11 +59,11 @@ julia> d.hdutype
 "'IMAGE   '"
 ```
 """
-function cast_FITS_data(hdutype::String, data)
+function cast_FITS_dataobject(hdutype::String, data)
 
     hdutype = _format_hdutype(hdutype)
     
-    return FITS_data(hdutype, data)
+    return FITS_dataobject(hdutype, data)
 
 end
 
@@ -146,40 +145,40 @@ end
 #                       cast_FITS_header()
 # ------------------------------------------------------------------------------
 @doc raw"""
-    cast_FITS_header(dataobject::FITS_data)
+    cast_FITS_header(dataobject::FITS_dataobject)
 
 Create the [`FITS_header`](@ref) object from the dataobject. The 
 dataobject-input mode is used by [`fits_create`](@ref) to ceate the header
-object as part of creating the [`FITS`](@ref) obhectstarting from Julia data 
+object as part of creating the [`FITS`](@ref) object starting from Julia data 
 input.
 
     cast_FITS_header(record::Vector{String})
 
-Create the [`FITS_header`](@ref) object from a block of 36 single-record 
-strings (of 80 printable ASCII characters). The record-input mode is used
-by [`fits_read`](@ref) after reading the header records from disk.
+Create the [`FITS_header`](@ref) object from a block of (a multiple of) 36 
+single-record strings (of 80 printable ASCII characters). The record-input mode
+is used by [`fits_read`](@ref) after reading the header records from disk 
+(see casting diagram above).
 #### Example:
 ```
-julia> record = [rpad("r$i",8) * ''' * rpad("$i",70) * ''' for i=1:36]
+julia> record = [rpad("key$i",8) * ''' * rpad("$i",70) * ''' for i=1:36]
 36-element Vector{String}:
- "r1      '1                     " ⋯ 18 bytes ⋯ "                              '"
- "r2      '2                     " ⋯ 18 bytes ⋯ "                              '"
- "r3      '3                     " ⋯ 18 bytes ⋯ "                              '"
+ "key1    '1                     " ⋯ 18 bytes ⋯ "                              '"
+ "key2    '2                     " ⋯ 18 bytes ⋯ "                              '"
+ "key3    '3                     " ⋯ 18 bytes ⋯ "                              '"
  ⋮
- "r34     '34                    " ⋯ 18 bytes ⋯ "                              '"
- "r35     '35                    " ⋯ 18 bytes ⋯ "                              '"
- "r36     '36                    " ⋯ 18 bytes ⋯ "                              '"
+ "key35   '35                    " ⋯ 18 bytes ⋯ "                              '"
+ "key36   '36                    " ⋯ 18 bytes ⋯ "                              '"
 
-julia> h = cast_FITS_header(record);
+julia> header = cast_FITS_header(record);
 
-julia> a35 = h.map["r35"]
+julia> header.map["key35"]
 35
 
-julia> h.card[35].record
-"r35     '35                                                                    '"
+julia> header.card[35].keyword
+"key35                                                                   '"
 ```
 """
-function cast_FITS_header(dataobject::FITS_data)
+function cast_FITS_header(dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
 
@@ -215,7 +214,7 @@ Object to hold a single "Header and Data Unit" (HDU).
 The fields are
 * `.hduindex:`:  identifier (a file may contain more than one HDU) (`:Int`)
 * `.header`:  the header object (`::FITS_header`)
-* `.dataobject`:  the data object (`::FITS_data`)
+* `.dataobject`:  the data object (`::FITS_dataobject`)
 
 NB. An empty data block (`.dataobject = nothing`) conforms to the standard.
 """
@@ -223,7 +222,7 @@ struct FITS_HDU
 
     hduindex::Int
     header::FITS_header     # FITS_header
-    dataobject::FITS_data   # FITS_data
+    dataobject::FITS_dataobject   # FITS_dataobject
 
 end
 # ------------------------------------------------------------------------------
@@ -283,7 +282,7 @@ function _str_table_column(col::Vector{T}, tform::String) where {T}
 end
 
 @doc raw"""
-    cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_data)
+    cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 
 Create the [`FITS_HDU`](@ref) object from given `hduindex`, `header` and `data`.
 
@@ -297,8 +296,8 @@ julia> data = [11,21,31,12,22,23,13,23,33];
 
 julia> data = reshape(data,(3,3,1));
 
-julia> d = dataobject = cast_FITS_data("IMAGE", data)
-FITS_data("IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
+julia> d = dataobject = cast_FITS_dataobject("IMAGE", data)
+FITS_dataobject("IMAGE", [11 12 13; 21 22 23; 31 23 33;;;])
 
 julia> hdu = cast_FITS_HDU(1, h, d);
 
@@ -313,7 +312,7 @@ julia> hdu.dataobject.data
  31  23  33
 ```
 """
-function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data)
+function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
     data = dataobject.data
@@ -337,7 +336,7 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         data = [join([lpad(strcol[i][j], w[i]) for i = 1:ncols]) for j = 1:nrows]
         # data output as Vector{String}
         # this is the Vector{String} of table ROWS (equal-size fields)
-        dataobject = FITS_data(hdutype, data)
+        dataobject = FITS_dataobject(hdutype, data)
     end
 
     return FITS_HDU(hduindex, header, dataobject)
@@ -540,7 +539,7 @@ end
 #                 _primary_header_records(dataobject)
 # ------------------------------------------------------------------------------
 
-function _header_record_primary(dataobject::FITS_data)
+function _header_record_primary(dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
     hdutype == "'PRIMARY '" || Base.throw(FITSError(msgErr(26)))
@@ -588,7 +587,7 @@ end
 #                 _header_record_groups(dataobject)
 # ------------------------------------------------------------------------------
 
-function _header_record_groups(dataobject::FITS_data)
+function _header_record_groups(dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
     hdutype == "'GROUPS   '" && error("hdutype $(hdutype) not implemented")
@@ -599,7 +598,7 @@ end
 #                 _header_record_image(dataobject)
 # ------------------------------------------------------------------------------
 
-function _header_record_image(dataobject::FITS_data)
+function _header_record_image(dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
     hdutype == "'IMAGE   '" || Base.throw(FITSError(msgErr(28)))
@@ -644,7 +643,7 @@ end
 #                  _header_record_table(dataobject)
 # ------------------------------------------------------------------------------
 
-function _header_record_table(dataobject::FITS_data)
+function _header_record_table(dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
@@ -711,7 +710,7 @@ end
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-function _table_bindata_types(dataobject::FITS_data)
+function _table_bindata_types(dataobject::FITS_dataobject)
 
     data = dataobject.data
     ncols = length(data) # number of columns in table (= rows in input data !!)
@@ -744,7 +743,7 @@ function _table_bindata_types(dataobject::FITS_data)
 end
 # ------------------------------------------------------------------------------
 
-function _header_record_bintable(dataobject::FITS_data) 
+function _header_record_bintable(dataobject::FITS_dataobject) 
 
     hdutype = dataobject.hdutype
     #hdutype == "'BINTABLE'" && error("hdutype $(hdutype) not implemented")

@@ -233,7 +233,7 @@ function test_fits_rename_key!()
 
     filnam = "minimal.fits"
     f = fits_create(filnam; protect=false)
-    fits_add_key!(f, 1, "KEYNEW1", true, "this is card 9")
+    fits_add_key!(f, 1, "KEYNEW1", true, "this is card 7")
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
@@ -244,10 +244,6 @@ function test_fits_rename_key!()
     i = get(f.hdu[1].header.map, "KEYNEW2", 0)
 
     test2 = i == 7
-
-    # test = .![test1, test2]
-
-    # o = isnothing(findfirst(.![test1, test2])) ? true : false
 
     rm(filnam)
 

@@ -300,7 +300,7 @@ function fits_create(filnam::String, data=[]; protect=true)
     end
 
     hduindex = 1
-    dataobject = cast_FITS_data("'PRIMARY '", data)
+    dataobject = cast_FITS_dataobject("'PRIMARY '", data)
     header = cast_FITS_header(dataobject)
     hdu = cast_FITS_HDU(hduindex, header, dataobject)
 
@@ -412,7 +412,7 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
     hdutype = _format_hdutype(hdutype)
     hduindex = length(f.hdu) + 1
-    dataobject = cast_FITS_data(hdutype, data_extend)
+    dataobject = cast_FITS_dataobject(hdutype, data_extend)
     header = cast_FITS_header(dataobject)
 
     push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))

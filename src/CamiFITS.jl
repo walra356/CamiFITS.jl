@@ -58,14 +58,14 @@ export FITS_filnam
 export FITS_HDU
 export FITS_header
 export FITS_card
-export FITS_data
+export FITS_dataobject
 
 export cast_FITS
 export cast_FITS_filnam
 export cast_FITS_HDU
 export cast_FITS_header
 export cast_FITS_card
-export cast_FITS_data
+export cast_FITS_dataobject
 
 export cast_FITS_test
 

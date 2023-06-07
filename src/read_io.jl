@@ -78,7 +78,7 @@ function _read_hdu(o::IO, hduindex::Int)  # read data using header information
         Base.throw(FITSError(msgErr(25)))
     end
 
-    dataobject = FITS_data(hdutype, data)
+    dataobject = FITS_dataobject(hdutype, data)
 
     return FITS_HDU(hduindex, h, dataobject)
 
