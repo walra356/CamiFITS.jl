@@ -1,7 +1,7 @@
 name = "CamiFITS"
 uuid = "e3d38e7e-66c0-4598-81c1-d1e9bcf43bf0"
 authors = ["Jook Walraven <69215586+walra356@users.noreply.github.com> and contributors"]
-version = "0.2.8"
+version = "0.2.9"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
