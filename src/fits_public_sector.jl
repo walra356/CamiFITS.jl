@@ -10,14 +10,16 @@
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_info(f::FITS [, hduindex=1 [; msg=true]])
+    fits_info(f::FITS [, hduindex=1] [; msg=true])
+    fits_info(f.hdu[hduindex] [; msg=true])
 
-Metafinformation and daya of the FITS_HDU object `f.hdu[hduindex]`. 
-The fits object `f` has to be created seperately.
+Metafinformation and data of an *existing* FITS_HDU object. 
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `msg`: print message (::Bool)
 #### Example:
+To demonstrate `fits_info` we first create the fits object `f` for subsequent 
+inspection.
 ```
 julia> filnam = "minimal.fits";
 
