@@ -238,7 +238,7 @@ them when usung [`fits_create`](@ref) and [`fits_create`](@ref).
 
 # FITS objects and casting procedures 
 CamiFits is based on 6 *FITS-object structs* with dedicated *object-casting
-procedures* to enforce the 
+procedures to enforce the* 
 [FITS standard ](https://fits.gsfc.nasa.gov/fits_standard.html).
 
 #### FITS-object structs

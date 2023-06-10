@@ -13,7 +13,7 @@
     fits_info(f::FITS [, hduindex=1] [; msg=true])
     fits_info(f.hdu[hduindex] [; msg=true])
 
-Metafinformation and data of an *existing* FITS_HDU object. 
+Metafinformation and data of a given [`FITS_HDU`](@ref) object. 
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `msg`: print message (::Bool)
@@ -47,10 +47,10 @@ Any[]
 
 julia> rm(filnam); f = nothing
 ```
-    fits_info(filnam::String [, hduindex=1 [; nr=true [, msg=true]]])
+    fits_info(filnam::String [, hduindex=1] [; [nr=true] [, msg=true]])
 
-As above but reading the fits object from `filnam` from disc. Additional is 
-the record numbering.
+As above but reading the fits object from the `.fits` file `filnam` on disc. 
+Additional is the record numbering.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `nr`: include cardindex (::Bool - default: `true`)
@@ -113,11 +113,11 @@ function fits_info(hdu::FITS_HDU; msg=true)
 
     card = hdu.header.card
 
-    records = [card[i].record for i ∈ eachindex(card)]
+    record = [card[i].record for i ∈ eachindex(card)]
 
-    _rm_blanks!(records)
+    _rm_blanks!(record)
 
-    Base.append!(str, records)
+    Base.append!(str, record)
 
     msg && println(Base.join(str .* "\r\n"))
 
@@ -136,12 +136,25 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
     str *= "hdu: " * string(hduindex) * "\n\n"
     str *= nr ? "nr  " : ""
     str *= "Metainformation:\n"
-    for i ∈ eachindex(card)
-        str *= nr ? rpad("$i", 4) : ""
-        str *= card[i].record * "\n"
-    end
 
-    msg && println(str)
+    str = [str]
+
+    record = nr ? [lpad("$i | ", 7) * card[i].record for i ∈ eachindex(card)] :
+                  [lpad("$i | ", 7) * card[i].record for i ∈ eachindex(card)]
+
+    _rm_blanks!(record)
+
+    Base.append!(str, record)
+
+    msg && println(Base.join(str .* "\r\n"))
+
+
+    #for i ∈ eachindex(card)
+    #    str *= nr ? lpad("$i", 4) : " | "
+    #    str *= card[i].record * "\n"
+    #end
+
+    # msg && println(str)
 
     hdu = _read_hdu(o, hduindex)
 
