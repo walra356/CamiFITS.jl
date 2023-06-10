@@ -236,7 +236,7 @@ For users primarily interested in image processing the casting
 procedures are not very relevant because CamiFITS implicitely takes care of 
 them when usung [`fits_create`](@ref) and [`fits_create`](@ref).
 
-### FITS-objects and casting procedures 
+# FITS-objects and casting procedures 
 CamiFits is based on 6 *FITS-object structs* with dedicated *object-casting
 procedures* to enforce the 
 [FITS standard ](https://fits.gsfc.nasa.gov/fits_standard.html).
@@ -270,7 +270,9 @@ cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ```
 
-### FITS creation, editing and inspection tools
+# FITS creation, editing and inspection tools
+
+#### FITS - information tools
 
 ```@docs
 fits_info(f::FITS, hduindex=1; msg=true)
@@ -298,7 +300,7 @@ fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Real, com::String)
 fits_rename_key!(f::FITS, hduindex::Int, keyold::String, keynew::String)
 ```
 
-### FITS terminology and keyword description
+# FITS terminology and keyword description
 
 #### FITS keyword description tool
 
