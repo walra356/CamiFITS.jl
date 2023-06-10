@@ -429,6 +429,22 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
+    FITS
+
+Object to hold a single `.fits` file.
+"""
+struct FITS
+
+    filnam::FITS_filnam
+    hdu::Vector{FITS_HDU}
+
+end
+
+# ------------------------------------------------------------------------------
+#                      cast_FITS(filnam, hdu)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
     FITS(filnam::String, hdu::Vector{FITS_HDU})
 
 Object to hold a single `.fits` file.
@@ -454,21 +470,6 @@ julia> f.hdu[1].dataobject.data
  12  22  23
  13  23  33
 ```
-"""
-struct FITS
-
-    filnam::FITS_filnam
-    hdu::Vector{FITS_HDU}
-
-end
-
-# ------------------------------------------------------------------------------
-#                      cast_FITS(filnam, hdu)
-# ------------------------------------------------------------------------------
-@doc raw"""
-    cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
-
-Create the [`FITS`](@ref) object to hold a single `.fits` file.
 """
 function cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 
