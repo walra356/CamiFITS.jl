@@ -335,7 +335,8 @@ fits_keyword(keyword::String; msg=true)
 
 ### FITS 
 CamiFits is based on 6 *FITS-object structs* with dedicated *object-casting
-procedures* to enforce the [FITS standard ](https://fits.gsfc.nasa.gov/fits_standard.html).
+procedures* to enforce the 
+[FITS standard ](https://fits.gsfc.nasa.gov/fits_standard.html).
 
 #### FITS-object structs
 ```@docs
@@ -347,8 +348,14 @@ FITS_card
 FITS_dataobject
 ```
 #### FITS-object casting
-The casting of the FITS object is illustrated in the flow diagram below.
+The casting procedures of the FITS objects is illustrated in the flow diagram 
+below. 
+
 ![Image](./assets/fits_casting.png)
+
+The use of the casting procedures is *recommended* over direct application
+of FITS-object strucs *to ensure conformance* to the 
+[FITS standard ](https://fits.gsfc.nasa.gov/fits_standard.html).
 
 ```@docs
 cast_FITS_filnam(filnam::String)
