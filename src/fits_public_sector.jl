@@ -10,12 +10,13 @@
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_info(f::FITS [, hduindex=1] [; msg=true])
+    fits_info(f::FITS [, hduindex=1] [; nr=true [, msg=true]])
     fits_info(f.hdu[hduindex] [; msg=true])
 
 Metafinformation and data of a given [`FITS_HDU`](@ref) object. 
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
+* `nr`: include cardindex (::Bool - default: `true`)
 * `msg`: print message (::Bool)
 #### Example:
 To demonstrate `fits_info` we first create the fits object `f` for subsequent 
@@ -47,7 +48,7 @@ Any[]
 
 julia> rm(filnam); f = nothing
 ```
-    fits_info(filnam::String [, hduindex=1] [; [nr=true] [, msg=true]])
+    fits_info(filnam::String [, hduindex=1] [; nr=true [, msg=true]])
 
 As above but reading the fits object from the `.fits` file `filnam` on disc. 
 Additional is the record numbering.
@@ -85,19 +86,12 @@ nr  Metainformation:
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_info(f::FITS, hduindex=1; msg=true)
-
-    str = "\nFile: " * f.filnam.value
-    msg && println(str)
-
-    return fits_info(f.hdu[hduindex]; msg)
-
-end
-function fits_info(hdu::FITS_HDU; msg=true)
+function fits_info(hdu::FITS_HDU; nr=true, msg=true)
 
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
     hdutype = hdu.dataobject.hdutype
+    card = hdu.header.card
 
     str = "hdu: " * Base.string(hdu.hduindex)
     str *= "\nhdutype: " * hdu.dataobject.hdutype
@@ -107,15 +101,17 @@ function fits_info(hdu::FITS_HDU; msg=true)
         str *= "\nDataType: " * strDataType
         str *= "\nDatasize: " * strDatasize
     end
-    str *= "\n\nMetainformation:"
+    str *= nr ? "\n\n  nr | " : "\n\n"
+    str *= "Metainformation:"
 
     str = [str]
-
-    card = hdu.header.card
 
     record = [card[i].record for i ∈ eachindex(card)]
 
     _rm_blanks!(record)
+
+    record = nr ? [lpad("$i | ", 7) * record[i] for i ∈ eachindex(record)] :
+             record
 
     Base.append!(str, record)
 
@@ -124,41 +120,29 @@ function fits_info(hdu::FITS_HDU; msg=true)
     return hdu.dataobject.data
 
 end
+# ------------------------------------------------------------------------------
+function fits_info(f::FITS, hduindex=1; nr=true, msg=true)
+
+    str = "\nFile: " * f.filnam.value
+    msg && println(str)
+
+    return fits_info(f.hdu[hduindex]; nr, msg)
+
+end
+# ------------------------------------------------------------------------------
 function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     o = IORead(filnam)
 
     Base.seekstart(o)
 
-    card = _read_header(o, hduindex).card
-
-    str = "\nFile: " * filnam * "\n"
-    str *= "hdu: " * string(hduindex) * "\n\n"
-    str *= nr ? "nr  " : ""
-    str *= "Metainformation:\n"
-
-    str = [str]
-
-    record = nr ? [lpad("$i | ", 7) * card[i].record for i ∈ eachindex(card)] :
-                  [lpad("$i | ", 7) * card[i].record for i ∈ eachindex(card)]
-
-    _rm_blanks!(record)
-
-    Base.append!(str, record)
-
-    msg && println(Base.join(str .* "\r\n"))
-
-
-    #for i ∈ eachindex(card)
-    #    str *= nr ? lpad("$i", 4) : " | "
-    #    str *= card[i].record * "\n"
-    #end
-
-    # msg && println(str)
-
     hdu = _read_hdu(o, hduindex)
 
-    return hdu.dataobject.data
+    str = "\nFile: " * filnam
+    
+    msg && println(str)
+
+    return fits_info(hdu; nr, msg)
 
 end
 
@@ -167,15 +151,16 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true]]]])
+    fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true [, msg=true]]]]])
 
-Metafinformation and data as loaded from `f.hdu[hduindex]`; i.e.,
-*without casting of the FITS object*.
+Listing of all single-line records (ordered by ecord number) as read from 
+file; i.e., *without* creation of any FITS object.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `hdr`: show header (::Bool - default: true)
 * `dat`: show data (::Bool - default: true)
 * `nr`: include record numbers (::Bool - default: true)
+* `msg`: print message (::Bool)
 #### Example:
 ```
 julia> filnam = "minimal.fits";
@@ -186,38 +171,37 @@ julia> fits_create(filnam, data; protect=false);
 
 julia> fits_record_dump(filnam; dat=false)
 36-element Vector{Any}:
- (1, "SIMPLE  =                    T / file does conform to FITS standard             ")
- (2, "BITPIX  =                   32 / number of bits per data pixel                  ")
- (3, "NAXIS   =                    1 / number of data axes                            ")
- (4, "NAXIS1  =                    3 / length of data axis 1                          ")
- (5, "BZERO   =           2147483648 / offset data range to that of unsigned integer  ")
- (6, "BSCALE  =                  1.0 / default scaling factor                         ")
- (7, "EXTEND  =                    T / FITS dataset may contain extensions            ")
- (8, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
- (9, "END                                                                             ")
- (10, "                                                                                ")
- (11, "                                                                                ")
- (12, "                                                                                ")
+ "   1 | SIMPLE  =               " ⋯ 25 bytes ⋯ "m to FITS standard             "
+ "   2 | BITPIX  =               " ⋯ 25 bytes ⋯ "er data pixel                  "
+ "   3 | NAXIS   =               " ⋯ 25 bytes ⋯ "xes                            "
+ "   4 | NAXIS1  =               " ⋯ 25 bytes ⋯ "xis 1                          "
+ "   5 | NAXIS2  =               " ⋯ 25 bytes ⋯ "xis 2                          "
+ "   6 | NAXIS3  =               " ⋯ 25 bytes ⋯ "xis 3                          "
+ "   7 | EXTEND  =               " ⋯ 25 bytes ⋯ " contain extensions            "
+ "   8 | COMMENT    Extended FITS" ⋯ 25 bytes ⋯ ".nasa.gov/                     "
+ "   9 | END                     " ⋯ 25 bytes ⋯ "                               "
+ "  10 |                         " ⋯ 25 bytes ⋯ "                               "
+ "  11 |                         " ⋯ 25 bytes ⋯ "                               "                              "
  ⋮
- (34, "                                                                                ")
- (35, "                                                                                ")
- (36, "                                                                                ")
+ "  33 |                         " ⋯ 25 bytes ⋯ "                               "
+ "  34 |                         " ⋯ 25 bytes ⋯ "                               "
+ "  35 |                         " ⋯ 25 bytes ⋯ "                               "
+ "  36 |                         " ⋯ 25 bytes ⋯ "                               "
 
 julia> fits_record_dump(filnam; hdr=false)
 36-element Vector{Any}:
- (37, "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
- (38, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
- (39, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
- (40, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ "  37 | \0\0\0\0\0\0\0\v\0\0\0\0\0\0\0\x15\0\0\0\0\0\0\0\x1f" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\r\0\0\0\0\0\0\0\x17\0\0\0\0\0\0\0!\0\0\0\0\0\0\0\0"
+ "  38 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+ "  39 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
  ⋮
- (70, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
- (71, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
- (72, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0")
+ "  70 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+ "  71 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+ "  72 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
+function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=true)
 
     o = IORead(filnam)
 
@@ -226,30 +210,35 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
     ptrdat = _data_pointer(o)
     ptrend = _end_pointer(o)
 
-    record = []
+    rec = []
     for hduindex ∈ eachindex(ptrhdu)
         if (hduindex == hduval) ⊻ iszero(hduval)
             if hdr
                 Base.seek(o, ptrhdu[hduindex])
                 for ptr = (ptrhdu[hduindex]÷80+1):(ptrdat[hduindex]÷80)
-                    str = String(Base.read(o, 80))
-                    rec = nr ? (ptr, str) : str
-                    push!(record, rec)
+                    add = (ptr, String(Base.read(o, 80)))
+                    push!(rec, add)
                 end
             end
             if dat
                 Base.seek(o, ptrdat[hduindex])
                 for ptr = (ptrdat[hduindex]÷80+1):(ptrend[hduindex]÷80)
-                    str = String(Base.read(o, 80))
-                    rec = nr ? (ptr, str) : str
-                    push!(record, rec)
+                    add = (ptr, String(Base.read(o, 80)))
+                    push!(rec, add)
                 end
             end
         end
     end
 
-    record = record == [] ? nothing : record
-    
+    record = [lpad("$(rec[i][1]) | ", 7) * rec[i][2] for i ∈ eachindex(rec)]
+
+
+    str = "\nFile: " * filnam * " - record dump (no FITS object created):\n"
+
+    msg && println(str)
+
+    record = rec == [] ? nothing : record
+
     return record
 
 end

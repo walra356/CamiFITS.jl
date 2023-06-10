@@ -307,11 +307,15 @@ function test_fits_pointer()
     e = _data_row(o)
     f = _end_row(o)
 
-    r = fits_record_dump(filnam)
-    g = r[9][2][1:3]
-    h = r[37][2][1:15]
-    i = r[109][2][1:15]
-    j = r[181][2][1:15]
+    r = fits_record_dump(filnam; msg=false)
+    # g = r[9][2][1:3]
+    # h = r[37][2][1:15]
+    # i = r[109][2][1:15]
+    # j = r[181][2][1:15]
+    g = r[9][8:10]
+    h = r[37][8:22]
+    i = r[109][8:22]
+    j = r[181][8:22]
 
     a = (a .+1 == Base.OneTo(216))
     b = (b == [0, 36, 72, 108, 144, 180])

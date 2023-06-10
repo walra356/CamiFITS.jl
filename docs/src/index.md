@@ -275,8 +275,8 @@ cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 #### FITS - information tools
 
 ```@docs
-fits_info(f::FITS, hduindex=1; msg=true)
-fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true)
+fits_info(hdu::FITS_HDU; nr=true, msg=true)
+fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=true)
 parse_FITS_TABLE(hdu::FITS_HDU)
 ```
 
