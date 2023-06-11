@@ -178,6 +178,9 @@ julia> for i=3:8 println(dump[i]) end
    7 | EXTEND  =                    T / FITS dataset may contain extensions
    8 | END
 
+julia> dump[37]
+"  37 | \x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 40 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+
 julia> rm(filnam); f = data = dump = nothing
 ```
 """
