@@ -49,7 +49,7 @@ julia> rm(filnam); f = nothing
 ```
     fits_info(filnam::String [, hduindex=1] [; nr=true [, msg=true]])
 
-Same as above but creating the fits object after reading `filnam` from disc and
+Same as above but creating the fits object by reading `filnam` from disc and
 with *default* record nubering.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
@@ -162,39 +162,23 @@ FITS-conformance testing.
 * `msg`: print message (::Bool)
 #### Example:
 ```
-julia> filnam = "minimal.fits";
+julia> filnam = "test.fits";
 
 julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
 julia> fits_create(filnam, data; protect=false);
 
-julia> fits_record_dump(filnam; dat=false)
-36-element Vector{Any}:
- "   1 | SIMPLE  =               " ⋯ 25 bytes ⋯ "m to FITS standard             "
- "   2 | BITPIX  =               " ⋯ 25 bytes ⋯ "er data pixel                  "
- "   3 | NAXIS   =               " ⋯ 25 bytes ⋯ "xes                            "
- "   4 | NAXIS1  =               " ⋯ 25 bytes ⋯ "xis 1                          "
- "   5 | BZERO   =           2147" ⋯ 25 bytes ⋯ "e to that of unsigned integer  "
- "   6 | BSCALE  =               " ⋯ 25 bytes ⋯ "factor                         "
- "   7 | EXTEND  =               " ⋯ 25 bytes ⋯ " contain extensions            "
- "   8 | END                     " ⋯ 25 bytes ⋯ "                               "
- "   9 |                         " ⋯ 25 bytes ⋯ "                               "
- ⋮
- "  34 |                         " ⋯ 25 bytes ⋯ "                               "
- "  35 |                         " ⋯ 25 bytes ⋯ "                               "
- "  36 |                         " ⋯ 25 bytes ⋯ "                               "
+julia> dump = fits_record_dump(filnam; msg=false);
 
-julia> fits_record_dump(filnam; hdr=false)
-36-element Vector{Any}:
- "  37 | \0\0\0\0\0\0\0\v\0\0\0\0\0\0\0\x15\0\0\0\0\0\0\0\x1f" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\r\0\0\0\0\0\0\0\x17\0\0\0\0\0\0\0!\0\0\0\0\0\0\0\0"
- "  38 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
- "  39 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
- ⋮
- "  70 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
- "  71 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
- "  72 | \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 25 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+julia> for i=3:8 println(dump[i]) end
+   3 | NAXIS   =                    1 / number of data axes
+   4 | NAXIS1  =                    3 / length of data axis 1
+   5 | BZERO   =           2147483648 / offset data range to that of unsigned integer
+   6 | BSCALE  =                  1.0 / default scaling factor
+   7 | EXTEND  =                    T / FITS dataset may contain extensions
+   8 | END
 
-julia> rm(filnam); f = nothing
+julia> rm(filnam); f = data = dump = nothing
 ```
 """
 function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=true)
