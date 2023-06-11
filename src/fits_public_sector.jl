@@ -384,9 +384,9 @@ julia> data = let
        data = (a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b1,b2,b3);
        end;
 
-julia> fits_extend!(f, data; hdutype="TABLE");
+julia> fits_extend!(f, data; hdutype="table");
 
-julia> table = fits_info(f.hdu[2]; msg=false)
+julia> fits_info(f.hdu[2]; msg=false)
 7-element Vector{String}:
  " T 1.2 1.01E-6 1.01D-6   255   " ⋯ 35 bytes ⋯ " 4194303 a                    a"
  " F 2.1 2.00E-6 2.00D-6   511   " ⋯ 35 bytes ⋯ " 8388607 b                   bb"
