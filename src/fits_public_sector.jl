@@ -49,8 +49,8 @@ julia> rm(filnam); f = nothing
 ```
     fits_info(filnam::String [, hduindex=1] [; nr=true [, msg=true]])
 
-As above but reading the fits object from `filnam` on disc and *default* 
-record nubering.
+Same as above but creating the fits object after reading `filnam` from disc and
+with *default* record nubering.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `nr`: include cardindex (::Bool - default: `true`)
