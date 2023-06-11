@@ -27,9 +27,10 @@ julia> filnam = "minimal.fits";
 julia> f = fits_create(filnam; protect=false);
 
 julia> fits_info(f)
+
 File: minimal.fits
 hdu: 1
-hdutype: PRIMARY
+hdutype: 'PRIMARY '
 DataType: Any
 Datasize: (0,)
 
@@ -38,8 +39,6 @@ SIMPLE  =                    T / file does conform to FITS standard
 BITPIX  =                   64 / number of bits per data pixel
 NAXIS   =                    1 / number of data axes
 NAXIS1  =                    0 / length of data axis 1
-BZERO   =                  0.0 / offset data range to that of unsigned integer  
-BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
 END
 
@@ -59,28 +58,28 @@ Additional is the record numbering.
 ```
 julia> filnam = "minimal.fits";
 
+julia> fits_create(filnam; protect=false);
+
 julia> fits_info(filnam)
 
 File: minimal.fits
 hdu: 1
+hdutype: 'PRIMARY '
+DataType: Any
+Datasize: (0,)
 
-nr  Metainformation:
-1   SIMPLE  =                    T / file does conform to FITS standard
-2   BITPIX  =                   64 / number of bits per data pixel
-3   NAXIS   =                    1 / number of data axes
-4   NAXIS1  =                    0 / length of data axis 1
-5   BZERO   =                  0.0 / offset data range to that of unsigned integer
-6   BSCALE  =                  1.0 / default scaling factor
-7   EXTEND  =                    T / FITS dataset may contain extensions
-8   END
-9
-10
-⋮
-34
-35
-36
+  nr | Metainformation:
+---------------------------------------------------------------------------------------
+   1 | SIMPLE  =                    T / file does conform to FITS standard
+   2 | BITPIX  =                   64 / number of bits per data pixel
+   3 | NAXIS   =                    1 / number of data axes
+   4 | NAXIS1  =                    0 / length of data axis 1
+   5 | EXTEND  =                    T / FITS dataset may contain extensions
+   6 | END
 
-julia> rm(filnam); f = nothing
+Any[]
+
+julia> rm(filnam)
 ```
 """
 function fits_info(hdu::FITS_HDU; nr=false, msg=true)
