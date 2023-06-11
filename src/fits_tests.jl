@@ -438,6 +438,7 @@ function test_table_data_types()
     rm(filnam)
 
     table = fits_info(f.hdu[2]; msg=false)
+    
     str = " T 1.01E-6 1.01D-6 1.23   255   32767   4194303   1   255   32767   4194303 a                    a"
 
     return table[1] == str
