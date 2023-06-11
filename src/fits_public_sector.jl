@@ -149,10 +149,11 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true [, msg=true]]]]])
+    fits_record_dump(filnam [, hduindex=0] [; hdr=true [, dat=true [, nr=true [, msg=true]]]])
 
 Listing of all single-line records (ordered by record number) as read from 
-file; i.e., *without* creation of any FITS object.
+file; i.e., *without casting of FITS objects*. Note that this tool is free 
+from FITS conformance testing (anr related fatal errors).
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `hdr`: show header (::Bool - default: true)
