@@ -10,13 +10,13 @@
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_info(f::FITS [, hduindex=1] [; nr=true [, msg=true]])
-    fits_info(f.hdu[hduindex] [; msg=true])
+    fits_info(f::FITS [, hduindex=1] [; nr=false [, msg=true]])
+    fits_info(hdu::FITS_HDU; nr=false, msg=true)
 
 Metafinformation and data of a given [`FITS_HDU`](@ref) object. 
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
-* `nr`: include cardindex (::Bool - default: `true`)
+* `nr`: include cardindex (::Bool - default: `false`)
 * `msg`: print message (::Bool)
 #### Example:
 To demonstrate `fits_info` we first create the fits object `f` for subsequent 

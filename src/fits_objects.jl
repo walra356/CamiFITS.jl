@@ -256,7 +256,7 @@ julia> record = [rpad("KEYWORD$i",8) * "'" * rpad("$i",70) * "'" for i=1:3];
 
 julia> blanks = [repeat(' ', 80) for i = 1:36-length(record)];
 
-julia> append!(record, blanks);
+julia> append!(record, blanks);   # to conform to the FITS standard
 
 julia> h = cast_FITS_header(record);
 
