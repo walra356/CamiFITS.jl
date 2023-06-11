@@ -41,7 +41,6 @@ NAXIS1  =                    0 / length of data axis 1
 BZERO   =                  0.0 / offset data range to that of unsigned integer  
 BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
 
 Any[]
@@ -73,11 +72,9 @@ nr  Metainformation:
 5   BZERO   =                  0.0 / offset data range to that of unsigned integer
 6   BSCALE  =                  1.0 / default scaling factor
 7   EXTEND  =                    T / FITS dataset may contain extensions
-8   COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-9   END
+8   END
+9
 10
-11
-12
 ⋮
 34
 35
@@ -86,7 +83,7 @@ nr  Metainformation:
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_info(hdu::FITS_HDU; nr=true, msg=true)
+function fits_info(hdu::FITS_HDU; nr=false, msg=true)
 
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
@@ -103,6 +100,7 @@ function fits_info(hdu::FITS_HDU; nr=true, msg=true)
     end
     str *= nr ? "\n\n  nr | " : "\n\n"
     str *= "Metainformation:"
+    str *= nr ? '\n' *repeat('-', 87) : ""
 
     str = [str]
 
@@ -121,7 +119,7 @@ function fits_info(hdu::FITS_HDU; nr=true, msg=true)
 
 end
 # ------------------------------------------------------------------------------
-function fits_info(f::FITS, hduindex=1; nr=true, msg=true)
+function fits_info(f::FITS, hduindex=1; nr=false, msg=true)
 
     str = "\nFile: " * f.filnam.value
     msg && println(str)
@@ -153,7 +151,7 @@ end
 @doc raw"""
     fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true [, msg=true]]]]])
 
-Listing of all single-line records (ordered by ecord number) as read from 
+Listing of all single-line records (ordered by record number) as read from 
 file; i.e., *without* creation of any FITS object.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
@@ -178,10 +176,9 @@ julia> fits_record_dump(filnam; dat=false)
  "   5 | NAXIS2  =               " ⋯ 25 bytes ⋯ "xis 2                          "
  "   6 | NAXIS3  =               " ⋯ 25 bytes ⋯ "xis 3                          "
  "   7 | EXTEND  =               " ⋯ 25 bytes ⋯ " contain extensions            "
- "   8 | COMMENT    Extended FITS" ⋯ 25 bytes ⋯ ".nasa.gov/                     "
- "   9 | END                     " ⋯ 25 bytes ⋯ "                               "
- "  10 |                         " ⋯ 25 bytes ⋯ "                               "
- "  11 |                         " ⋯ 25 bytes ⋯ "                               "                              "
+ "   8 | END                     " ⋯ 25 bytes ⋯ "                               "
+ "   9 |                         " ⋯ 25 bytes ⋯ "                               "
+ "  10 |                         " ⋯ 25 bytes ⋯ "                               "                              "
  ⋮
  "  33 |                         " ⋯ 25 bytes ⋯ "                               "
  "  34 |                         " ⋯ 25 bytes ⋯ "                               "
@@ -285,7 +282,6 @@ NAXIS3  =                    1 / length of data axis 3
 BZERO   =                  0.0 / offset data range to that of unsigned integer
 BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
 
 3×3×1 Array{Int64, 3}:
@@ -346,7 +342,6 @@ NAXIS1  =                    0 / length of data axis 1
 BZERO   =                  0.0 / offset data range to that of unsigned integer
 BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
 
 Any[]
@@ -441,7 +436,7 @@ julia> filnam = "minimal.fits";
 
 julia> f = fits_create(filnam; protect=false);
 
-julia> fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension");
+julia> fits_add_key!(f, 1, "KEYNEW1", true, "This is the bew key");
 
 julia> fits_info(f)
 
@@ -459,8 +454,7 @@ NAXIS1  =                    0 / length of data axis 1
 BZERO   =                  0.0 / offset data range to that of unsigned integer
 BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-KEYNEW1 =                    T / FITS dataset may contain extension
+KEYNEW1 =                    T / This is the bew key
 END
 
 Any[]
@@ -520,16 +514,16 @@ julia> filnam = "minimal.fits";
 
 julia> f = fits_create(filnam; protect=false);
 
-julia> fits_add_key!(f, 1, "KEYNEW1", true, "this is record 5");
+julia> fits_add_key!(f, 1, "KEYNEW1", true, "This is the new key");
 
 julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
-9
+8
 
 julia> keyword = f.hdu[1].header.card[cardindex].keyword
 "KEYNEW1"
 
 julia> cardindex = get(f.hdu[1].header.map,"KEYNEW1", nothing)
-9
+8
 
 julia> fits_delete_key!(f, 1, "KEYNEW1");
 

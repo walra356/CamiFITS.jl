@@ -237,13 +237,13 @@ function test_fits_rename_key!()
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
-    test1 = i == 7
+    test1 = i == 6
 
     fits_rename_key!(f, 1, "KEYNEW1", "KEYNEW2")
 
     i = get(f.hdu[1].header.map, "KEYNEW2", 0)
 
-    test2 = i == 7
+    test2 = i == 6
 
     rm(filnam)
 
@@ -259,7 +259,7 @@ function test_fits_delete_key!()
 
     i = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
-    test1 = i == 7
+    test1 = i == 6
 
     fits_delete_key!(f, 1, "KEYNEW1")
 
@@ -308,11 +308,7 @@ function test_fits_pointer()
     f = _end_row(o)
 
     r = fits_record_dump(filnam; msg=false)
-    # g = r[9][2][1:3]
-    # h = r[37][2][1:15]
-    # i = r[109][2][1:15]
-    # j = r[181][2][1:15]
-    g = r[9][8:10]
+    g = r[8][8:10]
     h = r[37][8:22]
     i = r[109][8:22]
     j = r[181][8:22]

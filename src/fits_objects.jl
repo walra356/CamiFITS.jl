@@ -595,7 +595,6 @@ function _header_record_primary(dataobject::FITS_dataobject)
         Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
     end
     Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
-    Base.push!(r, "COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/                     ")
     Base.push!(r, "END                                                                             ")
 
     _append_blanks!(r)

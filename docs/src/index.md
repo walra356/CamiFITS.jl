@@ -106,7 +106,6 @@ BITPIX  =                   64 / number of bits per data pixel
 NAXIS   =                    1 / number of data axes
 NAXIS1  =                    0 / length of data axis 1
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
 
 Any[]
@@ -181,7 +180,6 @@ NAXIS1  =                    3 / length of data axis 1
 NAXIS2  =                    3 / length of data axis 2
 NAXIS3  =                    1 / length of data axis 3
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
 END
 
 3×3×1 Array{Int64, 3}:
