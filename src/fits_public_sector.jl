@@ -174,14 +174,12 @@ julia> fits_record_dump(filnam; dat=false)
  "   2 | BITPIX  =               " ⋯ 25 bytes ⋯ "er data pixel                  "
  "   3 | NAXIS   =               " ⋯ 25 bytes ⋯ "xes                            "
  "   4 | NAXIS1  =               " ⋯ 25 bytes ⋯ "xis 1                          "
- "   5 | NAXIS2  =               " ⋯ 25 bytes ⋯ "xis 2                          "
- "   6 | NAXIS3  =               " ⋯ 25 bytes ⋯ "xis 3                          "
+ "   5 | BZERO   =           2147" ⋯ 25 bytes ⋯ "e to that of unsigned integer  "
+ "   6 | BSCALE  =               " ⋯ 25 bytes ⋯ "factor                         "
  "   7 | EXTEND  =               " ⋯ 25 bytes ⋯ " contain extensions            "
  "   8 | END                     " ⋯ 25 bytes ⋯ "                               "
  "   9 |                         " ⋯ 25 bytes ⋯ "                               "
- "  10 |                         " ⋯ 25 bytes ⋯ "                               "                              "
  ⋮
- "  33 |                         " ⋯ 25 bytes ⋯ "                               "
  "  34 |                         " ⋯ 25 bytes ⋯ "                               "
  "  35 |                         " ⋯ 25 bytes ⋯ "                               "
  "  36 |                         " ⋯ 25 bytes ⋯ "                               "
@@ -254,42 +252,31 @@ Key:
 * `protect`: overwrite protection (::Bool)
 #### Examples:
 ```
-julia> data = [11,21,31,12,22,23,13,23,33];
+julia> filnam = "test.fits";
 
-julia> data = reshape(data,(3,3,1))
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
- 11  12  13
- 21  22  23
- 31  23  33
-
-julia> f = fits_create("minimal.fits", data; protect=false);
+julia> f = fits_create(filnam, data; protect=false);
 
 julia> fits_info(f)
 
-File: minimal.fits
+File: test.fits
 hdu: 1
-hdutype: PRIMARY
+hdutype: 'PRIMARY '
 DataType: Int64
-Datasize: (3, 3, 1)
+Datasize: (3, 3)
 
 Metainformation:
 SIMPLE  =                    T / file does conform to FITS standard
 BITPIX  =                   64 / number of bits per data pixel
-NAXIS   =                    3 / number of data axes
+NAXIS   =                    2 / number of data axes
 NAXIS1  =                    3 / length of data axis 1
 NAXIS2  =                    3 / length of data axis 2
-NAXIS3  =                    1 / length of data axis 3
-BZERO   =                  0.0 / offset data range to that of unsigned integer
-BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
 END
 
-3×3×1 Array{Int64, 3}:
-[:, :, 1] =
- 11  12  13
- 21  22  23
- 31  23  33
+3×3 Matrix{Int64}:
+ 11  21  31
+ 12  22  23
+ 13  23  33
 
 julia> rm("minimal.fits"); f = nothing
 ```
@@ -376,36 +363,38 @@ end
 Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
 #### Examples:
 ```
-julia> filnam = "test_example.fits";
+julia> filnam = "test.fits";
 
-julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
+julia> f = fits_create(filnam; protect=false);
 
-julia> f = fits_create(filnam, data; protect=false);
+julia> data = let
+       a0 = Bool[1, 0, 1, 0, 1, 0, 1];
+       a1 = [1.2, 2.1, 3.0, 4.0, 5.0, 6.0, 7.0];
+       a2 = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6];
+       a3 = Float64[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6];
+       a4 = [convert(Int16, Int(2^i) - 1) for i = 8:14];
+       a5 = [convert(Int32, Int(2^i) - 1) for i = 15:21];
+       a6 = [convert(Int64, Int(2^i) - 1) for i = 22:28];
+       a7 = [convert(UInt8, Int(2^i) - 1) for i = 1:7];
+       a8 = [convert(UInt16, Int(2^i) - 1) for i = 8:14];
+       a9 = [convert(UInt32, Int(2^i) - 1) for i = 15:21];
+       b1 = [convert(UInt64, Int(2^i) - 1) for i = 22:28];
+       b2 = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+       b3 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE", "qwerty", "qwerty"];
+       data = (a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b1,b2,b3);
+       end;
 
-julia> a = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6];
+julia> fits_extend!(f, data; hdutype="TABLE");
 
-julia> b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
-
-julia> c = [1.23,2.12,3.,4.,5.];
-
-julia> d = ['a','b','c','d','e'];
-
-julia> e = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"];
-
-julia> data = [a,b,c,d,e];
-
-julia> fits_extend!(f, data; hdutype="TABLE")
-
-
-julia> f.hdu[2].dataobject.data
-  5-element Vector{String}:
-   "1.0e-6 1086 1.23 a a                    "
-   "2.0e-6 1036 2.12 b bb                   "
-   "3.0e-6 1055 3.0  c ccc                  "
-   "4.0e-6 1070 4.0  d dddd                 "
-   "5.0e-6 1071 5.0  e ABCeeaeeEEEEEEEEEEEE "
-
-rm(strExample); f = data = a = b = c = d = e = nothing
+julia> table = fits_info(f.hdu[2]; msg=false)
+7-element Vector{String}:
+ " T 1.2 1.01E-6 1.01D-6   255   " ⋯ 35 bytes ⋯ " 4194303 a                    a"
+ " F 2.1 2.00E-6 2.00D-6   511   " ⋯ 35 bytes ⋯ " 8388607 b                   bb"
+ " T 3.0 3.00E-6 3.00D-6  1023  1" ⋯ 35 bytes ⋯ "16777215 c                  ccc"
+ " F 4.0 4.00E-6 4.00D-6  2047  2" ⋯ 35 bytes ⋯ "33554431 d                 dddd"
+ " T 5.0 5.00E-6 5.00D-6  4095  5" ⋯ 35 bytes ⋯ "67108863 e ABCeeaeeEEEEEEEEEEEE"
+ " F 6.0 6.00E-6 6.00D-6  8191 10" ⋯ 35 bytes ⋯ "34217727 f               qwerty"
+ " T 7.0 7.00E-6 7.00D-6 16383 20" ⋯ 35 bytes ⋯ "68435455 g               qwerty"
 ```
 """
 function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")

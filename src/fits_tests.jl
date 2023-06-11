@@ -415,7 +415,7 @@ function test_table_data_types()
 
     filnam = "kanweg.fits";
     f = fits_create(filnam; protect=false);
-
+    datatuple = let
     a0 = Bool[1, 0, 1, 0, 1, 0, 1];
     a1 = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6];
     a2 = Float64[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6];
@@ -430,6 +430,7 @@ function test_table_data_types()
     b2 = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
     b3 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE", "qwerty", "qwerty"];
     data = (a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b1,b2,b3);
+    end;
 
     fits_extend!(f, data; hdutype="TABLE");
 
