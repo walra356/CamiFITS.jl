@@ -400,11 +400,11 @@ end
 
 
 # ------------------------------------------------------------------------------
-#                 fits_copy(filnam1 [, filnam2="" [; protect=true[, msg=true]]])
+#           fits_copy(filnam1 [, filnam2=""] [; protect=true[, msg=true]])
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_copy(filnam1 [, filnam2="" [; protect=true]])
+    fits_copy(filnam1 [, filnam2=""] [; protect=true]])
 
 Copy `filnam1` to `filnam2` (with mandatory `.fits` extension)
 Key:
@@ -412,30 +412,27 @@ Key:
 * `msg::Bool`: allow status message
 #### Examples:
 ```
-fits_copy("T01.fits")
-  'T01.fits' was saved as 'T01 - Copy.fits'
+julia> fits_create("test1.fits"; protect=false);
 
-fits_copy("T01.fits", "T01a.fits")
-  strError: 'T01a.fits' in use (set ';protect=false' to lift overwrite protection)
+julia> fits_copy("test1.fits", "test2.fits"; protect=false);
+'test1.fits' was copied under the name 'test2.fits'
 
-fits_copy("T01.fits", "T01a.fits"; protect=false)
-  'T01.fits' was saved as 'T01a.fits'
+julia> rm.(["test1.fits", "test2.fits"]);
 ```
 """
 function fits_copy(filnam1::String, filnam2=" "; protect=true, msg=true)
 
-    filnam = filnam2 == " " ? (filnam1 * "- Copy.fits") : filnam2
-    
-    if Base.Filesystem.isfile(filnam2) & protect
-        str = filnam2 * " allready exists - set 'protect=false' to replace it."
-        return println(str)
-    end
+    filnam = filnam2 == " " ? (filnam1 * " - Copy.fits") : filnam2
+
+    isprotected = Base.Filesystem.isfile(filnam) & protect
+    isprotected && println("Try copy '" * filnam1 * "' to '" * filnam * "'")
+    isprotected && Base.throw(FITSError(msgErr(4)))
 
     o = IORead(filnam1)
 
-    IOWrite(o, filnam2)
+    IOWrite(o, filnam)
 
-    return msg && println("'$(filnam1)' was copied under the name '$(filnam2)'")
+    return msg && println("'$(filnam1)' was copied to '$(filnam)'")
 
 end
 
