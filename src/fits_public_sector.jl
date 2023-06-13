@@ -453,28 +453,36 @@ Key:
 * `msg::Bool`: allow status message
 #### Example:
 ```
+julia> for i=1:5
+           data = [0 0 0; 0 i 0; 0 0 0]
+           fits_create("T$i.fits", data; protect=false)
+       end
+
 julia> f = fits_collect("T1.fits", "T5.fits"; protect=false);
 'T1-T5.fits': file created
 
-julia> fits_info(f);
+julia> fits_info(f)[:,:,2]
+
 File: T1-T5.fits
 hdu: 1
-hdutype: PRIMARY
-DataType: UInt32
-Datasize: (512, 512, 5)
+hdutype: 'PRIMARY '
+DataType: Int64
+Datasize: (3, 3, 5)
 
 Metainformation:
 SIMPLE  =                    T / file does conform to FITS standard
-BITPIX  =                   32 / number of bits per data pixel
+BITPIX  =                   64 / number of bits per data pixel
 NAXIS   =                    3 / number of data axes
-NAXIS1  =                  512 / length of data axis 1
-NAXIS2  =                  512 / length of data axis 2
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
 NAXIS3  =                    5 / length of data axis 3
-BZERO   =           2147483648 / offset data range to that of unsigned integer
-BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
 END
+
+3×3 Matrix{Int64}:
+ 0  0  0
+ 0  2  0
+ 0  0  0
 ```
 """
 function fits_collect(fileStart::String, fileStop::String; protect=true, msg=true)
