@@ -171,28 +171,56 @@ end
 
 function test_fits_collect()
 
-    filnam1 = "F1.fits"
-    filnam2 = "F2.fits"
-    filnam3 = "F3.fits"
-    filnam4 = "F1-F3.fits"
+    data1(i) = [i]
+    for i = 1:5
+        fits_create("T$i.fits", data1(i); protect=false)
+    end
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    dataout = fits_info(f; msg=false)
+    a = dataout[2, 1] == data1(2)[1]
 
-    data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
-    data = reshape(data, (3, 3, 1))
+    data2(i) = [0, i, 0]
+    for i = 1:5
+        fits_create("T$i.fits", data2(i); protect=false)
+    end
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    dataout = fits_info(f; msg=false)
+    b = dataout[2, :] == data2(2)
 
-    fits_create(filnam1, data; protect=false)
-    fits_create(filnam2, data; protect=false)
-    fits_create(filnam3, data; protect=false)
+    data3(i) = [0 i 0]
+    for i = 1:5
+        fits_create("T$i.fits", data3(i); protect=false)
+    end
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    dataout = fits_info(f; msg=false)
+    c = dataout[:, :, 2] == data3(2)[:, :, 1]
 
-    f = fits_collect(filnam1, filnam3; protect=false, msg=false)
+    data4(i) = [0 0 0; 0 i 0; 0 0 0]
+    for i = 1:5
+        fits_create("T$i.fits", data4(i); protect=false)
+    end
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    dataout = fits_info(f; msg=false)
+    d = dataout[:, :, 2] == data4(2)[:, :, 1]
 
-    o = f.filnam.value == filnam4
+    data5(i) = [0 0 0; 0 i 0; 0 0 0;;;]
+    for i = 1:5
+        fits_create("T$i.fits", data5(i); protect=false)
+    end
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    dataout = fits_info(f; msg=false)
+    e = dataout[:, :, 2] == data5(2)[:, :, 1]
 
-    rm(filnam1)
-    rm(filnam2)
-    rm(filnam3)
-    rm(filnam4)
+    for i = 1:5
+        rm("T$i.fits")
+    end
 
-    return o
+    rm("T1-T5.fits")
+
+    pass = a & b & c & d & e
+    pass || println([a, b, c, d, e])
+
+    return pass
 
 end
 

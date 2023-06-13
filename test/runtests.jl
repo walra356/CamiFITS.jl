@@ -40,4 +40,3 @@ using Test
     @test fits_terminology(; test=true)
 
 end
-

@@ -479,8 +479,8 @@ END
 """
 function fits_collect(fileStart::String, fileStop::String; protect=true, msg=true)
 
-    # Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
-    # Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
+    Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
+    Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
 
     nam1 = cast_FITS_filnam(fileStart)
     strPre1 = nam1.prefix
@@ -509,71 +509,13 @@ function fits_collect(fileStart::String, fileStop::String; protect=true, msg=tru
     dataA = f.hdu[1].dataobject.data  # read an image from disk
     t = eltype(f.hdu[1].dataobject.data)
     s = size(f.hdu[1].dataobject.data)
+
     d = ndims(f.hdu[1].dataobject.data)
 
-    dims = d == 1 ? (s[1], nstack) : d == 2 ? (s[1], s[2], nstack) :
-           error("Error: stacking of arrays of dimension > 2 not implemented")
+    dims = d == 1 ? (nstack, s[1]) : d == 2 ? (s[1], s[2], nstack) :
+           d == 3 ? (s[1], s[2], nstack) : Base.throw(FITSError(msgErr(38)))
 
-    dataStack = Array{t,d+1}(undef, dims)
-
-    itr = valNum1:valNum2
-    filnamNext = fileStart
-    for i ∈ itr
-        l = length(filnamNext)
-        filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
-        if l < length(filnamNext)
-            numLeadingZeros = numLeadingZeros - 1
-            filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
-        end
-        f = fits_read(filnamNext)
-        dataNext = f.hdu[1].dataobject.data           # read an image from disk
-        dataStack[i] = dataNext
-    end
-
-    filnamOut = strPre1 * strNum1 * "-" * strPre1 * strNum2 * strExt1
-
-    f = fits_create(filnamOut, dataStack; protect)
-
-    msg && println("'$filnamOut': file created")
-
-    return f
-
-end
-
-function fits_collect1(fileStart::String, fileStop::String; protect=true, msg=true)
-
-    # Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
-    # Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
-
-    nam1 = cast_FITS_filnam(fileStart)
-    strPre1 = nam1.prefix
-    strNum1 = nam1.numerator
-    strExt1 = nam1.extension
-    valNum1 = parse(Int, strNum1)
-    numLeadingZeros = length(strNum1) - length(string(valNum1))
-
-    nam2 = cast_FITS_filnam(fileStop)
-    strPre2 = nam2.prefix
-    strNum2 = nam2.numerator
-    strExt2 = nam2.extension
-    valNum2 = parse(Int, strNum2)
-    numLeadingZeros2 = length(strNum2) - length(string(valNum2))
-
-    if strPre1 ≠ strPre2
-        error(strPre1 * " ≠ " * strPre2 * " (prefixes must be identical)")
-    elseif strExt1 ≠ strExt2
-        error(strExt1 * " ≠ " * strExt2 * " (file extensions must be identical)")
-    elseif uppercase(strExt1) ≠ ".FITS"
-        error("file extension must be '.fits'")
-    end
-
-    numFiles = 1 + valNum2 - valNum1
-    f = fits_read(fileStart)
-    dataA = f.hdu[1].dataobject.data  # read an image from disk
-    t = typeof(f.hdu[1].dataobject.data[1, 1, 1])
-    s = size(f.hdu[1].dataobject.data)
-
-    dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
+    datastack = Array{t,}(undef, dims)
 
     itr = valNum1:valNum2
     filnamNext = fileStart
@@ -585,13 +527,19 @@ function fits_collect1(fileStart::String, fileStop::String; protect=true, msg=tr
             filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
         end
         f = fits_read(filnamNext)
-        dataNext = f.hdu[1].dataobject.data           # read an image from disk
-        dataStack[:, :, i] = dataNext[:, :, 1]
+        dataNext = f.hdu[1].dataobject.data       # read an image from disk
+        if d == 3
+            datastack[:, :, i] = dataNext[:, :, 1]
+        elseif d == 2
+            datastack[:, :, i] = dataNext[:, :]
+        else
+            datastack[i, :] = dataNext[:]
+        end
     end
 
     filnamOut = strPre1 * strNum1 * "-" * strPre1 * strNum2 * strExt1
 
-    f = fits_create(filnamOut, dataStack; protect)
+    f = fits_create(filnamOut, datastack; protect)
 
     msg && println("'$filnamOut': file created")
 
