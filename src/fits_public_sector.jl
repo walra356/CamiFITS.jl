@@ -483,6 +483,10 @@ END
  0  0  0
  0  2  0
  0  0  0
+
+julia> for i = 1:5 rm("T$i.fits") end
+
+julia> rm("T1-T5.fits"); f = nothing
 ```
 """
 function fits_collect(fileStart::String, fileStop::String; protect=true, msg=true)
