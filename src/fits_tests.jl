@@ -417,20 +417,20 @@ function test_table_data_types()
     f = fits_create(filnam; protect=false)
 
     datatuple = let
-        a0 = Bool[1, 0, 1, 0, 1, 0, 1]
-        a1 = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6]
-        a2 = Float64[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6]
-        a3 = [1.23, 2.12, 3.0, 4.0, 5.0, 6.0, 7.0]
-        a4 = [convert(Int16, Int(2^i) - 1) for i = 8:14]
-        a5 = [convert(Int32, Int(2^i) - 1) for i = 15:21]
-        a6 = [convert(Int64, Int(2^i) - 1) for i = 22:28]
-        a7 = [convert(UInt8, Int(2^i) - 1) for i = 1:7]
-        a8 = [convert(UInt16, Int(2^i) - 1) for i = 8:14]
-        a9 = [convert(UInt32, Int(2^i) - 1) for i = 15:21]
-        b1 = [convert(UInt64, Int(2^i) - 1) for i = 22:28]
-        b2 = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-        b3 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE", "qwerty", "qwerty"]
-        data = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, b1, b2, b3)
+        a1 = Bool[1, 0, 1, 0, 1]
+        a2 = UInt8[108, 108, 108, 108, 108]
+        a3 = Int16[1081, 1082, 1083, 1084, 1085]
+        a4 = UInt16[1081, 1082, 1083, 1084, 1085]
+        a5 = Int32[1081, 1082, 1083, 1084, 10850]
+        a6 = UInt32[1081, 10820, 1083, 1084, 10850]
+        a7 = Int64[1081, 1082, 1083, 1084, 108500]
+        a8 = UInt64[1081, 1082, 1083, 1084, 108500]
+        a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
+        a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
+        a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
+        a12 = ['a', 'b', 'c', 'd', 'e']
+        a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
+        data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
     end
 
     fits_extend!(f, datatuple; hdutype="TABLE")
@@ -438,8 +438,8 @@ function test_table_data_types()
     rm(filnam)
 
     table = fits_info(f.hdu[2]; msg=false)
-    
-    str = " T 1.01E-6 1.01D-6 1.23   255   32767   4194303   1   255   32767   4194303 a                    a"
+
+    str = " T 108 1081 1081  1081  1081   1081   1081  1.23 1.01E-6 1.01D-6 a                    a"
 
     return table[1] == str
 

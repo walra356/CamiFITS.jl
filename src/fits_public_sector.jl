@@ -287,6 +287,63 @@ function fits_create(filnam::String, data=[]; protect=true)
 
 end
 
+
+# ------------------------------------------------------------------------------
+#           fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+
+Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
+#### Examples:
+```
+julia> filnam = "test.fits";
+
+julia> f = fits_create(filnam; protect=false);
+
+julia> data = let
+        a1 = Bool[1, 0, 1, 0, 1]
+        a2 = UInt8[108, 108, 108, 108, 108]
+        a3 = Int16[1081, 1082, 1083, 1084, 1085]
+        a4 = UInt16[1081, 1082, 1083, 1084, 1085]
+        a5 = Int32[1081, 1082, 1083, 1084, 10850]
+        a6 = UInt32[1081, 10820, 1083, 1084, 10850]
+        a7 = Int64[1081, 1082, 1083, 1084, 108500]
+        a8 = UInt64[1081, 1082, 1083, 1084, 108500]
+        a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
+        a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
+        a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
+        a12 = ['a', 'b', 'c', 'd', 'e']
+        a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
+        data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+       end;
+
+julia> fits_extend!(f, data; hdutype="table");
+
+julia> table = fits_info(f.hdu[2]; msg=false);
+
+julia> table[1]
+" T 108 1081 1081  1081  1081   1081   1081  1.23 1.01E-6 1.01D-6 a                    a"
+
+julia> rm(filnam); f = nothing
+```
+"""
+function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+
+    hdutype = _format_hdutype(hdutype)
+    hduindex = length(f.hdu) + 1
+    dataobject = cast_FITS_dataobject(hdutype, data_extend)
+    header = cast_FITS_header(dataobject)
+
+    push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))
+
+    fits_save(f)
+
+    return f
+
+end
+
 # ------------------------------------------------------------------------------
 #                     fits_read(filnam::String)
 # ------------------------------------------------------------------------------
@@ -340,60 +397,203 @@ function fits_read(filnam::String)
 
 end
 
+
+
 # ------------------------------------------------------------------------------
-#           fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
+#                 fits_copy(filnam1 [, filnam2="" [; protect=true[, msg=true]]])
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+    fits_copy(filnam1 [, filnam2="" [; protect=true]])
 
-Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
+Copy `filnam1` to `filnam2` (with mandatory `.fits` extension)
+Key:
+* `protect::Bool`: overwrite protection
+* `msg::Bool`: allow status message
 #### Examples:
 ```
-julia> filnam = "test.fits";
+fits_copy("T01.fits")
+  'T01.fits' was saved as 'T01 - Copy.fits'
 
-julia> f = fits_create(filnam; protect=false);
+fits_copy("T01.fits", "T01a.fits")
+  strError: 'T01a.fits' in use (set ';protect=false' to lift overwrite protection)
 
-julia> data = let
-       a0 = Bool[1, 0, 1, 0, 1, 0, 1];
-       a1 = [1.2, 2.1, 3.0, 4.0, 5.0, 6.0, 7.0];
-       a2 = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6];
-       a3 = Float64[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6, 6.0E-6, 7.0E-6];
-       a4 = [convert(Int16, Int(2^i) - 1) for i = 8:14];
-       a5 = [convert(Int32, Int(2^i) - 1) for i = 15:21];
-       a6 = [convert(Int64, Int(2^i) - 1) for i = 22:28];
-       a7 = [convert(UInt8, Int(2^i) - 1) for i = 1:7];
-       a8 = [convert(UInt16, Int(2^i) - 1) for i = 8:14];
-       a9 = [convert(UInt32, Int(2^i) - 1) for i = 15:21];
-       b1 = [convert(UInt64, Int(2^i) - 1) for i = 22:28];
-       b2 = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-       b3 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE", "qwerty", "qwerty"];
-       data = (a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b1,b2,b3);
-       end;
-
-julia> fits_extend!(f, data; hdutype="table");
-
-julia> fits_info(f.hdu[2]; msg=false)
-7-element Vector{String}:
- " T 1.2 1.01E-6 1.01D-6   255   " ⋯ 35 bytes ⋯ " 4194303 a                    a"
- " F 2.1 2.00E-6 2.00D-6   511   " ⋯ 35 bytes ⋯ " 8388607 b                   bb"
- " T 3.0 3.00E-6 3.00D-6  1023  1" ⋯ 35 bytes ⋯ "16777215 c                  ccc"
- " F 4.0 4.00E-6 4.00D-6  2047  2" ⋯ 35 bytes ⋯ "33554431 d                 dddd"
- " T 5.0 5.00E-6 5.00D-6  4095  5" ⋯ 35 bytes ⋯ "67108863 e ABCeeaeeEEEEEEEEEEEE"
- " F 6.0 6.00E-6 6.00D-6  8191 10" ⋯ 35 bytes ⋯ "34217727 f               qwerty"
- " T 7.0 7.00E-6 7.00D-6 16383 20" ⋯ 35 bytes ⋯ "68435455 g               qwerty"
+fits_copy("T01.fits", "T01a.fits"; protect=false)
+  'T01.fits' was saved as 'T01a.fits'
 ```
 """
-function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+function fits_copy(filnam1::String, filnam2=" "; protect=true, msg=true)
 
-    hdutype = _format_hdutype(hdutype)
-    hduindex = length(f.hdu) + 1
-    dataobject = cast_FITS_dataobject(hdutype, data_extend)
-    header = cast_FITS_header(dataobject)
+    filnam = filnam2 == " " ? (filnam1 * "- Copy.fits") : filnam2
+    
+    if Base.Filesystem.isfile(filnam2) & protect
+        str = filnam2 * " allready exists - set 'protect=false' to replace it."
+        return println(str)
+    end
 
-    push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))
+    o = IORead(filnam1)
 
-    fits_save(f)
+    IOWrite(o, filnam2)
+
+    return msg && println("'$(filnam1)' was copied under the name '$(filnam2)'")
+
+end
+
+# ------------------------------------------------------------------------------
+#                 fits_collect(strA, strB [; protect=true])
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_collect(fileStart::String, fileStop::String [; protect=true[], msg=true]])
+
+Combine "fileStart" with "fileStop" (with mandatory ".fits" extension)
+
+Key:
+* `protect::Bool`: overwrite protection
+* `msg::Bool`: allow status message
+#### Example:
+```
+julia> f = fits_collect("T1.fits", "T5.fits"; protect=false);
+'T1-T5.fits': file created
+
+julia> fits_info(f);
+File: T1-T5.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: UInt32
+Datasize: (512, 512, 5)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   32 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                  512 / length of data axis 1
+NAXIS2  =                  512 / length of data axis 2
+NAXIS3  =                    5 / length of data axis 3
+BZERO   =           2147483648 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+```
+"""
+function fits_collect(fileStart::String, fileStop::String; protect=true, msg=true)
+
+    # Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
+    # Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
+
+    nam1 = cast_FITS_filnam(fileStart)
+    strPre1 = nam1.prefix
+    strNum1 = nam1.numerator
+    strExt1 = nam1.extension
+    valNum1 = parse(Int, strNum1)
+    numLeadingZeros = length(strNum1) - length(string(valNum1))
+
+    nam2 = cast_FITS_filnam(fileStop)
+    strPre2 = nam2.prefix
+    strNum2 = nam2.numerator
+    strExt2 = nam2.extension
+    valNum2 = parse(Int, strNum2)
+    numLeadingZeros2 = length(strNum2) - length(string(valNum2))
+
+    if strPre1 ≠ strPre2
+        error(strPre1 * " ≠ " * strPre2 * " (prefixes must be identical)")
+    elseif strExt1 ≠ strExt2
+        error(strExt1 * " ≠ " * strExt2 * " (file extensions must be identical)")
+    elseif uppercase(strExt1) ≠ ".FITS"
+        error("file extension must be '.fits'")
+    end
+
+    nstack = 1 + valNum2 - valNum1
+    f = fits_read(fileStart)
+    dataA = f.hdu[1].dataobject.data  # read an image from disk
+    t = eltype(f.hdu[1].dataobject.data)
+    s = size(f.hdu[1].dataobject.data)
+    d = ndims(f.hdu[1].dataobject.data)
+
+    dims = d == 1 ? (s[1], nstack) : d == 2 ? (s[1], s[2], nstack) :
+           error("Error: stacking of arrays of dimension > 2 not implemented")
+
+    dataStack = Array{t,d+1}(undef, dims)
+
+    itr = valNum1:valNum2
+    filnamNext = fileStart
+    for i ∈ itr
+        l = length(filnamNext)
+        filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
+        if l < length(filnamNext)
+            numLeadingZeros = numLeadingZeros - 1
+            filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
+        end
+        f = fits_read(filnamNext)
+        dataNext = f.hdu[1].dataobject.data           # read an image from disk
+        dataStack[i] = dataNext
+    end
+
+    filnamOut = strPre1 * strNum1 * "-" * strPre1 * strNum2 * strExt1
+
+    f = fits_create(filnamOut, dataStack; protect)
+
+    msg && println("'$filnamOut': file created")
+
+    return f
+
+end
+
+function fits_collect1(fileStart::String, fileStop::String; protect=true, msg=true)
+
+    # Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
+    # Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
+
+    nam1 = cast_FITS_filnam(fileStart)
+    strPre1 = nam1.prefix
+    strNum1 = nam1.numerator
+    strExt1 = nam1.extension
+    valNum1 = parse(Int, strNum1)
+    numLeadingZeros = length(strNum1) - length(string(valNum1))
+
+    nam2 = cast_FITS_filnam(fileStop)
+    strPre2 = nam2.prefix
+    strNum2 = nam2.numerator
+    strExt2 = nam2.extension
+    valNum2 = parse(Int, strNum2)
+    numLeadingZeros2 = length(strNum2) - length(string(valNum2))
+
+    if strPre1 ≠ strPre2
+        error(strPre1 * " ≠ " * strPre2 * " (prefixes must be identical)")
+    elseif strExt1 ≠ strExt2
+        error(strExt1 * " ≠ " * strExt2 * " (file extensions must be identical)")
+    elseif uppercase(strExt1) ≠ ".FITS"
+        error("file extension must be '.fits'")
+    end
+
+    numFiles = 1 + valNum2 - valNum1
+    f = fits_read(fileStart)
+    dataA = f.hdu[1].dataobject.data  # read an image from disk
+    t = typeof(f.hdu[1].dataobject.data[1, 1, 1])
+    s = size(f.hdu[1].dataobject.data)
+
+    dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
+
+    itr = valNum1:valNum2
+    filnamNext = fileStart
+    for i ∈ itr
+        l = length(filnamNext)
+        filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
+        if l < length(filnamNext)
+            numLeadingZeros = numLeadingZeros - 1
+            filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
+        end
+        f = fits_read(filnamNext)
+        dataNext = f.hdu[1].dataobject.data           # read an image from disk
+        dataStack[:, :, i] = dataNext[:, :, 1]
+    end
+
+    filnamOut = strPre1 * strNum1 * "-" * strPre1 * strNum2 * strExt1
+
+    f = fits_create(filnamOut, dataStack; protect)
+
+    msg && println("'$filnamOut': file created")
 
     return f
 
@@ -666,143 +866,6 @@ function fits_rename_key!(f::FITS, hduindex::Int, keyold::String, keynew::String
     f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)
 
     fits_save(f)
-
-    return f
-
-end
-
-# ------------------------------------------------------------------------------
-#                 fits_copy(filnam1 [, filnam2="" [; protect=true[, msg=true]]])
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_copy(filnam1 [, filnam2="" [; protect=true]])
-
-Copy `filnam1` to `filnam2` (with mandatory `.fits` extension)
-Key:
-* `protect::Bool`: overwrite protection
-* `msg::Bool`: allow status message
-#### Examples:
-```
-fits_copy("T01.fits")
-  'T01.fits' was saved as 'T01 - Copy.fits'
-
-fits_copy("T01.fits", "T01a.fits")
-  strError: 'T01a.fits' in use (set ';protect=false' to lift overwrite protection)
-
-fits_copy("T01.fits", "T01a.fits"; protect=false)
-  'T01.fits' was saved as 'T01a.fits'
-```
-"""
-function fits_copy(filnam1::String, filnam2=" "; protect=true, msg=true)
-
-    filnam = filnam2 == " " ? (filnam1 * "- Copy.fits") : filnam2
-    
-    if Base.Filesystem.isfile(filnam2) & protect
-        str = filnam2 * " allready exists - set 'protect=false' to replace it."
-        return println(str)
-    end
-
-    o = IORead(filnam1)
-
-    IOWrite(o, filnam2)
-
-    return msg && println("'$(filnam1)' was copied under the name '$(filnam2)'")
-
-end
-
-# ------------------------------------------------------------------------------
-#                 fits_collect(strA, strB [; protect=true])
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_collect(fileStart::String, fileStop::String [; protect=true[], msg=true]])
-
-Combine "fileStart" with "fileStop" (with mandatory ".fits" extension)
-
-Key:
-* `protect::Bool`: overwrite protection
-* `msg::Bool`: allow status message
-#### Example:
-```
-julia> f = fits_collect("T1.fits", "T5.fits"; protect=false);
-'T1-T5.fits': file created
-
-julia> fits_info(f);
-File: T1-T5.fits
-hdu: 1
-hdutype: PRIMARY
-DataType: UInt32
-Datasize: (512, 512, 5)
-
-Metainformation:
-SIMPLE  =                    T / file does conform to FITS standard
-BITPIX  =                   32 / number of bits per data pixel
-NAXIS   =                    3 / number of data axes
-NAXIS1  =                  512 / length of data axis 1
-NAXIS2  =                  512 / length of data axis 2
-NAXIS3  =                    5 / length of data axis 3
-BZERO   =           2147483648 / offset data range to that of unsigned integer
-BSCALE  =                  1.0 / default scaling factor
-EXTEND  =                    T / FITS dataset may contain extensions
-COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
-END
-```
-"""
-function fits_collect(fileStart::String, fileStop::String; protect=true, msg=true)
-
-    # Base.Filesystem.isfile(fileStart) || Base.throw(FITSError(msgErr(1)))
-    # Base.Filesystem.isfile(fileStop) || Base.throw(FITSError(msgErr(1)))
-
-    nam1 = cast_FITS_filnam(fileStart)
-    strPre1 = nam1.prefix
-    strNum1 = nam1.numerator
-    strExt1 = nam1.extension
-    valNum1 = parse(Int, strNum1)
-    numLeadingZeros = length(strNum1) - length(string(valNum1))
-
-    nam2 = cast_FITS_filnam(fileStop)
-    strPre2 = nam2.prefix
-    strNum2 = nam2.numerator
-    strExt2 = nam2.extension
-    valNum2 = parse(Int, strNum2)
-    numLeadingZeros2 = length(strNum2) - length(string(valNum2))
-
-    if strPre1 ≠ strPre2
-        error(strPre1 * " ≠ " * strPre2 * " (prefixes must be identical)")
-    elseif strExt1 ≠ strExt2
-        error(strExt1 * " ≠ " * strExt2 * " (file extensions must be identical)")
-    elseif uppercase(strExt1) ≠ ".FITS"
-        error("file extension must be '.fits'")
-    end
-
-    numFiles = 1 + valNum2 - valNum1
-    f = fits_read(fileStart)
-    dataA = f.hdu[1].dataobject.data  # read an image from disk
-    t = typeof(f.hdu[1].dataobject.data[1, 1, 1])
-    s = size(f.hdu[1].dataobject.data)
-
-    dataStack = Array{t,3}(undef, s[1], s[2], numFiles)
-
-    itr = valNum1:valNum2
-    filnamNext = fileStart
-    for i ∈ itr
-        l = length(filnamNext)
-        filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
-        if l < length(filnamNext)
-            numLeadingZeros = numLeadingZeros - 1
-            filnamNext = strPre1 * "0"^numLeadingZeros * string(i) * ".fits"
-        end
-        f = fits_read(filnamNext)
-        dataNext = f.hdu[1].dataobject.data           # read an image from disk
-        dataStack[:, :, i] = dataNext[:, :, 1]
-    end
-
-    filnamOut = strPre1 * strNum1 * "-" * strPre1 * strNum2 * strExt1
-
-    f = fits_create(filnamOut, dataStack; protect)
-
-    msg && println("'$filnamOut': file created")
 
     return f
 
