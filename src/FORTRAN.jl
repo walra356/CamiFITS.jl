@@ -126,40 +126,33 @@ end
 
 function _FORTRAN_integer_type(T::Type)
 
-    T == Bool && return 'L'
-    T == UInt8 && return 'B'
-    T == Int16 && return 'I'
-    T == UInt16 && return 'I'
-    T == Int32 && return 'J'
-    T == UInt32 && return 'J'
-    T == Int64 && return 'K'
-    T == UInt64 && return 'K'
+    c = T == Bool ? 'L' : T == UInt8 ? 'B' : T == Int16 ? 'I' :
+        T == UInt16 ? 'I' : T == Int32 ? 'J' : T == UInt32 ? 'J' :
+        T == Int64 ? 'K' : T == UInt64 ? 'K' : '-'
 
-    println("$T: datatype not part of the FITS standard")
+    c == '-' ? println("$T: datatype not part of the FITS standard") : false
 
-    return '-'
+    return c
 
 end
 # ------------------------------------------------------------------------------
 function _FORTRAN_real_type(T::Type)
 
-    T == Float32 && return 'E'
-    T == Float64 && return 'D'
+    c = T == Float32 ? 'E' : T == Float64 ? 'D' : '-'
 
-    println("$T: datatype not part of the FITS standard")
+    c == '-' ? println("$T: datatype not part of the FITS standard") : false
 
-    return '-'
+    return c
 
 end
 # ------------------------------------------------------------------------------
 function _FORTRAN_complex_type(T::Type)
 
-    T == ComplexF32 && return 'C'
-    T == ComplexF64 && return 'M'
+    c = T == ComplexF32 ? 'C' : T == ComplexF64 ? 'M' : '-'
 
-    println("$T: datatype not part of the FITS standard")
+    c == '-' ? println("$T: datatype not part of the FITS standard") : false
 
-    return '-'
+    return c
 
 end
 
