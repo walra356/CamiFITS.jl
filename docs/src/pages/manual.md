@@ -23,7 +23,7 @@ we asign the [`FITS`](@ref) object (read from the `.fits` file `filnam` on disc)
 to the variable `f`. All information of a given `.fits` file is stored in 
 the [`FITS`](@ref) object, its structure is shown in the diagram below.
 
-![Image](./assets/flowchart.png)
+![Image](../assets/flowchart.png)
 
 The fields of `f` (`f.hdu[1]`, `f.hdu[2]`, ...) correspond to 
 [`FITS_HDU`](@ref) objects. The *PRIMARY HDU* of the [`FITS`](@ref) object is
