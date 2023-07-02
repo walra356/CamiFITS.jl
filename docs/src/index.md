@@ -1,4 +1,6 @@
-# CamiFITS.jl
+# Home
+
+## CamiFITS.jl
 
 FITS stands for *Flexible Image Transport System*. This is an open standard 
 originally developed for the astronomy community to store telescope images 
@@ -20,12 +22,12 @@ process the code is tested, both with regard to FITS conformance and runtest
 coverage. Known issues remain to be solved and the package certainly did 
 not reach a stable form .
 
-# Table of contents
+## Table of contents
 
 ```@contents
 ```
 
-# Install
+## Install
 
 The package is installed using the Julia package manager
 
@@ -35,7 +37,7 @@ julia> using Pkg; Pkg.add("CamiFITS")
 julia> using CamiFITS
 ```
 
-# Index
+## Index
 
 ```@index
 ```
