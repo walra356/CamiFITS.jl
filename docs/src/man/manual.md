@@ -1,5 +1,5 @@
 
-# Manual
+
 ### Introduction
 
 A FITS file (with defining extension `.fits`) consists of a sequence 
