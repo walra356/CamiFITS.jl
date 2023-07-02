@@ -35,18 +35,6 @@ julia> using Pkg; Pkg.add("CamiFITS")
 julia> using CamiFITS
 ```
 
-# Manual
-
-```@contents
-Pages = ["pages/manual.md"]
-```
-
-# API
-
-```@contents
-Pages = ["pages/api.md"]
-```
-
 # Index
 
 ```@contents
