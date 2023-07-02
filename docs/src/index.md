@@ -18,7 +18,7 @@ create, edit and delete user-defined metainformation.
 *Disclaimer 2023-06-6:* The author is currently writing the manual. In this 
 process the code is tested, both with regard to FITS conformance and runtest 
 coverage. Known issues remain to be solved and the package certainly did 
-not reach a stable form.
+not reach a stable form .
 
 # Table of contents
 
