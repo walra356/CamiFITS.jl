@@ -24,6 +24,7 @@ not reach a stable form .
 
 ```@contents
 ```
+
 # Install
 
 The package is installed using the Julia package manager
@@ -37,16 +38,17 @@ julia> using CamiFITS
 # Manual
 
 ```@contents
-Pages = ["man/manual.md"]
+Pages = ["pages/manual.md"]
 ```
 
 # API
 
 ```@contents
-Pages = ["man/api.md"]
+Pages = ["pages/api.md"]
 ```
 
 # Index
 
-```@index
+```@contents
+Pages = ["pages/index.md"]
 ```
