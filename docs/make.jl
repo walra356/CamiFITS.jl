@@ -12,10 +12,10 @@ makedocs(;
         assets=String[]
     ),
     pages=[
-        "Home" => "intro.md",
+        "Home" => "index.md",
         "Manual" => "manual.md",
         "API" => "man/api.md",
-        "Index" => "index.md"
+        #"Index" => "man/index.md"
     ]
 )
 
