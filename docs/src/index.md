@@ -37,6 +37,5 @@ julia> using CamiFITS
 
 # Index
 
-```@contents
-Pages = ["pages/index.md"]
+```@index
 ```

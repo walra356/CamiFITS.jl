@@ -16,7 +16,6 @@ makedocs(;
         "Manual" => "pages/manual.md",
         "FITS tools" => "pages/tools.md",
         "API" => "pages/api.md",
-        "Index" => "pages/index.md"
     ]
 )
 
