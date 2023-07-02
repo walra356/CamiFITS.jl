@@ -13,9 +13,10 @@ makedocs(;
     ),
     pages=[
         "Home" => "home.md",
-        "Manual" => "man/manual.md",
-        "API" => "man/api.md",
-        "Index" => "man/index.md"
+        "Manual" => "pages/manual.md",
+        "FITS tools" => "pages/tools"
+        "API" => "pages/api.md",
+        "Index" => "pages/index.md"
     ]
 )
 
