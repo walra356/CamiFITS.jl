@@ -1,8 +1,13 @@
+# API
 
-## FITS objects and casting procedures 
-CamiFits is based on 6 *FITS-object structs* with dedicated *object-casting
-procedures to enforce the* 
-[FITS standard ](https://fits.gsfc.nasa.gov/fits_standard.html).
+## Introduction
+
+The *Application Programming Interface* (API) for CamiFITS is based on 6 
+*FITS-object structs* with dedicated *object-casting procedures to enforce the* 
+[FITS standard ](https://fits.gsfc.nasa.gov/fits_standard.html). The API 
+elements are typically called internally by one of the *Basic tools* but is
+made available in the documentation to provide insight in the structure of 
+CamiFITS.
 
 ## FITS-structs
 ```@docs

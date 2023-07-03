@@ -4,7 +4,7 @@ CurrentModule = CamiFITS
 
 # Home
 
-## CamiFITS.jl
+## [CamiFITS.jl]("https://walra356.github.io/CamiFITS.jl")
 
 FITS stands for *Flexible Image Transport System*. This is an open standard 
 originally developed for the astronomy community to store telescope images 
