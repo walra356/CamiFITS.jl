@@ -1,3 +1,7 @@
+```@meta
+CurrentModule = CamiFITS
+```
+
 # Home
 
 ## CamiFITS.jl
