@@ -38,8 +38,6 @@ cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ```
 
-# Fortran
-
 ## FORTRAN-format struct 
 
 ```@docs
