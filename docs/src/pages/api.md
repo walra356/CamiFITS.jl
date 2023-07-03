@@ -33,3 +33,11 @@ cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ```
 
+## FORTRAN
+
+```@docs
+FORTRAN_format
+cast_FORTRAN_format(str::String)
+FORTRAN_eltype_char(T::Type)
+FORTRAN_fits_table_tform(col::Vector{T}) where {T}
+```
