@@ -9,7 +9,7 @@ elements are typically called internally by one of the *Basic tools* but is
 made available in the documentation to provide insight in the structure of 
 CamiFITS.
 
-## FITS-structs
+## FITS-object structs
 ```@docs
 FITS
 FITS_filnam
@@ -38,11 +38,23 @@ cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ```
 
-## FORTRAN
+# Fortran
+
+## FORTRAN-format struct 
 
 ```@docs
 FORTRAN_format
+```
+
+## FORTRAN-format casting
+
+```@docs
 cast_FORTRAN_format(str::String)
+```
+
+## FORTRAN-related eltype
+
+```
 FORTRAN_eltype_char(T::Type)
 FORTRAN_fits_table_tform(col::Vector{T}) where {T}
 ```
