@@ -50,14 +50,7 @@ FORTRAN_format
 cast_FORTRAN_format(str::String)
 ```
 
-### FORTRAN eltype charactes
-
-```@docs
-FORTRAN_eltype_char(T::Type)
-FORTRAN_fits_table_tform(col::Vector{T}) where {T}
-```
-
-### FORTRAN FITS table tform
+## FORTRAN-related methods
 
 ```@docs
 FORTRAN_eltype_char(T::Type)
