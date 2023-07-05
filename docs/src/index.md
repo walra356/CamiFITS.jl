@@ -21,10 +21,10 @@ requiring celestal coordinates. Optional *Conforming Extensions* are under
 development. The user can create, read and extend .fits files as well as 
 create, edit and delete user-defined metainformation.
 
-*Disclaimer 2023-06-6:* The author is currently writing the manual. In this 
-process the code is tested, both with regard to FITS conformance and runtest 
-coverage. Known issues remain to be solved and the package certainly did 
-not reach a stable form .
+*Disclaimer 2023-07-5:* The author is currently writing the documentation. 
+In this process the code is tested, both with regard to FITS conformance and 
+runtest coverage. Known issues remain to be solved but the package steadily
+converges to a stable form.
 
 ## Table of contents
 
