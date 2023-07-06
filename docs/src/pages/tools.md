@@ -1,11 +1,10 @@
 # FITS Tools
 
-## FITS information tools
+## FITS metainformation
 
 ```@docs
 fits_info(hdu::FITS_HDU; nr=true, msg=true)
 fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=true)
-parse_FITS_TABLE(hdu::FITS_HDU)
 ```
 
 ## FITS creation, extension and collection

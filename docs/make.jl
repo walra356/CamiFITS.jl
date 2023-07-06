@@ -15,7 +15,7 @@ makedocs(;
         "Home" => "index.md",
         "Manual" => "pages/manual.md",
         "Basic tools" => "pages/tools.md",
-        "API" => ["pages/api.md", "pages/FORTRAN.md"]
+        "API" => ["pages/fits.md", "pages/fortran.md"]
     ]
 )
 

@@ -198,14 +198,3 @@ these procedures impose comformance to the
 For users primarily interested in image processing, the casting 
 procedures typically remain hidden as they are called internally by 
 [`fits_create`](@ref) and [`fits_read`](@ref). 
-
-```
-
-## FORTRAN
-
-```@docs
-FORTRAN_format
-cast_FORTRAN_format(str::String)
-FORTRAN_eltype_char(T::Type)
-FORTRAN_fits_table_tform(col::Vector{T}) where {T}
-```
