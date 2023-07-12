@@ -107,7 +107,8 @@ export test_fits_read
 export test_fits_save_as
 export test_fits_collect
 export test_fits_pointer
-export test_fits_zero_offset
+export test_fits_zero_offset_1
+export test_fits_zero_offset_2
 export test_format_hdutype
 export test_table_data_types
 export test_FORTRAN_format

@@ -483,10 +483,7 @@ function test_FORTRAN_eltype_char()
 
 end
 
-function test_fits_zero_offset()
-
-    T = Type[Any, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32,
-        Int64, UInt64, Float16, Float32, Float64]
+function test_fits_zero_offset_1()
 
     a = fits_zero_offset(Any) == 0.0
     b = fits_zero_offset(Bool) == 0.0
@@ -501,6 +498,30 @@ function test_fits_zero_offset()
     k = fits_zero_offset(Float16) == 0.0
     l = fits_zero_offset(Float32) == 0.0
     m = fits_zero_offset(Float64) == 0.0
+
+    o = a & b & c & d & e & f & g & h & i & j & k & l & m
+
+    o || println([a, b, c, d, e, f, g, h, i, j, k, l, m])
+
+    return o
+
+end
+
+function test_fits_zero_offset_2()
+
+    a = fits_zero_offset(Any; str=true) == "0.0"
+    b = fits_zero_offset(Bool; str=true) == "0.0"
+    c = fits_zero_offset(Int8; str=true) == "-128"
+    d = fits_zero_offset(UInt8; str=true) == "0.0"
+    e = fits_zero_offset(Int16; str=true) == "0.0"
+    f = fits_zero_offset(UInt16; str=true) == "32768"
+    g = fits_zero_offset(Int32; str=true) == "0.0"
+    h = fits_zero_offset(UInt32; str=true) == "2147483648"
+    i = fits_zero_offset(Int64; str=true) == "0.0"
+    j = fits_zero_offset(UInt64; str=true) == "9223372036854775808"
+    k = fits_zero_offset(Float16; str=true) == "0.0"
+    l = fits_zero_offset(Float32; str=true) == "0.0"
+    m = fits_zero_offset(Float64; str=true) == "0.0"
 
     o = a & b & c & d & e & f & g & h & i & j & k & l & m
 
