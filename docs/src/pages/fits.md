@@ -37,3 +37,9 @@ cast_FITS_card(cardindex::Int, record::String)
 cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ```
+
+## FITS methods
+
+```@docs
+fits_zero_offset(T::Type; str=false)
+```

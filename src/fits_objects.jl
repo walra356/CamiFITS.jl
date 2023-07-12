@@ -256,7 +256,7 @@ julia> record = [rpad("KEYWORD$i",8) * "'" * rpad("$i",70) * "'" for i=1:3];
 
 julia> blanks = [repeat(' ', 80) for i = 1:36-length(record)];
 
-julia> append!(record, blanks);   # to conform to the FITS standard
+julia> append!(record, blanks);         # to conform to the FITS standard
 
 julia> h = cast_FITS_header(record);
 
@@ -264,8 +264,8 @@ julia> h.map
 Dict{String, Int64} with 4 entries:
   "KEYWORD3" => 3
   "KEYWORD2" => 2
-  "KEYWORD1" => 1
-  ""         => 36                                                                '"
+  "KEYWORD1" => 144
+  ""         => 36
 ```
 """
 function cast_FITS_header(dataobject::FITS_dataobject)
@@ -399,6 +399,7 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
     data = dataobject.data
 
     if (hdutype == "'TABLE   '") & (eltype(data) ≠ Vector{String})
+
         # data input as array of table COLUMNS
         col = data
         ncols = length(col)
@@ -418,6 +419,29 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         # data output as Vector{String}
         # this is the Vector{String} of table ROWS (equal-size fields)
         dataobject = FITS_dataobject(hdutype, data)
+
+    elseif (hdutype == "'BINTABLE'") & (eltype(data) ≠ Vector{String})
+
+        # data input as array of table COLUMNS
+        col = data
+        ncols = length(col)
+        nrows = length(col[1])
+
+        # make array of table format descriptors Xw.d
+        tform = [FORTRAN_fits_table_tform(col[i]) for i ∈ eachindex(col)]
+
+        # convert data to array of fortran strings
+        strcol = [_str_table_column(col[i], tform[i]) for i ∈ eachindex(col)]
+
+        # w = required widths of fits data fields
+        w = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
+
+        # transpose matrix and join data into vector of strings
+        data = [join([lpad(strcol[i][j], w[i]) for i = 1:ncols]) for j = 1:nrows]
+        # data output as Vector{String}
+        # this is the Vector{String} of table ROWS (equal-size fields)
+        dataobject = FITS_dataobject(hdutype, data)
+
     end
 
     return FITS_HDU(hduindex, header, dataobject)
@@ -573,26 +597,26 @@ function _header_record_primary(dataobject::FITS_dataobject)
     dims = Base.size(data)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
     nbits = 8 * nbyte
-    bzero = T ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 :
-            T == Int8 ? -128.0 : 2^(nbits - 1)
+    bzero = fits_zero_offset(T; str=true)
     bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
 
-    strbitpix = Base.lpad(bitpix, 20)
-    strnaxis = Base.lpad(ndims, 20)
-    strdims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
-    strbzero = Base.lpad(bzero, 20)
+
+    bitpix = Base.lpad(bitpix, 20)
+    naxis = Base.lpad(ndims, 20)
+    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    bzero = Base.lpad(bzero, 20)
 
     r::Vector{String} = []
 
     Base.push!(r, "SIMPLE  =                    T / file does conform to FITS standard             ")
-    Base.push!(r, "BITPIX  = " * strbitpix * " / number of bits per data pixel                  ")
-    Base.push!(r, "NAXIS   = " * strnaxis * " / number of data axes                            ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
     for i = 1:ndims
-        Base.push!(r, "NAXIS$i  = " * strdims[i] * " / length of data axis " * rpad(i, 27))
+        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
     end
-    if !iszero(bzero)
-        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
+    if strip(bzero) ≠ "0.0"
         Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
+        Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
     end
     Base.push!(r, "EXTEND  =                    T / FITS dataset may contain extensions            ")
     Base.push!(r, "END                                                                             ")
@@ -630,25 +654,24 @@ function _header_record_image(dataobject::FITS_dataobject)
     dims = Base.size(data)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
     nbits = 8 * nbyte
-    bzero = T ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 :
-            T == Int8 ? -128.0 : 2^(nbits - 1)
+    bzero = fits_zero_offset(T; str=true)
     bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
 
-    strbitpix = Base.lpad(bitpix, 20)
-    strnaxis = Base.lpad(ndims, 20)
-    strdims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
-    strbzero = Base.lpad(bzero, 20)
+    bitpix = Base.lpad(bitpix, 20)
+    naxis = Base.lpad(ndims, 20)
+    dims = [Base.lpad(dims[i], 20) for i ∈ eachindex(dims)]
+    bzero = Base.lpad(bzero, 20)
 
     r::Vector{String} = []
 
     Base.push!(r, "XTENSION= 'IMAGE   '           / FITS standard extension                        ")
-    Base.push!(r, "BITPIX  = " * strbitpix * " / number of bits per data pixel                  ")
-    Base.push!(r, "NAXIS   = " * strnaxis * " / number of data axes                            ")
+    Base.push!(r, "BITPIX  = " * bitpix * " / number of bits per data pixel                  ")
+    Base.push!(r, "NAXIS   = " * naxis * " / number of data axes                            ")
     for i = 1:ndims
-        Base.push!(r, "NAXIS$i  = " * strdims[i] * " / length of data axis " * rpad(i, 27))
+        Base.push!(r, "NAXIS$i  = " * dims[i] * " / length of data axis " * rpad(i, 27))
     end
-    if !iszero(bzero)
-        Base.push!(r, "BZERO   = " * strbzero * " / offset data range to that of unsigned integer  ")
+    if strip(bzero) ≠ "0.0"
+        Base.push!(r, "BZERO   = " * bzero * " / offset data range to that of unsigned integer  ")
         Base.push!(r, "BSCALE  =                  1.0 / default scaling factor                         ")
     end
     Base.push!(r, "END                                                                             ")
@@ -679,6 +702,7 @@ function _header_record_table(dataobject::FITS_dataobject)
 
     # make array of table format descriptors Xw.d
     tform = [FORTRAN_fits_table_tform(col[i]) for i ∈ eachindex(col)]
+    tzero = [fits_tzero(col[i]) for i ∈ eachindex(col)]
     
     # w = required widths of fits data fields
     w = [cast_FORTRAN_format(tform[i]).width .+ 1 for i ∈ eachindex(col)]
@@ -694,7 +718,8 @@ function _header_record_table(dataobject::FITS_dataobject)
     naxis1 = Base.lpad(lrow, 20) 
     naxis2 = Base.lpad(nrows, 20)
     tfields = Base.lpad(ncols, 20)
-    tbcol = [Base.lpad(tbcol[i], 20) for i ∈ eachindex(tbcol)]
+    tbcol = [Base.lpad(tbcol[i], 20) for i ∈ eachindex(col)]
+    tzero = [Base.lpad(tzero[i], 20) for i ∈ eachindex(col)]
 
     r::Array{String,1} = []
 
@@ -712,8 +737,12 @@ function _header_record_table(dataobject::FITS_dataobject)
         Base.push!(r, rpad("TBCOL$i", 8) * "= " * tbcol[i] * " / pointer to column " * rpad(i, 29))
         Base.push!(r, rpad("TFORM$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
         Base.push!(r, rpad("TDISP$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
+        if !isnothing(tzero)
+            Base.push!(r, rpad("TZERO$i", 8) * "= " * tzero[i] * " / data type of column " * rpad(i, 27))
+            Base.push!(r, rpad("TSCAL$i", 8) * "=                  1.0 / data type of column " * rpad(i, 27))
+        end
     end
-    Base.push!(r, "END                                                                             ")
+    Base.push!(r, "END" * repeat(' ', 77))
 
     pass = sum(length.(r) .- 80) == false
 
@@ -787,7 +816,9 @@ function _header_record_bintable(dataobject::FITS_dataobject)
         tzero = push!(tzero, Base.lpad(bzero, 20))
     end
 
+
     tform = _table_bindata_types(dataobject)
+    tzero = [fits_tzero(data[i]) for i = 1:ncols]
 
     tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
     tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
@@ -812,9 +843,12 @@ function _header_record_bintable(dataobject::FITS_dataobject)
         Base.push!(r, rpad("TTYPE$i", 8) * "= " * ttype[i] * " / header of column " * rpad(i, 30))
         Base.push!(r, rpad("TFORM$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
         Base.push!(r, rpad("TDISP$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
-        Base.push!(r, rpad("TZERO$i", 8) * "= " * tbcol[i] * " / pointer to column " * rpad(i, 29))
+        if !isnothing(tzero)
+            Base.push!(r, rpad("TZERO$i", 8) * "= " * tzero[i] * " / data type of column " * rpad(i, 27))
+            Base.push!(r, rpad("TSCAL$i", 8) * "=                  1.0 / data type of column " * rpad(i, 27))
+        end
     end
-    Base.push!(r, "END                                                                             ")
+    Base.push!(r, "END" * repeat(' ', 77))
 
     pass = sum(length.(r) .- 80) == false
 
@@ -843,8 +877,18 @@ function zeroffset(T::Type)
     nbits = 8 * nbyte
     bzero = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
             T == Int8 ? -128 :
-            T == UInt64 ? 9223372036854775808 : 2^(nbits - 1)
+            T == UInt64 ? 9223372036854775807 : 2^(nbits - 1)
 
     return nbyte, bzero
+
+end
+
+
+
+
+
+function fits_tzero(col::Vector{T}) where {T}
+
+    return fits_zero_offset(T::Type)
 
 end

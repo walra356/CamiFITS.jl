@@ -124,33 +124,33 @@ end
 #                             FORTRAN_
 # ------------------------------------------------------------------------------
 
-function _FORTRAN_integer_type(T::Type)
+function _FORTRAN_integer_type(T::Type; msg=true)
 
     c = T == Bool ? 'L' : T == UInt8 ? 'B' : T == Int16 ? 'I' :
         T == UInt16 ? 'I' : T == Int32 ? 'J' : T == UInt32 ? 'J' :
         T == Int64 ? 'K' : T == UInt64 ? 'K' : '-'
 
-    c == '-' ? println("$T: datatype not part of the FITS standard") : false
+    c == '-' && msg && println("$T: datatype not part of the FITS standard")
 
     return c
 
 end
 # ------------------------------------------------------------------------------
-function _FORTRAN_real_type(T::Type)
+function _FORTRAN_real_type(T::Type; msg=true)
 
     c = T == Float32 ? 'E' : T == Float64 ? 'D' : '-'
 
-    c == '-' ? println("$T: datatype not part of the FITS standard") : false
+    c == '-' && msg && println("$T: datatype not part of the FITS standard")
 
     return c
 
 end
 # ------------------------------------------------------------------------------
-function _FORTRAN_complex_type(T::Type)
+function _FORTRAN_complex_type(T::Type; msg=true)
 
     c = T == ComplexF32 ? 'C' : T == ComplexF64 ? 'M' : '-'
 
-    c == '-' ? println("$T: datatype not part of the FITS standard") : false
+    c == '-' && msg && println("$T: datatype not part of the FITS standard")
 
     return c
 
@@ -194,25 +194,31 @@ FITS: not a FORTRAN datatype
 ['A', 'A', '-', '-']
 ```
 """
-function FORTRAN_eltype_char(T::Type)
+function FORTRAN_eltype_char(T::Type; msg=true)
 
     if T <: Union{Char,String}
         o = 'A'
     elseif T <: Integer
-        o = _FORTRAN_integer_type(T)
+        o = _FORTRAN_integer_type(T; msg)
     elseif T <: Real
-        o = _FORTRAN_real_type(T)
+        o = _FORTRAN_real_type(T; msg)
     elseif T <: Complex
-        o = _FORTRAN_complex_type(T)
+        o = _FORTRAN_complex_type(T; msg)
     else
         o = '-'
-        println("$T: not a FORTRAN datatype")
+        msg && println("$T: not a FORTRAN datatype")
     end
 
     return o
 
 end
+
 # ------------------------------------------------------------------------------
+#                FORTRAN_fits_table_tform(col::Vector{T}) where {T}
+#
+# -              table column format descriptors Xw.d
+# ------------------------------------------------------------------------------
+
 @doc raw"""
     FORTRAN_fits_table_tform(col::Vector{T}) where {T}
 

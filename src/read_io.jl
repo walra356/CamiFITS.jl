@@ -121,10 +121,10 @@ function _read_table_data(o::IO, hduindex::Int)
     h = _read_header(o, hduindex) # FITS_header object
 
     Base.seek(o, ptr[hduindex])
-    lrow = h.card[h.map["NAXIS1"]].value
-    nrow = h.card[h.map["NAXIS2"]].value
+    lrow = h.card[h.map["NAXIS1"]].value # row length in bytes
+    nrow = h.card[h.map["NAXIS2"]].value # number of rows
     tfields = h.card[h.map["TFIELDS"]].value
-    tbcol = [h.card[h.map["TBCOL$i"]].value for i=1:tfields]
+    tbcol = [h.card[h.map["TBCOL$i"]].value for i = 1:tfields]
 
     Base.seek(o, ptr[hduindex])
 
@@ -147,10 +147,10 @@ function _read_bintable_data(o::IO, hduindex::Int)
     h = _read_header(o, hduindex) # FITS_header object
 
     Base.seek(o, ptr[hduindex])
-    lrow = h.card[h.map["NAXIS1"]].value
-    nrow = h.card[h.map["NAXIS2"]].value
+    lrow = h.card[h.map["NAXIS1"]].value # row length in bytes
+    nrow = h.card[h.map["NAXIS2"]].value # number of rows
     tfields = h.card[h.map["TFIELDS"]].value
-    tbcol = [h.card[h.map["TBCOL$i"]].value for i = 1:tfields]
+    tform = [h.card[h.map["TFORM$i"]].value for i = 1:tfields]
 
     Base.seek(o, ptr[hduindex])
 
@@ -163,5 +163,13 @@ function _read_bintable_data(o::IO, hduindex::Int)
     data = [join(data[i]) for i = 1:nrow]
 
     return data
+
+end
+
+function _read_tform(tform::String)
+
+    x = collect(tform)
+
+    return 
 
 end

@@ -303,11 +303,11 @@ end
 
 function test_fits_edit_key!()
 
-    filnam = "minimal.fits"
-    f = fits_create(filnam; protect=false)
+    filnam = "minimal.fits";
+    f = fits_create(filnam; protect=false);
     
-    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-    fits_edit_key!(f, 1, "KEYNEW1", false, "comment has changed")
+    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension");
+    fits_edit_key!(f, 1, "KEYNEW1", false, "comment has changed");
 
     k = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
@@ -473,13 +473,39 @@ end
 
 function test_FORTRAN_eltype_char()
 
-    T = Type[Char, Bool]
-    append!(T, [UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64])
-    append!(T, [Float32, Float64, ComplexF32, ComplexF64])
+    T = (Char, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
+         Float16, Float32, Float64, ComplexF16, ComplexF32, ComplexF64, FITS)
 
-    o = [FORTRAN_eltype_char(T[i]) for i ∈ eachindex(T)]
-    x = join(o) == "ALBIIJJKKEDCM"
+    o = [FORTRAN_eltype_char(T[i]; msg=false) for i ∈ eachindex(T)]
+    x = join(o) == "AL-BIIJJKK-ED-CM-"
 
     return x
+
+end
+
+function test_fits_zero_offset()
+
+    T = Type[Any, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32,
+        Int64, UInt64, Float16, Float32, Float64]
+
+    a = fits_zero_offset(Any) == 0.0
+    b = fits_zero_offset(Bool) == 0.0
+    c = fits_zero_offset(Int8) == -128
+    d = fits_zero_offset(UInt8) == 0.0
+    e = fits_zero_offset(Int16) == 0.0
+    f = fits_zero_offset(UInt16) == 32768
+    g = fits_zero_offset(Int32) == 0.0
+    h = fits_zero_offset(UInt32) == 2147483648
+    i = fits_zero_offset(Int64) == 0.0
+    j = fits_zero_offset(UInt64) == 9223372036854775808 
+    k = fits_zero_offset(Float16) == 0.0
+    l = fits_zero_offset(Float32) == 0.0
+    m = fits_zero_offset(Float64) == 0.0
+
+    o = a & b & c & d & e & f & g & h & i & j & k & l & m
+
+    o || println([a, b, c, d, e, f, g, h, i, j, k, l, m])
+
+    return o
 
 end

@@ -81,7 +81,7 @@ function _fits_obsolete_records(h::FITS_header, recordindex::Int)
 
 end
 
-function _fits_parse(str::String) # routine
+function _fits_parse(str::String) 
 
     T = Float32
     s = Base.strip(str)
@@ -94,13 +94,13 @@ function _fits_parse(str::String) # routine
     p = [Base.Unicode.ispunct(c[i]) for i ∈ Base.eachindex(c)]  # p: punctuation
 
     s[1] == '\'' && return str
-    s[1] == '-' && (d[1] = true) && (p[1] = false)     # change leading sign into digit (for type parsing only)
-    s[1] == '+' && (d[1] = true) && (p[1] = false)     # change leading sign into digit (for type parsing only)
+    s[1] == '-' && (d[1] = true) && (p[1] = false)      # change leading sign into digit (for type parsing only)
+    s[1] == '+' && (d[1] = true) && (p[1] = false)      # change leading sign into digit (for type parsing only)
 
     a = p .== d                                         # a: other non-digit or punctuation characters
 
-    ia = [i for i ∈ Base.eachindex(a) if a[i] == 1]       # ia: indices of nonzero elements of a
-    ip = [i for i ∈ Base.eachindex(p) if p[i] == 1]       # ip: indices of nonzero elements of p
+    ia = [i for i ∈ Base.eachindex(a) if a[i] == 1]     # ia: indices of nonzero elements of a
+    ip = [i for i ∈ Base.eachindex(p) if p[i] == 1]     # ip: indices of nonzero elements of p
 
     sd = Base.sum(d)                                    # sd: number of digits
     sp = Base.sum(p)                                    # sd: number of punctuation characters
@@ -108,7 +108,7 @@ function _fits_parse(str::String) # routine
 
     E = ['E', 'D', 'e', 'p']
 
-    sd == l && return Base.parse(Int, s)
+    sd == l && return s ≠ "9223372036854775808" ? Base.parse(Int, s) : 9223372036854775808
     sa >= 2 && return str
     sp >= 3 && return str
     sa == 1 && s == "T" && return true
@@ -330,9 +330,7 @@ function _format_record(key::String, val::Any, com::String)
             o[1] = rpad("CONTINUE  " * v[end] * " /" * o[1][offset+1:end], 80)
             o = vcat(v[1:end-1], o)
         end
-
         return o
-
     end
 
 end

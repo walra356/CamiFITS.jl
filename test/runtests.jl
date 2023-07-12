@@ -12,6 +12,7 @@ using Test
     @test test_fits_save_as()
     @test test_fits_collect()
     @test test_fits_pointer()
+    @test test_fits_zero_offset()
     @test test_format_hdutype()
     @test test_table_data_types()
 

@@ -287,7 +287,6 @@ function fits_create(filnam::String, data=[]; protect=true)
 
 end
 
-
 # ------------------------------------------------------------------------------
 #           fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
@@ -723,29 +722,34 @@ end
 Edit a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
 #### Example:
 ```
-data = DateTime("2020-01-01T00:00:00.000")
-strExample="minimal.fits"
-fits_create(strExample; protect=false)
-fits_add_key!(strExample, 1, "KEYNEW1", true, "this is record 5")
-fits_edit_key!(strExample, 1, "KEYNEW1", data, "record 5 changed to a DateTime type")
+julia> using Dates
 
-fits_info(f[1])
+julia> data = DateTime("2020-01-01T00:00:00.000");
 
-  File: minimal.fits
-  hdu: 1
-  hdutype: PRIMARY
-  DataType: Any
-  Datasize: (0,)
+julia> strExample="minimal.fits";
 
-  Metainformation:
-  SIMPLE  =                    T / file does conform to FITS standard
-  NAXIS   =                    0 / number of data axes
-  EXTEND  =                    T / FITS dataset may contain extensions
-  COMMENT    Primary FITS HDU    / http://fits.gsfc.nasa.gov
-  KEYNEW1 = '2020-01-01T00:00:00' / record 5 changed to a DateTime type
-  END
+julia> f = fits_create(strExample; protect=false);
 
-  Any[]
+julia> fits_add_key!(f, 1, "KEYNEW1", true, "this is record 5");
+
+julia> fits_edit_key!(f, 1, "KEYNEW1", data, "record 5 changed to a DateTime type");
+
+julia> fits_info(f.hdu[1])
+hdu: 1
+hdutype: 'PRIMARY '
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+EXTEND  =                    T / FITS dataset may contain extensions
+KEYNEW1 = '2020-01-01T00:00:0' / record 5 changed to a DateTime type
+END
+
+Any[]
 ```
 """
 function fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
@@ -897,5 +901,56 @@ function parse_FITS_TABLE(hdu::FITS_HDU)
     data = [ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
 
     return data
+
+end
+
+# ------------------------------------------------------------------------------
+#                      fits_zero_offset(T; str=false)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_zero_offset(T::Type; str=false)
+
+Zero offset `a` as used in linear scaling equation
+```
+f(x) = a + b x,
+```
+where `b` is the scaling factor. 
+
+The default value `a = 0.0` (`a = "0.0"` if str=true) for `Real` numeric types.
+nonreal
+#### Example:
+```
+julia> T = Type[Any, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32,
+                  Int64, UInt64, Float16, Float32, Float64];
+
+julia> o = (0.0, 0.0, -128, 0.0, 0.0, 32768,
+                   0.0, 2147483648, 0.0, 9223372036854775808, 0.0, 0.0, 0.0);
+
+julia> sum([fits_zero_offset(T[i]) == o[i] for i ∈ eachindex(T)]) == 13
+true
+
+julia> sum([fits_zero_offset(T[i]; str=true) == string(o[i]) for i ∈ eachindex(T)]) == 13
+true
+```
+"""
+function fits_zero_offset(T::Type; str=false)
+
+    if str 
+        T <: Number || return T == Any ? "0.0" : nothing
+
+        o = T ∉ [Int8, UInt16, UInt32, UInt64] ? "0.0" :
+            T == Int8 ? "-128" : T == UInt16 ? "32768" :
+            T == UInt32 ? "2147483648" : T == UInt64 ? "9223372036854775808" : 
+        nothing
+    else
+        T <: Number || return T == Any ? 0.0 : nothing
+
+        nbits = 8 * Base.sizeof(T)
+        o = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
+            T == Int8 ? -128 : T == UInt64 ? 9223372036854775808 : 2^(nbits-1)
+    end
+
+    return o
 
 end
