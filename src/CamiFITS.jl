@@ -48,12 +48,10 @@ export dictDefinedTerms
 export dictDefinedKeywords
 export fits_terminology
 export fits_keyword
-export fits_keywords
 export fits_mandatory_keyword
 export fits_zero_offset
 export fits_downshift_offset
 export fits_upshift_offset
-export list_keywords
 
 export FITS_test
 

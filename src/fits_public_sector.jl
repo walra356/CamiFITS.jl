@@ -948,12 +948,13 @@ end
 @doc raw"""
     fits_downshift_offset(data)
  
-Shift the `UInt` range of values onto the `Int` range by *substracting* the 
-appropriate integer offset value as specified by the `BZERO` keyword.
+Shift the `UInt` range of values onto the `Int` range by *substracting* from 
+the `data` the appropriate integer offset value as specified by the `BZERO` 
+keyword.
 
-NB. Since the FITS format *does not support a native unsigned integer* data 
-type (except `UInt8`), the unsigned values `UInt16`, `UInt32` and `UInt64`, are
-stored as the native signed integers `Int16`, `Int32` and `Int64`, after 
+NB. Since the FITS format *does not support a native unsigned integer data 
+type* (except `UInt8`), the unsigned values `UInt16`, `UInt32` and `UInt64`, 
+are stored as the native signed integers `Int16`, `Int32` and `Int64`, after 
 *substracting* the appropriate integer offset specified by the (positive) 
 `BZERO` keyword value. For the byte data type (`UInt8`), the converse technique
 can be used to store signed byte values (`Int8`) as native unsigned values 
@@ -992,8 +993,8 @@ end
 @doc raw"""
     fits_upshift_offset(data)
  
-Shift the `Int` range of values onto the `UInt` range by *adding* the 
-appropriate integer offset value as specified by the `BZERO` keyword.
+Shift the `Int` range of values onto the `UInt` range by *adding* to the `data`
+the appropriate integer offset value as specified by the `BZERO` keyword.
 
 NB. Since the FITS format *does not support a native unsigned integer* data 
 type (except `UInt8`), the unsigned values `UInt16`, `UInt32` and `UInt64`, are
