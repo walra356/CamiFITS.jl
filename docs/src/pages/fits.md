@@ -41,5 +41,7 @@ cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ## FITS methods
 
 ```@docs
-fits_zero_offset(T::Type; str=false)
+fits_zero_offset(T::Type)
+fits_downshift_offset(data)
+fits_downshift_offset(data)
 ```

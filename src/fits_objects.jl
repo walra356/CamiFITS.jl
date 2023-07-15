@@ -597,9 +597,8 @@ function _header_record_primary(dataobject::FITS_dataobject)
     dims = Base.size(data)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
     nbits = 8 * nbyte
-    bzero = fits_zero_offset(T; str=true)
+    bzero = fits_zero_offset(T)
     bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
-
 
     bitpix = Base.lpad(bitpix, 20)
     naxis = Base.lpad(ndims, 20)
@@ -651,10 +650,11 @@ function _header_record_image(dataobject::FITS_dataobject)
     T = Base.eltype(data)
 
     ndims = Base.ndims(data)
+    ndims ≤ 3 || Base.throw(FITSError(msgErr(38)))
     dims = Base.size(data)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
     nbits = 8 * nbyte
-    bzero = fits_zero_offset(T; str=true)
+    bzero = fits_zero_offset(T)
     bitpix = T <: AbstractFloat ? -abs(nbits) : nbits
 
     bitpix = Base.lpad(bitpix, 20)
@@ -701,25 +701,25 @@ function _header_record_table(dataobject::FITS_dataobject)
     equal || Base.throw(FITSError(msgErr(33)))
 
     # make array of table format descriptors Xw.d
-    tform = [FORTRAN_fits_table_tform(col[i]) for i ∈ eachindex(col)]
-    tzero = [fits_tzero(col[i]) for i ∈ eachindex(col)]
+    tform = [FORTRAN_fits_table_tform(col[i]) for i=1:ncols]
+    tzero = ntuple(i -> fits_tzero(col[i]), ncols)
     
     # w = required widths of fits data fields
-    w = [cast_FORTRAN_format(tform[i]).width .+ 1 for i ∈ eachindex(col)]
+    w = [cast_FORTRAN_format(tform[i]).width .+ 1 for i=1:ncols]
     #####width = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
     tbcol = [sum(w[1:i-1]) + 1 for i ∈ eachindex(col)]
     lrow = sum(w[i] for i ∈ eachindex(col))
 
-    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i ∈ eachindex(col)]
+    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
     tform = [Base.rpad(tform[i], 20) for i ∈ eachindex(col)]
     ttype = ["HEAD$i" for i ∈ eachindex(col)]
-    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i ∈ eachindex(col)]       # default column headers
+    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]       # default column headers
 
     naxis1 = Base.lpad(lrow, 20) 
     naxis2 = Base.lpad(nrows, 20)
     tfields = Base.lpad(ncols, 20)
-    tbcol = [Base.lpad(tbcol[i], 20) for i ∈ eachindex(col)]
-    tzero = [Base.lpad(tzero[i], 20) for i ∈ eachindex(col)]
+    tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
+    tzero = [Base.lpad(tzero[i], 20) for i = 1:ncols]
 
     r::Array{String,1} = []
 
@@ -806,24 +806,15 @@ function _header_record_bintable(dataobject::FITS_dataobject)
     ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
     equal = sum(length.(data) .- nrows) == 0 # equal colum length test
     equal || Base.throw(FITSError(msgErr(33)))
-    
-    nbyte = 8
-    tzero = String[]
-    for i = 1:ncols
-        T = Base.eltype(data[i][1])
-        isfitstype(T) || error("FITSError: $T is not a supported datatype")
-        nbyte, bzero = zeroffset(T)
-        tzero = push!(tzero, Base.lpad(bzero, 20))
-    end
-
 
     tform = _table_bindata_types(dataobject)
-    tzero = [fits_tzero(data[i]) for i = 1:ncols]
+    tzero = ntuple(i => fits_tzero(data[i]), ncols)
 
     tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
     tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
     ttype = ["HEAD$i" for i = 1:ncols]
     ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]          # default column headers
+    tzero = [Base.lpad(tzero[i], 20) for i = 1:ncols]
 
     naxis1 = Base.lpad(nbyte, 20) 
     naxis2 = Base.lpad(nrows, 20)
@@ -859,33 +850,6 @@ function _header_record_bintable(dataobject::FITS_dataobject)
     return r
 
 end
-
-function isfitstype(T::Type)
-
-    fitstype = [Float16, Float32, Float64]
-    append!(fitstype, [Bool, Int8, Int16, Int32, Int64])
-    append!(fitstype, [UInt8, UInt16, UInt32, UInt64])
-    append!(fitstype, [Char, String])
-
-    return T ∈ fitstype
-
-end
-
-function zeroffset(T::Type)
-
-    nbyte = T ≠ Any ? Base.sizeof(T) : 8 # intercept empty array Any[]
-    nbits = 8 * nbyte
-    bzero = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
-            T == Int8 ? -128 :
-            T == UInt64 ? 9223372036854775807 : 2^(nbits - 1)
-
-    return nbyte, bzero
-
-end
-
-
-
-
 
 function fits_tzero(col::Vector{T}) where {T}
 

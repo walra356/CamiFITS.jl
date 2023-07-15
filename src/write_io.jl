@@ -149,8 +149,13 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
 
     data = Base.vec(data)
-    # change between Int and UInt (if applicable):
-    data = data .- T(bzero)
+
+    # data = data .+ T(bzero)
+    # mapping of UInt-range onto Int-range (if applicable):
+    data = fits_downshift_offset(data)
+
+    T = Base.eltype(data)
+
     # change from 'host' to 'network' ordering: 
     data = hton.(data) 
 

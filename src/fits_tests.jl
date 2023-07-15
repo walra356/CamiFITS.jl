@@ -9,6 +9,31 @@ function test_fits_info()
 
     filnam = "kanweg.fits"
 
+    T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, Float32, Float64]
+    c =[]
+    for i ∈ eachindex(T)
+        data = [typemin(T[i]), typemax(T[i])]
+        f = fits_create(filnam, data; protect=false)
+        a = fits_info(f; msg=false) == data
+        push!(c, a)
+        a = fits_info(filnam; msg=false) == data  # [1] == '\n'
+        push!(c, a)
+    end
+    
+    rm(filnam)
+
+    o = c[1] & c[2] & c[3] & c[4] & c[5] & c[6] & c[7] & c[8] & c[9] & c[10]
+
+    o || println(c)
+
+    return o
+
+end
+
+function test_fits_info1()
+
+    filnam = "kanweg.fits"
+
     data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
     data = reshape(data, (3, 3, 1))
 
@@ -16,10 +41,14 @@ function test_fits_info()
 
     a = fits_info(f; msg=false) == data
     b = fits_info(filnam; msg=false) == data  # [1] == '\n'
-    
+
     rm(filnam)
 
-    return a & b
+    o = a & b
+
+    o || println([a, b])
+
+    return o
 
 end
 
@@ -337,9 +366,9 @@ function test_fits_pointer()
 
     r = fits_record_dump(filnam; msg=false)
     g = r[8][8:10]
-    h = r[37][8:22]
-    i = r[109][8:22]
-    j = r[181][8:22]
+    h = r[37][8:83]
+    i = r[109][8:83]
+    j = r[181][8:83]
 
     a = (a .+1 == Base.OneTo(216))
     b = (b == [0, 36, 72, 108, 144, 180])
@@ -348,9 +377,14 @@ function test_fits_pointer()
     e = (e == [36, 108, 180])
     f = (f == [72, 144, 216])
     g = (g == "END")
-    h = (h == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
-    i = (i == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
-    j = (j == "\x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0")
+
+    x = "UInt8["
+    x *= "0x80, 0x00, 0x04, 0x3e, "
+    x *= "0x80, 0x00, 0x04, 0x0c, "
+    x *= "0x80, 0x00, 0x04, 0x1f"
+    h = (h == x)
+    i = (i == x)
+    j = (j == x)
 
     rm(filnam)
 
@@ -483,7 +517,7 @@ function test_FORTRAN_eltype_char()
 
 end
 
-function test_fits_zero_offset_1()
+function test_fits_zero_offset()
 
     a = fits_zero_offset(Any) == 0.0
     b = fits_zero_offset(Bool) == 0.0
@@ -498,30 +532,6 @@ function test_fits_zero_offset_1()
     k = fits_zero_offset(Float16) == 0.0
     l = fits_zero_offset(Float32) == 0.0
     m = fits_zero_offset(Float64) == 0.0
-
-    o = a & b & c & d & e & f & g & h & i & j & k & l & m
-
-    o || println([a, b, c, d, e, f, g, h, i, j, k, l, m])
-
-    return o
-
-end
-
-function test_fits_zero_offset_2()
-
-    a = fits_zero_offset(Any; str=true) == "0.0"
-    b = fits_zero_offset(Bool; str=true) == "0.0"
-    c = fits_zero_offset(Int8; str=true) == "-128"
-    d = fits_zero_offset(UInt8; str=true) == "0.0"
-    e = fits_zero_offset(Int16; str=true) == "0.0"
-    f = fits_zero_offset(UInt16; str=true) == "32768"
-    g = fits_zero_offset(Int32; str=true) == "0.0"
-    h = fits_zero_offset(UInt32; str=true) == "2147483648"
-    i = fits_zero_offset(Int64; str=true) == "0.0"
-    j = fits_zero_offset(UInt64; str=true) == "9223372036854775808"
-    k = fits_zero_offset(Float16; str=true) == "0.0"
-    l = fits_zero_offset(Float32; str=true) == "0.0"
-    m = fits_zero_offset(Float64; str=true) == "0.0"
 
     o = a & b & c & d & e & f & g & h & i & j & k & l & m
 

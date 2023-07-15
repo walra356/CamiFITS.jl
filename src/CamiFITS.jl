@@ -32,6 +32,7 @@ export _update_spaces
 export _offset
 export _format_long_data
 export _format_value_string
+export _fits_eltype
 
 export _format_keyword
 export _format_value
@@ -49,6 +50,9 @@ export fits_terminology
 export fits_keyword
 export fits_keywords
 export fits_mandatory_keyword
+export fits_zero_offset
+export fits_downshift_offset
+export fits_upshift_offset
 export list_keywords
 
 export FITS_test
@@ -107,8 +111,7 @@ export test_fits_read
 export test_fits_save_as
 export test_fits_collect
 export test_fits_pointer
-export test_fits_zero_offset_1
-export test_fits_zero_offset_2
+export test_fits_zero_offset
 export test_format_hdutype
 export test_table_data_types
 export test_FORTRAN_format

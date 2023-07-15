@@ -40,12 +40,6 @@ function _err_FITS_filnam(filnam::String; protect=true)
 
 end
 
-function _fits_bzero(E::DataType)
-
-    return E ∉ [Int8, UInt16, UInt32, UInt64, UInt128] ? 0.0 : E == Int8 ? -128.0 : 2^(8sizeof(E) - 1)
-
-end
-
 function _fits_eltype(nbits::Int, bzero::Number)
 
     E = nbits == 8 ? UInt8 :

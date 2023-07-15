@@ -84,6 +84,19 @@ function _read_hdu(o::IO, hduindex::Int)  # read data using header information
 
 end
 
+function _fits_type(bitpix::Int)
+
+    T = bitpix == 8 ? UInt8 :
+        bitpix == 16 ? Int16 :
+        bitpix == 32 ? Int32 :
+        bitpix == 64 ? Int64 :
+        bitpix == -32 ? Float32 :
+        bitpix == -64 ? Float64 : Base.throw(FITSError(msgErr(42)))
+
+    return T
+
+end
+
 function _read_image_data(o::IO, hduindex::Int)
 
     h = _read_header(o, hduindex)            # FITS_header object
@@ -98,13 +111,17 @@ function _read_image_data(o::IO, hduindex::Int)
         dims = Core.tuple([h.card[i+n].value for n = 1:ndims]...)      
         ndata = Base.prod(dims)            # number of data points
         i = get(h.map, "BITPIX", 0)
-        nbits = h.card[i].value
+        bitpix = h.card[i].value
         i = get(h.map, "BZERO", 0)
         bzero = i > 0 ? h.card[i].value : 0.0
-        E = _fits_eltype(nbits, bzero)
-        data = [Base.read(o, E) for n = 1:ndata]
+        T_target = _fits_eltype(bitpix, bzero)
+        T = _fits_type(bitpix)
+        data = [Base.read(o, T) for n = 1:ndata]
         data = Base.ntoh.(data)  # change from network to host ordering
-        data = data .+ E(bzero)  # offset from Int to UInt
+        # data = data .+ T(bzero)
+        # mapping of Int-range onto UInt-range (if applicable):
+        T = Base.eltype(data)
+        data = T ≠ T_target ? fits_upshift_offset(data) : data
         data = Base.reshape(data, dims)
     else
         data = Any[]

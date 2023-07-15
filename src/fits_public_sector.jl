@@ -206,7 +206,7 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
             if dat
                 Base.seek(o, ptrdat[hduindex])
                 for ptr = (ptrdat[hduindex]÷80+1):(ptrend[hduindex]÷80)
-                    add = (ptr, String(Base.read(o, 80)))
+                    add = (ptr, "$(Base.read(o, 80))")
                     push!(rec, add)
                 end
             end
@@ -216,7 +216,7 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
     record = [lpad("$(rec[i][1]) | ", 7) * rec[i][2] for i ∈ eachindex(rec)]
 
 
-    str = "\nFile: " * filnam * " - record dump (no FITS object created):\n"
+    str = "\nFile: " * filnam * " - bare record dump:\n"
 
     msg && println(str)
 
@@ -395,8 +395,6 @@ function fits_read(filnam::String)
     return f
 
 end
-
-
 
 # ------------------------------------------------------------------------------
 #           fits_copy(filnam1 [, filnam2=""] [; protect=true[, msg=true]])
@@ -917,8 +915,8 @@ f(x) = a + b x,
 ```
 where `b` is the scaling factor. 
 
-The default value `a = 0.0` (`a = "0.0"` if str=true) for `Real` numeric types.
-nonreal
+The default value is `a = 0.0` for `Real` numeric types. 
+For non-real types `a = nothing`.
 #### Example:
 ```
 julia> T = Type[Any, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32,
@@ -929,28 +927,104 @@ julia> o = (0.0, 0.0, -128, 0.0, 0.0, 32768,
 
 julia> sum([fits_zero_offset(T[i]) == o[i] for i ∈ eachindex(T)]) == 13
 true
-
-julia> sum([fits_zero_offset(T[i]; str=true) == string(o[i]) for i ∈ eachindex(T)]) == 13
-true
 ```
 """
-function fits_zero_offset(T::Type; str=false)
+function fits_zero_offset(T::Type)
 
-    if str 
-        T <: Number || return T == Any ? "0.0" : nothing
+    T <: Number || return T == Any ? 0.0 : nothing
 
-        o = T ∉ [Int8, UInt16, UInt32, UInt64] ? "0.0" :
-            T == Int8 ? "-128" : T == UInt16 ? "32768" :
-            T == UInt32 ? "2147483648" : T == UInt64 ? "9223372036854775808" : 
-        nothing
-    else
-        T <: Number || return T == Any ? 0.0 : nothing
-
-        nbits = 8 * Base.sizeof(T)
-        o = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
+    nbits = 8 * Base.sizeof(T)
+    offset = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
             T == Int8 ? -128 : T == UInt64 ? 9223372036854775808 : 2^(nbits-1)
-    end
 
-    return o
+    return offset
+
+end
+
+# ------------------------------------------------------------------------------
+#                      fits_downshift_offset(data)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_downshift_offset(data)
+ 
+Shift the `UInt` range of values onto the `Int` range by *substracting* the 
+appropriate integer offset value as specified by the `BZERO` keyword.
+
+NB. Since the FITS format *does not support a native unsigned integer* data 
+type (except `UInt8`), the unsigned values `UInt16`, `UInt32` and `UInt64`, are
+stored as the native signed integers `Int16`, `Int32` and `Int64`, after 
+*substracting* the appropriate integer offset specified by the (positive) 
+`BZERO` keyword value. For the byte data type (`UInt8`), the converse technique
+can be used to store signed byte values (`Int8`) as native unsigned values 
+(`UInt`) after subtracting the (negative) `BZERO` offset value. 
+#### Example:
+```
+julia> fits_downshift_offset(UInt32[0])
+1-element Vector{Int32}:
+ -2147483648
+
+julia> fits_downshift_offset(Int8[0])
+1-element Vector{UInt8}:
+ 0x80
+
+julia> Int(0x80)
+128
+```
+"""
+function fits_downshift_offset(data)
+
+    T = eltype(data)
+
+    T ∈ (Int8, UInt16, UInt32, UInt64) || return data
+
+    T == Int8 && return UInt8.(Int.(data) .+ 128)
+    T == UInt16 && return Int16.(Int.(data) .- 32768)
+    T == UInt32 && return Int32.(Int.(data) .- 2147483648)
+    T == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808)
+
+end
+
+# ------------------------------------------------------------------------------
+#                      fits_upshift_offset(data)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_upshift_offset(data)
+ 
+Shift the `Int` range of values onto the `UInt` range by *adding* the 
+appropriate integer offset value as specified by the `BZERO` keyword.
+
+NB. Since the FITS format *does not support a native unsigned integer* data 
+type (except `UInt8`), the unsigned values `UInt16`, `UInt32` and `UInt64`, are
+recovered from the stored native signed integers `Int16`, `Int32` and `Int64`, 
+by *adding* the appropriate integer offset specified by the (positive) `BZERO` 
+keyword value. For the byte data type (`UInt8`), the converse technique can be 
+used to recover the signed byte values (`Int8`) from the stored native unsigned
+values (`UInt`) by *adding* the (negative) `BZERO` offset value. 
+#### Example:
+```
+julia> fits_upshift_offset(Int32[-2147483648])
+1-element Vector{UInt32}:
+ 0x00000000
+
+julia> Int(0x00000000)
+0
+
+julia> fits_upshift_offset(UInt8[128])
+1-element Vector{Int8}:
+ 0
+```
+"""
+function fits_upshift_offset(data)
+
+    T = eltype(data)
+
+    T ∈ (UInt8, Int16, Int32, Int64) || return data
+
+    T == UInt8 && return Int8.(Int.(data) .- 128)
+    T == Int16 && return UInt16.(Int.(data) .+ 32768)
+    T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
+    T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
 
 end

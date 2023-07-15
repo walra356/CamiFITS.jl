@@ -93,7 +93,8 @@ dictErr = Dict(0 => nothing,
     38 => "NAXIS ≤ 3 mandatory for PRIMARY HDU",
     39 => "NAXIS = 2 mandatory for TABLE HDU types",
     40 => "datatype not included in the FITS standard",
-    41 => "number type expected"
+    41 => "number type expected",
+    42 => "undefined numeric type"
 )
 
 # ------------------------------------------------------------------------------
