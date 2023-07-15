@@ -961,9 +961,9 @@ specified by the (positive) `BZERO` keyword value. For the byte data type
 (`Int8`) as native unsigned values (`UInt`) after subtracting the (negative) 
 `BZERO` offset value. 
 
-This method is included and used to ensure backward compatibility with 
-software not supporting native values of the types `Int8`, `UInt16`, `UInt32` 
-and `UInt64`.
+This method is included and used in saving data to ensure backward 
+compatibility with software not supporting native values of the types `Int8`, 
+`UInt16`, `UInt32` and `UInt64`.
 #### Example:
 ```
 julia> fits_downshift_offset(UInt32[0])
