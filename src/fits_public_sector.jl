@@ -942,11 +942,11 @@ function fits_zero_offset(T::Type)
 end
 
 # ------------------------------------------------------------------------------
-#                      fits_downshift_offset(data)
+#                      fits_apply_offset(data)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_downshift_offset(data)
+    fits_apply_offset(data)
  
 Shift the `UInt` range of values onto the `Int` range by *substracting* from 
 the `data` the appropriate integer offset value as specified by the `BZERO` 
@@ -966,11 +966,11 @@ compatibility with software not supporting native values of the types `Int8`,
 `UInt16`, `UInt32` and `UInt64`.
 #### Example:
 ```
-julia> fits_downshift_offset(UInt32[0])
+julia> fits_apply_offset(UInt32[0])
 1-element Vector{Int32}:
  -2147483648
 
-julia> fits_downshift_offset(Int8[0])
+julia> fits_apply_offset(Int8[0])
 1-element Vector{UInt8}:
  0x80
 
@@ -978,7 +978,7 @@ julia> Int(0x80)
 128
 ```
 """
-function fits_downshift_offset(data)
+function fits_apply_offset(data)
 
     T = eltype(data)
 
@@ -989,14 +989,16 @@ function fits_downshift_offset(data)
     T == UInt32 && return Int32.(Int.(data) .- 2147483648)
     T == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808)
 
+    # note workaround for InexactError:trunc(Int64, 9223372036854775808)
+
 end
 
 # ------------------------------------------------------------------------------
-#                      fits_upshift_offset(data)
+#                      fits_remove_offset(data)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_upshift_offset(data)
+    fits_remove_offset(data)
  
 Shift the `Int` range of values onto the `UInt` range by *adding* to the `data`
 the appropriate integer offset value as specified by the `BZERO` keyword.
@@ -1015,27 +1017,31 @@ compatibility with software not supporting native values of the types
 `Int8`, `UInt16`, `UInt32` and `UInt64`.
 #### Example:
 ```
-julia> fits_upshift_offset(Int32[-2147483648])
+julia> fits_remove_offset(Int32[-2147483648])
 1-element Vector{UInt32}:
  0x00000000
 
 julia> Int(0x00000000)
 0
 
-julia> fits_upshift_offset(UInt8[128])
+julia> fits_remove_offset(UInt8[128])
 1-element Vector{Int8}:
  0
 ```
 """
-function fits_upshift_offset(data)
+function fits_remove_offset(data, bzero::Real)
+
+    iszero(bzero) && return data 
 
     T = eltype(data)
 
-    T ∈ (UInt8, Int16, Int32, Int64) || return data
+    # T ∈ (UInt8, Int16, Int32, Int64) || return data
 
     T == UInt8 && return Int8.(Int.(data) .- 128)
     T == Int16 && return UInt16.(Int.(data) .+ 32768)
     T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
     T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
+    
+    # note workaround for InexactError:trunc(Int64, 9223372036854775808)
 
 end

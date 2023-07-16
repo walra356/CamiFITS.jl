@@ -50,8 +50,8 @@ export fits_terminology
 export fits_keyword
 export fits_mandatory_keyword
 export fits_zero_offset
-export fits_downshift_offset
-export fits_upshift_offset
+export fits_apply_offset
+export fits_remove_offset
 
 export FITS_test
 

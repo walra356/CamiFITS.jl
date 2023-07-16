@@ -114,14 +114,12 @@ function _read_image_data(o::IO, hduindex::Int)
         bitpix = h.card[i].value
         i = get(h.map, "BZERO", 0)
         bzero = i > 0 ? h.card[i].value : 0.0
-        T_target = _fits_eltype(bitpix, bzero)
         T = _fits_type(bitpix)
         data = [Base.read(o, T) for n = 1:ndata]
         data = Base.ntoh.(data)  # change from network to host ordering
         # data = data .+ T(bzero)
-        # mapping of Int-range onto UInt-range (if applicable):
-        T = Base.eltype(data)
-        data = T ≠ T_target ? fits_upshift_offset(data) : data
+        # remove mapping between UInt-range and Int-range (if applicable):
+        data = fits_remove_offset(data, bzero)
         data = Base.reshape(data, dims)
     else
         data = Any[]

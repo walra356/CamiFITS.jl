@@ -151,8 +151,8 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
     data = Base.vec(data)
 
     # data = data .+ T(bzero)
-    # mapping of UInt-range onto Int-range (if applicable):
-    data = fits_downshift_offset(data)
+    # apply mapping between UInt-range and Int-range (if applicable):
+    data = fits_apply_offset(data)
 
     T = Base.eltype(data)
 
