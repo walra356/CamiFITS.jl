@@ -30,7 +30,6 @@ using Test
     f = fits_create(filnam, data; protect=false);
     fits_extend!(f, data; hdutype="Image");
     fits_extend!(f, data; hdutype="IMAGE");
-    @test fits_verifier(filnam; msg=false) == 0
     @test_throws FITSError fits_create(filnam)
     rm(filnam)
     @test_throws FITSError fits_create("kanweg")

@@ -98,28 +98,6 @@ dictErr = Dict(0 => nothing,
 )
 
 # ------------------------------------------------------------------------------
-#     dictError
-# ------------------------------------------------------------------------------
-
-dictError = Dict(0 => nothing,
-    1 => "file not found",
-    2 => "filename lacks mandatory '.fits' extension",
-    3 => "filnam lacks mandatory 'name' specificaton",
-    4 => "filnam in use - set '; protect=false' to overrule overwrite protection",
-    5 => "incorrect DataType (Real type mandatory for image HDUs)",
-    6 => "FITS format requires integer number of blocks (of 2880 bytes)",
-    7 => "key in use (use different name or edit key)",# _write_IMAGE_data(FITS_HDU)
-    8 => "header shall consist of integer number of blocks (of 36 records)",
-    9 => "header blocks shall contain only the restricted set of ASCII text characters, decimal 32 through 126.",
-    10 => "illegal keyword (exceeds 8 charaters).",
-    11 => "mandatory keyword not present or out of order.",
-    12 => "mandatory keyword has wrong datatype or illegal value.",
-    13 => "END header keyword not present.",
-    23 => "header contains illegal ASCII character (not ASCCI 32 - 126)",
-    24 => "keyword contains illegal character."
-)
-
-# ------------------------------------------------------------------------------
 #                               dictDefinedTerms
 # ------------------------------------------------------------------------------
 
