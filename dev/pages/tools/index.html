@@ -47,7 +47,7 @@ Any[]
 
 julia&gt; rm(filnam)</code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="CamiFITS.fits_record_dump" href="#CamiFITS.fits_record_dump"><code>CamiFITS.fits_record_dump</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">fits_record_dump(filnam [, hduindex=0] [; hdr=true [, dat=true [, nr=true [, msg=true]]]])</code></pre><p>Listing of all single-line records (card records) as read from <code>filnam</code> on disc. The dump proceeds <em>without casting of FITS objects</em>; i.e., <em>without</em>  FITS-conformance testing.</p><ul><li><code>hduindex</code>: HDU index (::Int - default: <code>1</code> = <code>primary hdu</code>)</li><li><code>hdr</code>: show header (::Bool - default: true)</li><li><code>dat</code>: show data (::Bool - default: true)</li><li><code>nr</code>: include record numbers (::Bool - default: true)</li><li><code>msg</code>: print message (::Bool)</li></ul><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;test.fits&quot;;
 
-julia&gt; data = [0x0000043e, 0x0000040c, 0x0000041f];
+julia&gt; data = [typemin(UInt32),typemax(UInt32)];
 
 julia&gt; fits_create(filnam, data; protect=false);
 
@@ -55,14 +55,14 @@ julia&gt; dump = fits_record_dump(filnam; msg=false);
 
 julia&gt; for i=3:8 println(dump[i]) end
    3 | NAXIS   =                    1 / number of data axes
-   4 | NAXIS1  =                    3 / length of data axis 1
-   5 | BZERO   =           2147483648 / offset data range to that of unsigned integer
-   6 | BSCALE  =                  1.0 / default scaling factor
+   4 | NAXIS1  =                    2 / length of data axis 1
+   5 | BSCALE  =                  1.0 / default scaling factor
+   6 | BZERO   =           2147483648 / offset data range to that of unsigned integer
    7 | EXTEND  =                    T / FITS dataset may contain extensions
    8 | END
 
 julia&gt; dump[37]
-&quot;  37 | \x80\0\x04&gt;\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0\0\0\0\0&quot; ⋯ 40 bytes ⋯ &quot;\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0&quot;
+&quot;  37 | UInt8[0x80, 0x00, 0x00, 0x00, 0x7f, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, ⋯, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]&quot;]&quot;
 
 julia&gt; rm(filnam); f = data = dump = nothing</code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article><h2 id="FITS-creation,-extension-and-collection"><a class="docs-heading-anchor" href="#FITS-creation,-extension-and-collection">FITS creation, extension and collection</a><a id="FITS-creation,-extension-and-collection-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-creation,-extension-and-collection" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="CamiFITS.fits_create" href="#CamiFITS.fits_create"><code>CamiFITS.fits_create</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia hljs">fits_create(filnam [, data [; protect=true]])</code></pre><p>Create <code>.fits</code> file of given filnam and return Array of HDUs. Key:</p><ul><li><code>data</code>: data primary hdu (::DataType)</li><li><code>protect</code>: overwrite protection (::Bool)</li></ul><p><strong>Examples:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;test.fits&quot;;
 
@@ -418,4 +418,4 @@ p:
 Not one of the FITS defined terms.
 suggestions: Physical value, Pixel, Primary HDU, Primary data array, Primary header.
 
-see FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html</code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../manual/">« Manual</a><a class="docs-footer-nextpage" href="../fits/">FITS »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Sunday 16 July 2023 07:31">Sunday 16 July 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+see FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html</code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../manual/">« Manual</a><a class="docs-footer-nextpage" href="../fits/">FITS »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 20 July 2023 12:39">Thursday 20 July 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
