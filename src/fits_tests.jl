@@ -536,6 +536,35 @@ function test_FORTRAN_fits_table_tform()
 
 end
 
+function test_FORTRAN_fits_table_tdisp()
+
+    a1 = Bool[1, 0, 1, 0, 1]
+    a2 = UInt8[108, 108, 108, 108, 108]
+    a3 = Int16[1081, 1082, 1083, 1084, 1085]
+    a4 = UInt16[1081, 1082, 1083, 1084, 1085]
+    a5 = Int32[1081, 1082, 1083, 1084, 10850]
+    a6 = UInt32[1081, 10820, 1083, 1084, 10850]
+    a7 = Int64[1081, 1082, 1083, 1084, 108500]
+    a8 = UInt64[1081, 1082, 1083, 1084, 108500]
+    a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
+    a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
+    a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
+    a12 = ['a', 'b', 'c', 'd', 'e']
+    a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
+    data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+
+    tform = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
+
+    [FORTRAN_fits_table_tdisp(data[i]) for i = 1:13]
+
+    pass = [FORTRAN_fits_table_tdisp(data[i]) for i = 1:13] == tform
+
+    pass || println(fits_tform(d) .== tform)
+
+    return pass
+
+end
+
 function test_table_data_types()
 
     filnam = "kanweg.fits"
