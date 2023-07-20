@@ -43,5 +43,5 @@ cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
 ```@docs
 fits_zero_offset(T::Type)
 fits_apply_offset(data)
-fits_remove_offset(data)
+fits_remove_offset(data, bzero::Real)
 ```

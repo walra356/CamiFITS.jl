@@ -1018,7 +1018,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_remove_offset(data)
+    fits_remove_offset(data, bzero::Real)
  
 Shift the `Int` range of values onto the `UInt` range by *adding* to the `data`
 the appropriate integer offset value as specified by the `BZERO` keyword.
