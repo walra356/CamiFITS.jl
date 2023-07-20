@@ -69,7 +69,7 @@ julia> F = cast_FORTRAN_format("E10.5E3")
 FORTRAN_format("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
 
 julia> F.Type, F.TypeChar, F.EngSci, F.width, F.nmin, F.ndec, F.nexp
-("Ew.dEe", 'E', nothing, 10, 0, 5, 3)
+("Ew.dEe", 'E', nothing, 10, 0, 5, 3)  
 ```
 """
 function cast_FORTRAN_format(str::String)
