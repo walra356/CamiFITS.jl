@@ -115,6 +115,7 @@ export test_format_hdutype
 export test_table_data_types
 export test_FORTRAN_format
 export test_FORTRAN_fits_table_tform
+export test_FORTRAN_fits_table_tdisp
 export test_FORTRAN_eltype_char
 
 export test_fits_info

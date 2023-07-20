@@ -553,15 +553,13 @@ function test_FORTRAN_fits_table_tdisp()
     a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
     data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
 
-    tform = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
+    tdisp = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
 
-    [FORTRAN_fits_table_tdisp(data[i]) for i = 1:13]
+    o = [FORTRAN_fits_table_tdisp(data[i]) for i = 1:13] == tdisp
 
-    pass = [FORTRAN_fits_table_tdisp(data[i]) for i = 1:13] == tform
+    o || println([FORTRAN_fits_table_tdisp(data[i]) for i = 1:13] .== tdisp)
 
-    pass || println(fits_tform(d) .== tform)
-
-    return pass
+    return o
 
 end
 
