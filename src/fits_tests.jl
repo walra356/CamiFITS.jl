@@ -9,8 +9,9 @@ function test_fits_info()
 
     filnam = "kanweg.fits"
 
-    T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, Float32, Float64]
-    c =[]
+    T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, 
+         Float32, Float64]
+    c = []
     for i ∈ eachindex(T)
         data = [typemin(T[i]), typemax(T[i])]
         f = fits_create(filnam, data; protect=false)
@@ -19,10 +20,18 @@ function test_fits_info()
         a = fits_info(filnam; msg=false) == data  # [1] == '\n'
         push!(c, a)
     end
+
+    data = [1.23, 4.56]
+    f = fits_create(filnam, data; protect=false)
+    a = fits_info(f; msg=false) == data
+    push!(c, a)
+    a = fits_info(filnam; msg=false) == data  # [1] == '\n'
+    push!(c, a)
     
     rm(filnam)
 
     o = c[1] & c[2] & c[3] & c[4] & c[5] & c[6] & c[7] & c[8] & c[9] & c[10]
+    o = o & c[11]
 
     o || println(c)
 
@@ -158,6 +167,60 @@ function test_fits_extend!()
     o = a & b & c & d & e
 
     o || println([a, b, c, d, e])
+
+    return o
+
+end
+
+function test_fits_table_extend!()
+
+    filnam = "kanweg.fits"
+    f = fits_create(filnam; protect=false)
+
+    a1 = [typemin(Bool), typemax(Bool)]
+    a2 = [typemin(UInt8), typemax(UInt8)]
+    a3 = [typemin(Int16), typemax(Int16)]
+    a4 = [typemin(UInt16), typemax(UInt16)]
+    a5 = [typemin(Int32), typemax(Int32)]
+    a6 = [typemin(UInt32), typemax(UInt32)]
+    a7 = [typemin(Int64), typemax(Int64)]
+    a8 = [typemin(UInt64), typemax(UInt64)]
+    a9 = [0.123, 12.3]
+    a10 = Float32[1.23e-1, 1.23e1]
+    a11 = Float64[1.23e-1, 1.23e1]
+    a12 = ['a', 'b']
+    a13 = ["a", "bb"]
+    data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+
+    fits_extend!(f, data; hdutype="TABLE")
+
+    rm(filnam)
+
+    map = f.hdu[2].header.map
+    card = f.hdu[2].header.card
+
+    #tdisp = [strip(card[map["TDISP$i"]].value) for i = 1:13]
+    #tdisp = [strip(tdisp[i][2:9]) for i = 1:13]
+    
+    tdisp = [strip(card[map["TDISP$i"]].value, ['\'', ' ']) for i = 1:13]
+
+    a1 = tdisp[1] == "I1"
+    a2 = tdisp[2] == "I3"
+    a3 = tdisp[3] == "I6"
+    a4 = tdisp[4] == "I5"
+    a5 = tdisp[5] == "I11"
+    a6 = tdisp[6] == "I10"
+    a7 = tdisp[7] == "I20"
+    a8 = tdisp[8] == "I20"
+    a9 = tdisp[9] == "F6.3"
+    a10 = tdisp[10] == "F6.3"
+    a11 = tdisp[11] == "F6.3"
+    a12 = tdisp[12] == "A1"
+    a13 = tdisp[13] == "A2"
+
+    o = a1 & a2 & a3 & a4 & a5 & a6 & a7 & a8 & a9 & a10 & a11 & a12 & a13
+
+    o || println(o)
 
     return o
 
@@ -499,7 +562,7 @@ function test_table_data_types()
 
     table = fits_info(f.hdu[2]; msg=false)
 
-    str = " T 108 1081 1081  1081  1081   1081   1081  1.23 1.01E-6 1.01D-6 a                    a"
+    str = " 1 108 1081 1081  1081  1081   1081   1081  1.23 1.01E-6 1.01D-6 a                    a"
 
     return table[1] == str
 

@@ -105,6 +105,7 @@ export test_fits_copy
 export test_fits_create
 export test_fits_read
 export test_fits_extend!
+export test_fits_table_extend!
 export test_fits_read
 export test_fits_save_as
 export test_fits_collect

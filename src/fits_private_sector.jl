@@ -97,7 +97,7 @@ function _fits_parse(str::String)
     ip = [i for i ∈ Base.eachindex(p) if p[i] == 1]     # ip: indices of nonzero elements of p
 
     sd = Base.sum(d)                                    # sd: number of digits
-    sp = Base.sum(p)                                    # sd: number of punctuation characters
+    sp = Base.sum(p)                                    # sp: number of punctuation characters
     sa = Base.sum(a)                                    # sa: number of other non-digit or punctuation characters
 
     E = ['E', 'D', 'e', 'p']

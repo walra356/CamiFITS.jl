@@ -265,6 +265,58 @@ function FORTRAN_fits_table_tform(col::Vector{T}) where {T}
         (x ∈ ['E', 'D']) & ('e' ∉ string(col[1])) ? 'F' : x
 
     if x == 'I' # NB. hdutype 'table' does not accept the 'L' descriptor
+        if T == Bool
+            tform = "I1"
+        else
+            strcol = string.(col)
+            w = maximum(length.(strcol))
+            tform = x * string(w)
+        end
+    elseif x == 'F'
+        strcol = string.(col)
+        n = [0, 0]
+        for i ∈ eachindex(col)
+            k = findfirst('.', strcol[i])
+            s = [strcol[i][1:k-1], strcol[i][k+1:end]]
+            m = length.(s)
+            n = max.(n, m)
+        end
+        w = 1 + sum(n)
+        d = n[2]
+        tform = x * string(w) * '.' * string(d)
+    elseif x ∈ ('E', 'D')
+        strcol = string.(col)
+        n = [0, 0, 0]
+        for i ∈ eachindex(col)
+            k = findfirst('.', strcol[i])
+            l = findfirst('e', strcol[i])
+            s = [strcol[i][1:k-1], strcol[i][k+1:l-1], strcol[i][l+1:end]]
+            m = length.(s)
+            n = max.(n, m)
+        end
+        w = 2 + sum(n)
+        d = n[2]
+        tform = x * string(w) * '.' * string(d)
+    elseif x == 'A'
+        strcol = string.(col)
+        w = T == Char ? 1 : maximum(length.(strcol))
+        tform = x * string(w)
+    end
+
+    return tform
+
+end
+# ------------------------------------------------------------------------------
+function FORTRAN_fits_table_tdisp(col::Vector{T}) where {T}
+
+    r = string(length(col))
+    x = FORTRAN_eltype_char(T)
+    x ≠ '-' || Base.throw(FITSError(msgErr(40)))
+
+    x = x ∈ ('L', 'B', 'I', 'J', 'K') ? 'I' :
+        (x ∈ ['E', 'D']) & ('e' ∉ string(col[1])) ? 'F' : x
+
+    if x == 'I' # NB. hdutype 'table' does not accept the 'L' descriptor
         strcol = string.(col)
         w = T == Bool ? 1 : maximum(length.(strcol))
         tform = x * string(w)
@@ -322,4 +374,54 @@ function FORTRAN_datatype_char(T::Type; msg=true)
 
 end
 # ------------------------------------------------------------------------------
+function FORTRAN_fits_table_string(col::Vector{T}, tform::String) where {T}
 
+    strcol = string.(col)
+    fmt = cast_FORTRAN_format(tform)
+    x = fmt.char
+    w = fmt.width
+    d = fmt.ndec
+
+    for j ∈ eachindex(col)
+        if x == 'I'
+            if eltype(col) == Bool
+                strcol[j] = col[j] ? "1" : "0" #  "T" : "F"
+            end
+        elseif x == 'F'
+            n = [w - d - 1, d]
+            k = findfirst('.', strcol[j])
+            s = [strcol[j][1:k-1], strcol[j][k+1:end]]
+            Δ = n .- length.(s)
+            if Δ[1] > 0
+                s[1] = repeat(' ', Δ[1]) * s[1]
+            end
+            if Δ[2] > 0
+                s[2] = s[2] * repeat('0', Δ[2])
+            end
+            strcol[j] = s[1] * '.' * s[2]
+        elseif x == 'E'
+            k = findfirst('.', strcol[j])
+            l = findfirst('e', strcol[j])
+            s = [strcol[j][1:k-1], strcol[j][k+1:l-1], strcol[j][l+1:end]]
+            Δ = d - length(s[2])
+            if Δ > 0
+                s[2] = s[2] * repeat('0', Δ)
+            end
+            strcol[j] = s[1] * '.' * s[2] * 'E' * s[3]
+        elseif x == 'D'
+            k = findfirst('.', strcol[j])
+            l = findfirst('e', strcol[j])
+            s = [strcol[j][1:k-1], strcol[j][k+1:l-1], strcol[j][l+1:end]]
+            Δ = d - length(s[2])
+            if Δ > 0
+                s[2] = s[2] * repeat('0', Δ)
+            end
+            strcol[j] = s[1] * '.' * s[2] * 'D' * s[3]
+        else
+            strcol[j] = strcol[j]
+        end
+    end
+
+    return strcol
+
+end

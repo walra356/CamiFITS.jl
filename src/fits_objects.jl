@@ -319,57 +319,6 @@ end
 #             cast_FITS_HDU(hduindex, header, dataobject)
 # ------------------------------------------------------------------------------
 
-function _str_table_column(col::Vector{T}, tform::String) where {T}
-
-    strcol = string.(col)
-    fmt = cast_FORTRAN_format(tform)
-    x = fmt.char
-    w = fmt.width
-    d = fmt.ndec
-
-    for j ∈ eachindex(col)
-        if x == 'I'
-            if eltype(col) == Bool
-                strcol[j] = col[j] ? "T" : "F"
-            end
-        elseif x == 'F'
-            n = [w - d - 1, d]
-            k = findfirst('.', strcol[j])
-            s = [strcol[j][1:k-1], strcol[j][k+1:end]]
-            Δ = n .- length.(s)
-            if Δ[1] > 0
-                s[1] = repeat(' ', Δ[1]) * s[1]
-            end
-            if Δ[2] > 0
-                s[2] = s[2] * repeat('0', Δ[2])
-            end
-            strcol[j] = s[1] * '.' * s[2]
-        elseif x == 'E' 
-            k = findfirst('.', strcol[j])
-            l = findfirst('e', strcol[j])
-            s = [strcol[j][1:k-1], strcol[j][k+1:l-1], strcol[j][l+1:end]]
-            Δ = d - length(s[2])
-            if Δ > 0
-                s[2] = s[2] * repeat('0', Δ)
-            end
-            strcol[j] = s[1] * '.' * s[2] * 'E' * s[3]
-        elseif x == 'D'
-            k = findfirst('.', strcol[j])
-            l = findfirst('e', strcol[j])
-            s = [strcol[j][1:k-1], strcol[j][k+1:l-1], strcol[j][l+1:end]]
-            Δ = d - length(s[2])
-            if Δ > 0
-                s[2] = s[2] * repeat('0', Δ)
-            end
-            strcol[j] = s[1] * '.' * s[2] * 'D' * s[3]
-        else
-            strcol[j] = strcol[j]
-        end
-    end
-
-    return strcol
-
-end
 
 @doc raw"""
     cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
@@ -397,19 +346,25 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
 
     hdutype = dataobject.hdutype
     data = dataobject.data
+    card = header.card
 
     if (hdutype == "'TABLE   '") & (eltype(data) ≠ Vector{String})
 
         # data input as array of table COLUMNS
         col = data
+        map = header.map
         ncols = length(col)
         nrows = length(col[1])
         
         # make array of table format descriptors Xw.d
-        tform = [FORTRAN_fits_table_tform(col[i]) for i ∈ eachindex(col)] 
-        
+       
+        cardindex = [max(get(map, "TDISP$i", 0), map["TFORM$i"]) for i = 1:ncols]
+
+        tdisp = [strip(card[cardindex[i]].value, ['\'', ' ']) for i = 1:ncols]
+        tdisp = string.(tdisp)
+
         # convert data to array of fortran strings
-        strcol = [_str_table_column(col[i], tform[i]) for i ∈ eachindex(col)]
+        strcol = [FORTRAN_fits_table_string(col[i], tdisp[i]) for i = 1:ncols]
 
         # w = required widths of fits data fields
         w = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
@@ -431,7 +386,7 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         tform = [FORTRAN_fits_table_tform(col[i]) for i ∈ eachindex(col)]
 
         # convert data to array of fortran strings
-        strcol = [_str_table_column(col[i], tform[i]) for i ∈ eachindex(col)]
+        strcol = [FORTRAN_fits_table_string(col[i], tform[i]) for i ∈ eachindex(col)]
 
         # w = required widths of fits data fields
         w = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
@@ -713,7 +668,7 @@ function _header_record_table(dataobject::FITS_dataobject)
     tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
     tform = [Base.rpad(tform[i], 20) for i ∈ eachindex(col)]
     ttype = ["HEAD$i" for i ∈ eachindex(col)]
-    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]       # default column headers
+    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]  # default column headers
 
     naxis1 = Base.lpad(lrow, 20) 
     naxis2 = Base.lpad(nrows, 20)
@@ -737,10 +692,6 @@ function _header_record_table(dataobject::FITS_dataobject)
         Base.push!(r, rpad("TBCOL$i", 8) * "= " * tbcol[i] * " / pointer to column " * rpad(i, 29))
         Base.push!(r, rpad("TFORM$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
         Base.push!(r, rpad("TDISP$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
-        if !isnothing(tzero)
-            Base.push!(r, rpad("TZERO$i", 8) * "= " * tzero[i] * " / data type of column " * rpad(i, 27))
-            Base.push!(r, rpad("TSCAL$i", 8) * "=                  1.0 / data type of column " * rpad(i, 27))
-        end
     end
     Base.push!(r, "END" * repeat(' ', 77))
 

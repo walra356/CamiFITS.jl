@@ -164,7 +164,7 @@ FITS-conformance testing.
 ```
 julia> filnam = "test.fits";
 
-julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
+julia> data = [typemin(UInt32),typemax(UInt32)];
 
 julia> fits_create(filnam, data; protect=false);
 
@@ -172,14 +172,14 @@ julia> dump = fits_record_dump(filnam; msg=false);
 
 julia> for i=3:8 println(dump[i]) end
    3 | NAXIS   =                    1 / number of data axes
-   4 | NAXIS1  =                    3 / length of data axis 1
-   5 | BZERO   =           2147483648 / offset data range to that of unsigned integer
-   6 | BSCALE  =                  1.0 / default scaling factor
+   4 | NAXIS1  =                    2 / length of data axis 1
+   5 | BSCALE  =                  1.0 / default scaling factor
+   6 | BZERO   =           2147483648 / offset data range to that of unsigned integer
    7 | EXTEND  =                    T / FITS dataset may contain extensions
    8 | END
 
 julia> dump[37]
-"  37 | \x80\0\x04>\x80\0\x04\f\x80\0\x04\x1f\0\0\0\0\0\0\0\0\0\0\0\0" ⋯ 40 bytes ⋯ "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+"  37 | UInt8[0x80, 0x00, 0x00, 0x00, 0x7f, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, ⋯, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]"]"
 
 julia> rm(filnam); f = data = dump = nothing
 ```
@@ -332,7 +332,13 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
     hdutype = _format_hdutype(hdutype)
     hduindex = length(f.hdu) + 1
+
+    if hdutype == "'TABLE   '"
+        data_extend = fits_table_data(data_extend)
+    end
+
     dataobject = cast_FITS_dataobject(hdutype, data_extend)
+   
     header = cast_FITS_header(dataobject)
 
     push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))
@@ -340,6 +346,20 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
     fits_save(f)
 
     return f
+
+end
+
+function fits_table_data(data)
+
+    hdutype = _format_hdutype("table")
+
+    col = data
+    ncols = length(col)
+
+    T = [eltype(data[i]) for i = 1:ncols]
+    T = [T[i] == Bool ? Int : T[i] for i = 1:ncols]
+
+    return ntuple(i -> T[i].(col[i]), ncols)
 
 end
 
@@ -1041,7 +1061,7 @@ function fits_remove_offset(data, bzero::Real)
     T == Int16 && return UInt16.(Int.(data) .+ 32768)
     T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
     T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
-    
+
     # note workaround for InexactError:trunc(Int64, 9223372036854775808)
 
 end
