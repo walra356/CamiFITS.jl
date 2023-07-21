@@ -89,6 +89,7 @@ export fits_info
 export fits_copy
 export fits_collect
 export fits_tform
+export fits_tzero
 export fits_zero_offset
 export fits_apply_offset
 export fits_remove_offset

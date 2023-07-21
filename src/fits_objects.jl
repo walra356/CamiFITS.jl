@@ -491,14 +491,14 @@ function msgErr(err::Int)
 
 end
 
-function msgError(err::Int)
+#function msgError(err::Int)
 
-    str = "FITSError: $(err) - "
-    str *= Base.get!(dictError, err, "not found")
+#    str = "FITSError: $(err) - "
+#    str *= Base.get!(dictError, err, "not found")
 
-    return str
+#    return str
 
-end
+# end
 
 # ------------------------------------------------------------------------------
 #                             FITS_test 
@@ -799,11 +799,5 @@ function _header_record_bintable(dataobject::FITS_dataobject)
     _append_blanks!(r)
 
     return r
-
-end
-
-function fits_tzero(col::Vector{T}) where {T}
-
-    return fits_zero_offset(T::Type)
 
 end

@@ -291,10 +291,26 @@ end
 #           fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
 
+function _fits_table_data(data)
+
+    hdutype = _format_hdutype("table")
+
+    col = data
+    ncols = length(col)
+
+    T = [eltype(data[i]) for i = 1:ncols]
+    T = [T[i] == Bool ? Int : T[i] for i = 1:ncols]
+
+    return ntuple(i -> T[i].(col[i]), ncols)
+
+end
+# ------------------------------------------------------------------------------
+
 @doc raw"""
     fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
-Extend the `.fits` file of given filnam with the data of `hdutype` from `data_extend`  and return Array of HDUs.
+HDU array in which the FITS object `f` is extended with the data 
+of `data_extend` in the format of the specified `hdutype`.
 #### Examples:
 ```
 julia> filnam = "test.fits";
@@ -334,7 +350,7 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
     hduindex = length(f.hdu) + 1
 
     if hdutype == "'TABLE   '"
-        data_extend = fits_table_data(data_extend)
+        data_extend = _fits_table_data(data_extend)
     end
 
     dataobject = cast_FITS_dataobject(hdutype, data_extend)
@@ -346,20 +362,6 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
     fits_save(f)
 
     return f
-
-end
-
-function fits_table_data(data)
-
-    hdutype = _format_hdutype("table")
-
-    col = data
-    ncols = length(col)
-
-    T = [eltype(data[i]) for i = 1:ncols]
-    T = [T[i] == Bool ? Int : T[i] for i = 1:ncols]
-
-    return ntuple(i -> T[i].(col[i]), ncols)
 
 end
 
@@ -587,7 +589,7 @@ julia> filnam = "minimal.fits";
 
 julia> f = fits_create(filnam; protect=false);
 
-julia> fits_add_key!(f, 1, "KEYNEW1", true, "This is the bew key");
+julia> fits_add_key!(f, 1, "KEYNEW1", true, "This is the new key");
 
 julia> fits_info(f)
 
@@ -602,10 +604,8 @@ SIMPLE  =                    T / file does conform to FITS standard
 BITPIX  =                   64 / number of bits per data pixel
 NAXIS   =                    1 / number of data axes
 NAXIS1  =                    0 / length of data axis 1
-BZERO   =                  0.0 / offset data range to that of unsigned integer
-BSCALE  =                  1.0 / default scaling factor
 EXTEND  =                    T / FITS dataset may contain extensions
-KEYNEW1 =                    T / This is the bew key
+KEYNEW1 =                    T / This is the new key
 END
 
 Any[]
@@ -658,7 +658,8 @@ end
 @doc raw"""
     fits_delete_key!(f::FITS, hduindex::Int, key::String)
 
-Delete a header record of given `key`, `value` and `comment` to `FITS_HDU[hduindex]` of file with name  'filnam'
+Delete a header record of given `key`, `value` and `comment` from the 
+FITS_HDU `f` of given `hduindex`.
 #### Examples:
 ```
 julia> filnam = "minimal.fits";
@@ -923,45 +924,6 @@ function parse_FITS_TABLE(hdu::FITS_HDU)
 end
 
 # ------------------------------------------------------------------------------
-#                      fits_zero_offset(T; str=false)
-# ------------------------------------------------------------------------------
-
-@doc raw"""
-    fits_zero_offset(T::Type; str=false)
-
-Zero offset `a` as used in linear scaling equation
-```
-f(x) = a + b x,
-```
-where `b` is the scaling factor. 
-
-The default value is `a = 0.0` for `Real` numeric types. 
-For non-real types `a = nothing`.
-#### Example:
-```
-julia> T = Type[Any, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32,
-                  Int64, UInt64, Float16, Float32, Float64];
-
-julia> o = (0.0, 0.0, -128, 0.0, 0.0, 32768,
-                   0.0, 2147483648, 0.0, 9223372036854775808, 0.0, 0.0, 0.0);
-
-julia> sum([fits_zero_offset(T[i]) == o[i] for i ∈ eachindex(T)]) == 13
-true
-```
-"""
-function fits_zero_offset(T::Type)
-
-    T <: Number || return T == Any ? 0.0 : nothing
-
-    nbits = 8 * Base.sizeof(T)
-    offset = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
-            T == Int8 ? -128 : T == UInt64 ? 9223372036854775808 : 2^(nbits-1)
-
-    return offset
-
-end
-
-# ------------------------------------------------------------------------------
 #                      fits_apply_offset(data)
 # ------------------------------------------------------------------------------
 
@@ -1049,19 +1011,76 @@ julia> fits_remove_offset(UInt8[128])
  0
 ```
 """
-function fits_remove_offset(data, bzero::Real)
+function fits_remove_offset(data, header::FITS_header)
 
-    iszero(bzero) && return data 
+    if header.card[1].keyword == "SIMPLE"
+        i = get(header.map, "BZERO", 0)
+        bzero = i > 0 ? header.card[i].value : 0.0
+        iszero(bzero) && return data
+    elseif header.card[1].value == "'IMAGE   '"
+        i = get(header.map, "BZERO", 0)
+        bzero = i > 0 ? header.card[i].value : 0.0
+        iszero(bzero) && return data
+    else
+        return data
+    end
 
     T = eltype(data)
-
-    # T ∈ (UInt8, Int16, Int32, Int64) || return data
 
     T == UInt8 && return Int8.(Int.(data) .- 128)
     T == Int16 && return UInt16.(Int.(data) .+ 32768)
     T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
     T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
 
-    # note workaround for InexactError:trunc(Int64, 9223372036854775808)
+    # workaround for InexactError:trunc(Int64, 9223372036854775808)
+
+end
+
+# ------------------------------------------------------------------------------
+#                      fits_zero_offset(T)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_zero_offset(T::Type)
+
+Zero offset `a` as used in linear scaling equation
+```
+f(x) = a + b x,
+```
+where `b` is the scaling factor. 
+
+The default value is `a = 0.0` for `Real` numeric types. 
+For non-real types `a = nothing`.
+#### Example:
+```
+julia> T = Type[Any, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32,
+                  Int64, UInt64, Float16, Float32, Float64];
+
+julia> o = (0.0, 0.0, -128, 0.0, 0.0, 32768,
+                   0.0, 2147483648, 0.0, 9223372036854775808, 0.0, 0.0, 0.0);
+
+julia> sum([fits_zero_offset(T[i]) == o[i] for i ∈ eachindex(T)]) == 13
+true
+```
+"""
+function fits_zero_offset(T::Type)
+
+    T <: Real || return T == Any ? 0.0 : nothing
+
+    nbits = 8 * Base.sizeof(T)
+    offset = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
+             T == Int8 ? -128 : T == UInt64 ? 9223372036854775808 : 2^(nbits - 1)
+
+    return offset
+
+end
+
+# ------------------------------------------------------------------------------
+#                      fits_tzero(col::Vector{T}) where {T}
+# ------------------------------------------------------------------------------
+
+function fits_tzero(col::Vector{T}) where {T}
+
+    return fits_zero_offset(T::Type)
 
 end

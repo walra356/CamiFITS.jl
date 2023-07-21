@@ -99,27 +99,25 @@ end
 
 function _read_image_data(o::IO, hduindex::Int)
 
-    h = _read_header(o, hduindex)            # FITS_header object
+    header = _read_header(o, hduindex)            # FITS_header object
 
     ptrdata = _data_pointer(o)
     Base.seek(o, ptrdata[hduindex])
     
-    i = get(h.map, "NAXIS", 0)
-    ndims = h.card[i].value
+    i = get(header.map, "NAXIS", 0)
+    ndims = header.card[i].value
 
     if ndims > 0                           # e.g. dims=(512,512,1)
-        dims = Core.tuple([h.card[i+n].value for n = 1:ndims]...)      
+        dims = Core.tuple([header.card[i+n].value for n = 1:ndims]...)      
         ndata = Base.prod(dims)            # number of data points
-        i = get(h.map, "BITPIX", 0)
-        bitpix = h.card[i].value
-        i = get(h.map, "BZERO", 0)
-        bzero = i > 0 ? h.card[i].value : 0.0
+        i = get(header.map, "BITPIX", 0)
+        bitpix = header.card[i].value
         T = _fits_type(bitpix)
         data = [Base.read(o, T) for n = 1:ndata]
         data = Base.ntoh.(data)  # change from network to host ordering
         # data = data .+ T(bzero)
         # remove mapping between UInt-range and Int-range (if applicable):
-        data = fits_remove_offset(data, bzero)
+        data = fits_remove_offset(data, header)
         data = Base.reshape(data, dims)
     else
         data = Any[]
