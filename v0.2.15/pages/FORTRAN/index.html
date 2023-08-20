@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>FORTRAN · CamiFITS.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://walra356.github.io/CamiFITS.jl/pages/FORTRAN/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CamiFITS.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../manual/">Manual</a></li><li><a class="tocitem" href="../tools/">Basic tools</a></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="../fits/">FITS</a></li><li class="is-active"><a class="tocitem" href>FORTRAN</a><ul class="internal"><li><a class="tocitem" href="#FORTRAN-format"><span>FORTRAN-format</span></a></li><li><a class="tocitem" href="#FORTRAN-format-casting"><span>FORTRAN-format casting</span></a></li><li><a class="tocitem" href="#FORTRAN-related-methods"><span>FORTRAN-related methods</span></a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">API</a></li><li class="is-active"><a href>FORTRAN</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>FORTRAN</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="github.com/walra356/CamiFITS.jl.git" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="FORTRAN"><a class="docs-heading-anchor" href="#FORTRAN">FORTRAN</a><a id="FORTRAN-1"></a><a class="docs-heading-anchor-permalink" href="#FORTRAN" title="Permalink"></a></h1><h2 id="FORTRAN-format"><a class="docs-heading-anchor" href="#FORTRAN-format">FORTRAN-format</a><a id="FORTRAN-format-1"></a><a class="docs-heading-anchor-permalink" href="#FORTRAN-format" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="CamiFITS.FORTRAN_format" href="#CamiFITS.FORTRAN_format"><code>CamiFITS.FORTRAN_format</code></a> — <span class="docstring-category">Type</span></header><section><div><pre><code class="language-julia hljs">FORTRAN_format</code></pre><p>Object to hold a FORTRAN format specifier decomposed in its fields.</p><p>Accepted <em>datatype specifiers</em> are:  <code>Aw</code>,  <code>Iw</code>,  <code>Fw.d</code>,  <code>Ew.d</code>,  <code>Dw.d</code></p><p>Accepted <em>output formating specifiers</em> are: <code>Aw</code>,  <code>Iw.m</code>,  <code>Bw.m</code>,  <code>Ow.m</code>, <code>Zw.m</code>,  <code>Fw.d</code>,  <code>Ew.dEe</code>,  <code>ENw.d</code>,  <code>ESw.d</code>,  <code>Gw.dEe</code>,  <code>Dw.dEe</code>. Notation: <code>w</code> - width, <code>m</code> (optional) - minimum number of digits, <code>d</code> - number of digits to right of decimal, <code>e</code> - number of digits in exponent <code>N</code>/<code>S</code> (optional) indicates engineering/scientific formating of the <code>E</code> type.</p><p>The fields are:</p><ul><li><code>.datatype</code>: primary FORTRAN datatype (<code>::String</code>)</li><li><code>.char</code>: primary FORTRAN datatype character (<code>::Char</code>)</li><li><code>.EngSci</code>: secundary datatype character - N for engineering/ S for scientific (<code>::Union{Char,Nothing}</code>)</li><li><code>.width</code>: width of numeric field (<code>::Int</code>)</li><li><code>.nmin</code>: minimum number of digits displayed (<code>::Int</code>)</li><li><code>.ndec</code>: number of digits to right of decimal (<code>::Int</code>)</li><li><code>.nexp</code>: number of digits in exponent (<code>::Int</code>)</li></ul></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article><h2 id="FORTRAN-format-casting"><a class="docs-heading-anchor" href="#FORTRAN-format-casting">FORTRAN-format casting</a><a id="FORTRAN-format-casting-1"></a><a class="docs-heading-anchor-permalink" href="#FORTRAN-format-casting" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="CamiFITS.cast_FORTRAN_format-Tuple{String}" href="#CamiFITS.cast_FORTRAN_format-Tuple{String}"><code>CamiFITS.cast_FORTRAN_format</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia hljs">cast_FORTRAN_format(format::String)</code></pre><p>Decompose the format specifier <code>format</code> into its fields and cast this into the <a href="#CamiFITS.FORTRAN_format"><code>FORTRAN_format</code></a> object. Allowed format specifiers are of the types: <code>Aw</code>, <code>Iw.m</code>, <code>Bw.m</code>, <code>Ow.m</code>, <code>Zw.m</code>, <code>Fw.d</code>, <code>Ew.dEe</code>, <code>ENw.d</code>, <code>ESw.d</code>, <code>Gw.dEe</code>, <code>Dw.dEe</code>, with: <code>w</code> - width, <code>m</code>(optional) - minimum number of digits, <code>d</code> - number of digits to right of decimal, <code>e</code> - number of digits in exponent; <code>N</code>/<code>S</code> (optional) indicates engineering/scientific formating of the <code>E</code> type.</p><p><strong>Examples:</strong></p><pre><code class="nohighlight hljs">julia&gt; cast_FORTRAN_format(&quot;I10&quot;)
+FORTRAN_format(&quot;Iw&quot;, &#39;I&#39;, nothing, 10, 0, 0, 0)
+
+julia&gt; cast_FORTRAN_format(&quot;I10.12&quot;)
+FORTRAN_format(&quot;Iw.m&quot;, &#39;I&#39;, nothing, 10, 12, 0, 0)
+
+julia&gt; F = cast_FORTRAN_format(&quot;E10.5E3&quot;)
+FORTRAN_format(&quot;Ew.dEe&quot;, &#39;E&#39;, nothing, 10, 0, 5, 3)
+
+julia&gt; F.Type, F.TypeChar, F.EngSci, F.width, F.nmin, F.ndec, F.nexp
+(&quot;Ew.dEe&quot;, &#39;E&#39;, nothing, 10, 0, 5, 3)  </code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article><h2 id="FORTRAN-related-methods"><a class="docs-heading-anchor" href="#FORTRAN-related-methods">FORTRAN-related methods</a><a id="FORTRAN-related-methods-1"></a><a class="docs-heading-anchor-permalink" href="#FORTRAN-related-methods" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="CamiFITS.FORTRAN_eltype_char-Tuple{Type}" href="#CamiFITS.FORTRAN_eltype_char-Tuple{Type}"><code>CamiFITS.FORTRAN_eltype_char</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia hljs">FORTRAN_eltype_char(T::Type)</code></pre><p>FORTRAN datatype description character for julia type <code>T</code>: </p><p>Bool =&gt; &#39;L&#39;, UInt8 =&gt; &#39;B&#39;, Int16 =&gt; &#39;I&#39;, UInt16 =&gt; &#39;I&#39;, Int32 =&gt; &#39;J&#39;,  UInt32 =&gt; &#39;J&#39;, Int64 =&gt; &#39;K&#39;, UInt64 =&gt; &#39;K&#39;, Float32 =&gt; &#39;E&#39;, Float64 =&gt; &#39;D&#39;,  ComplexF32 =&gt; &#39;C&#39;, ComplexF64 =&gt; &#39;M&#39;</p><p>The character &#39;-&#39; is returned for non-primitive FORTRAN datatypes and for  primitive datatypes not included in the FITS standard.</p><p><strong>Examples:</strong></p><pre><code class="nohighlight hljs">julia&gt; T = Type[Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64];
+
+julia&gt; print([FORTRAN_eltype_char(T[i]) for i ∈ eachindex(T)])
+Int8: datatype not part of the FITS standard
+[&#39;L&#39;, &#39;-&#39;, &#39;B&#39;, &#39;I&#39;, &#39;I&#39;, &#39;J&#39;, &#39;J&#39;, &#39;K&#39;, &#39;K&#39;]
+
+julia&gt; T = [Float16, Float32, Float64, ComplexF32, ComplexF64];
+
+julia&gt; print([FORTRAN_eltype_char(T[i]) for i ∈ eachindex(T)])
+Float16: datatype not part of the FITS standard
+[&#39;-&#39;, &#39;E&#39;, &#39;D&#39;, &#39;C&#39;, &#39;M&#39;]
+
+julia&gt; T = [String, Vector{Char}, FITS];
+
+julia&gt; print([FORTRAN_eltype_char(T[i]) for i ∈ eachindex(T)])
+Vector{Char}: not a FORTRAN datatype
+FITS: not a FORTRAN datatype
+[&#39;A&#39;, &#39;A&#39;, &#39;-&#39;, &#39;-&#39;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="CamiFITS.FORTRAN_fits_table_tform-Union{Tuple{Vector{T}}, Tuple{T}} where T" href="#CamiFITS.FORTRAN_fits_table_tform-Union{Tuple{Vector{T}}, Tuple{T}} where T"><code>CamiFITS.FORTRAN_fits_table_tform</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia hljs">FORTRAN_fits_table_tform(col::Vector{T}) where {T}</code></pre><p>Format fits_table FORTRAN ASCII datafield descriptors: </p><ul><li><code>Aw</code> : Char, String</li><li><code>Iw</code> : Decimal integer</li><li><code>Fw.d</code> : Floating-point, fixed decimal notation</li><li><code>Ew.d</code> : Floating point, exponential notation</li><li><code>Dw.d</code> : Floating-point, exponential notation</li></ul><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; function set_examples()
+       a1 = Bool[1, 0, 1, 0, 1]
+       a2 = UInt8[108, 108, 108, 108, 108]
+       a3 = Int16[1081, 1082, 1083, 1084, 1085]
+       a4 = UInt16[1081, 1082, 1083, 1084, 1085]
+       a5 = Int32[1081, 1082, 1083, 1084, 10850]
+       a6 = UInt32[1081, 10820, 1083, 1084, 10850]
+       a7 = Int64[1081, 1082, 1083, 1084, 108500]
+       a8 = UInt64[1081, 1082, 1083, 1084, 108500]
+       a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
+       a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
+       a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
+       a12 = [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;]
+       a13 = [&quot;a&quot;, &quot;bb&quot;, &quot;ccc&quot;, &quot;dddd&quot;, &quot;ABCeeaeeEEEEEEEEEEEE&quot;]
+       return (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+       end
+
+julia&gt; data = set_examples()
+
+julia&gt; print([FORTRAN_fits_table_tform(data[i]) for i=1:13])
+[&quot;I1&quot;, &quot;I3&quot;, &quot;I4&quot;, &quot;I4&quot;, &quot;I5&quot;, &quot;I5&quot;, &quot;I6&quot;, &quot;I6&quot;, &quot;F5.2&quot;, &quot;E7.2&quot;, &quot;D7.2&quot;, &quot;A1&quot;, &quot;A20&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="CamiFITS.parse_FITS_TABLE-Tuple{FITS_HDU}" href="#CamiFITS.parse_FITS_TABLE-Tuple{FITS_HDU}"><code>CamiFITS.parse_FITS_TABLE</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia hljs">parse_FITS_TABLE(hdu::FITS_HDU)</code></pre><p>Parse <code>FITS_TABLE</code> (ASCII table) into a Vector of its columns for further processing by the user. Default formatting in ISO 2004 FORTRAN data format specified by keys &quot;TFORMS1&quot; - &quot;TFORMSn&quot;). Display formatting in ISO 2004 FORTRAN data format (&quot;TDISP1&quot; - &quot;TDISPn&quot;) prepared for user editing.</p><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">strExample = &quot;example.fits&quot;
+data = [10, 20, 30]
+fits_create(strExample, data; protect=false)
+
+t1 = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6]
+t2 = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
+t3 = [1.23,2.12,3.,4.,5.]
+t4 = [&#39;a&#39;,&#39;b&#39;,&#39;c&#39;,&#39;d&#39;,&#39;e&#39;]
+t5 = [&quot;a&quot;,&quot;bb&quot;,&quot;ccc&quot;,&quot;dddd&quot;,&quot;ABCeeaeeEEEEEEEEEEEE&quot;]
+data = [t1,t2,t3,t4,t5]
+fits_extend(strExample, data, &quot;TABLE&quot;)
+
+f = fits_read(strExample)
+d = f[2].header.dict
+d = [get(d,&quot;TFORM\$i&quot;,0) for i=1:5]; println(strip.(d))
+  SubString{String}[&quot;&#39;E6.1    &#39;&quot;, &quot;&#39;I4      &#39;&quot;, &quot;&#39;F4.2    &#39;&quot;, &quot;&#39;A1      &#39;&quot;, &quot;&#39;A20     &#39;&quot;]
+
+f[2].dataobject.data                            # this is the table hdu
+  5-element Vector{String}:
+   &quot;1.0e-6 1086 1.23 a a                    &quot;
+   &quot;2.0e-6 1036 2.12 b bb                   &quot;
+   &quot;3.0e-6 1055 3.0  c ccc                  &quot;
+   &quot;4.0e-6 1070 4.0  d dddd                 &quot;
+   &quot;5.0e-6 1071 5.0  e ABCeeaeeEEEEEEEEEEEE &quot;
+
+parse_FITS_TABLE(f[2])
+  5-element Vector{Vector{T} where T}:
+   [1.0e-6, 2.0e-6, 3.0e-6, 4.0e-6, 5.0e-6]
+   [1086, 1036, 1055, 1070, 1071]
+   [1.23, 2.12, 3.0, 4.0, 5.0]
+   [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;]
+   [&quot;a                   &quot;, &quot;bb                  &quot;, &quot;ccc                 &quot;, &quot;dddd                &quot;, &quot;ABCeeaeeEEEEEEEEEEEE&quot;]</code></pre></div><a class="docs-sourcelink" target="_blank" href="github.com/walra356/CamiFITS.jl.git">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../fits/">« FITS</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Sunday 20 August 2023 06:59">Sunday 20 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
