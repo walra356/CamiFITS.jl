@@ -213,8 +213,11 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
         end
     end
 
-    record = [lpad("$(rec[i][1]) | ", 7) * rec[i][2] for i ∈ eachindex(rec)]
+    record = [rec[i][2] for i ∈ eachindex(rec)]
 
+    record = nr ? [lpad("$(rec[i][1]) | ", 7) * record[i] for i ∈ eachindex(record)] : record
+
+    # record = [lpad("$(rec[i][1]) | ", 7) * rec[i][2] for i ∈ eachindex(rec)]
 
     str = "\nFile: " * filnam * " - bare record dump:\n"
 
