@@ -106,17 +106,17 @@ Once ready it is good practice to remove the example:
 julia> rm(filnam); f = nothing
 ```
 
-#### Fits inspection tools
+### Fits inspection tools
 
 Rather than inspecting the [`FITS`](@ref) object directly (as demonstrated 
 above), CamiFITS offers the [`fits_info`](@ref) and 
-[`fits_record_dump`](@ref) tools. These tools will be used in the next 
-sections to demonstrate several  [`FITS_HDU`](@ref) types.
+[`fits_record_dump`](@ref) tools. These tools will be demonstrated in the next 
+sections to demonstrate several [`FITS_HDU`](@ref) types.
 
 ## The FITS file for a simple image
 
-In this section we demonstrate the use of the [`fits_info`](@ref) tool
-to inspect the primary hdu of a FITS object.
+In this section we demonstrate the [`fits_info`](@ref) tool to inspect the 
+primary hdu of a FITS object.
 
 We start by creating a simple image in the form of a 3x3 matrix:
 ```

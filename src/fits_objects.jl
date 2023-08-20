@@ -692,6 +692,10 @@ function _header_record_table(dataobject::FITS_dataobject)
         Base.push!(r, rpad("TBCOL$i", 8) * "= " * tbcol[i] * " / pointer to column " * rpad(i, 29))
         Base.push!(r, rpad("TFORM$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
         Base.push!(r, rpad("TDISP$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
+        if strip(tzero[i]) ∉ ("0.0", "nothing")
+            Base.push!(r, rpad("TZERO$i", 8) * "= " * tzero[i] * " / offset data range to that of unsigned integer  ")
+            Base.push!(r, rpad("TSCAL$i", 8) * "=                  1.0 / default scaling factor                         ")
+        end
     end
     Base.push!(r, "END" * repeat(' ', 77))
 

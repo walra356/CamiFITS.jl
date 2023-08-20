@@ -166,6 +166,7 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
     return o
 
 end
+
 function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     o = IOBuffer()
