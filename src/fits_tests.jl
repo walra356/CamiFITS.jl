@@ -630,3 +630,21 @@ function test_fits_zero_offset()
     return o
 
 end
+function test_BINTABLE_TFORM()
+
+
+    a = ["'   00L  '", "   00X  '", "0B", "1I", "J", "Ka", "10A", "E"]
+    a = append!(a, ["D", "C", "M", "P", "Q", "Aoptional"])
+    b = [1, 1, 1, 2, 4, 8, 1, 4, 8, 8, 16, 8, 16, 1]
+    c = [0, 0, 0, 1, 1, 1, 10, 1, 1, 1, 1, 1, 1, 1]
+
+    o = Bool[cast_BINTABLE_TFORM(a[i]).nbyte == b[i] for i ∈ eachindex(a)]
+    o = append!(o, Bool[cast_BINTABLE_TFORM(a[i]).repeat == c[i] for i ∈ eachindex(a)])
+
+    pass = Bool(sum(o) ÷ 28)
+
+    pass || println(o)
+
+    return pass
+
+end

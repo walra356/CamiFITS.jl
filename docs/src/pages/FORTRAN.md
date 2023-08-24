@@ -1,15 +1,17 @@
 # FORTRAN
 
-## FORTRAN-format 
+## Objects 
 
 ```@docs
 FORTRAN_format
+BINTABLE_TFORM
 ```
 
-## FORTRAN-format casting
+## Object casting
 
 ```@docs
 cast_FORTRAN_format(str::String)
+cast_BINTABLE_TFORM(str::String)
 ```
 
 ## FORTRAN-related methods

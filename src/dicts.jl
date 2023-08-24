@@ -94,7 +94,10 @@ dictErr = Dict(0 => nothing,
     39 => "NAXIS = 2 mandatory for TABLE HDU types",
     40 => "datatype not included in the FITS standard",
     41 => "number type expected",
-    42 => "undefined numeric type"
+    42 => "undefined numeric type",
+    43 => "undefined FORTRAN data type",
+    44 => "illegal BINTABLE TFORM datatype",
+    45 => "missing BINTABLE TFORM datatype"
 )
 
 # ------------------------------------------------------------------------------

@@ -136,19 +136,10 @@ function _read_table_data(o::IO, hduindex::Int)
     Base.seek(o, ptr[hduindex])
     lrow = h.card[h.map["NAXIS1"]].value # row length in bytes
     nrow = h.card[h.map["NAXIS2"]].value # number of rows
-    tfields = h.card[h.map["TFIELDS"]].value
-    #ttype = [h.card[h.map["TTYPE$i"]].value for i = 1:tfields]
-    tbcol = [h.card[h.map["TBCOL$i"]].value for i = 1:tfields]
 
     Base.seek(o, ptr[hduindex])
 
     data = [String(Base.read(o, lrow)) for i = 1:nrow]
-
-    itr = [tbcol[i]:tbcol[i+1]-1 for i=1:tfields-1]
-    itr = push!(itr, tbcol[tfields]:lrow)
-
-    data = [[data[i][itr[j]] for j ∈ eachindex(itr)] for i = 1:nrow]
-    data = [join(data[i]) for i = 1:nrow]
 
     return data
 
@@ -164,10 +155,12 @@ function _read_bintable_data(o::IO, hduindex::Int)
     lrow = h.card[h.map["NAXIS1"]].value # row length in bytes
     nrow = h.card[h.map["NAXIS2"]].value # number of rows
     tfields = h.card[h.map["TFIELDS"]].value
+    tform = [h.card[h.map["TFORM$i"]].value for i = 1:tfields]
 
     Base.seek(o, ptr[hduindex])
 
     data = [Base.read(o, lrow) for i = 1:nrow]
+    #data = [String(Base.read(o, lrow)) for i = 1:nrow]
 
     return data
 

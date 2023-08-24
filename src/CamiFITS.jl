@@ -74,8 +74,10 @@ export cast_FITS_test
 export FORTRAN_format
 export FORTRAN_eltype_char
 export FORTRAN_fits_table_tform
+export BINTABLE_TFORM
 
 export cast_FORTRAN_format
+export cast_BINTABLE_TFORM
 
 export parse_FITS_TABLE
 
@@ -120,6 +122,7 @@ export test_FORTRAN_format
 export test_FORTRAN_fits_table_tform
 export test_FORTRAN_fits_table_tdisp
 export test_FORTRAN_eltype_char
+export test_BINTABLE_TFORM
 
 export test_fits_info
 export test_fits_keyword
@@ -127,10 +130,6 @@ export test_fits_add_key!
 export test_fits_edit_key!
 export test_fits_delete_key!
 export test_fits_rename_key!
-
-export FORTRAN_format
-export cast_FORTRAN_format
-export cast_FORTRAN_datatype
 
 include("julia_toolbox.jl")
 include("fits_objects.jl")
