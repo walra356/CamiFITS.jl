@@ -308,6 +308,18 @@ function _fits_table_data(data)
 
 end
 # ------------------------------------------------------------------------------
+function _fits_bintable_data(data)
+
+    hdutype = _format_hdutype("bintable")
+
+    ncols = length(col)
+
+    T = [eltype(data[i]) for i = 1:ncols]
+    T = [T[i] == Bool ? Int : T[i] for i = 1:ncols]
+
+    return ntuple(i -> T[i].(col[i]), ncols)
+
+end
 
 @doc raw"""
     fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
@@ -362,7 +374,9 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
     push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))
 
-    fits_save(f)
+    if hdutype ≠ "'BINTABLE'"
+        fits_save(f)
+    end
 
     return f
 

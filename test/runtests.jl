@@ -25,7 +25,6 @@ using Test
     @test test_FORTRAN_eltype_char()
     @test test_FORTRAN_fits_table_tform()
     @test test_FORTRAN_fits_table_tdisp()
-    @test test_BINTABLE_TFORM()
 
     filnam = "kanweg.fits";
     data = [0x0000043e, 0x0000040c, 0x0000041f];

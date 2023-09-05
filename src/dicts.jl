@@ -97,7 +97,8 @@ dictErr = Dict(0 => nothing,
     42 => "undefined numeric type",
     43 => "undefined FORTRAN data type",
     44 => "illegal BINTABLE TFORM datatype",
-    45 => "missing BINTABLE TFORM datatype"
+    45 => "missing BINTABLE TFORM datatype",
+    46 => "single bit ('X') not a valid Julia type"
 )
 
 # ------------------------------------------------------------------------------

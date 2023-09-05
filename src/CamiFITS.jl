@@ -49,9 +49,6 @@ export dictDefinedKeywords
 export fits_terminology
 export fits_keyword
 export fits_mandatory_keyword
-export fits_zero_offset
-export fits_apply_offset
-export fits_remove_offset
 
 export FITS_test
 
@@ -74,10 +71,8 @@ export cast_FITS_test
 export FORTRAN_format
 export FORTRAN_eltype_char
 export FORTRAN_fits_table_tform
-export BINTABLE_TFORM
 
 export cast_FORTRAN_format
-export cast_BINTABLE_TFORM
 
 export parse_FITS_TABLE
 
@@ -122,7 +117,6 @@ export test_FORTRAN_format
 export test_FORTRAN_fits_table_tform
 export test_FORTRAN_fits_table_tdisp
 export test_FORTRAN_eltype_char
-export test_BINTABLE_TFORM
 
 export test_fits_info
 export test_fits_keyword

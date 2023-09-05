@@ -194,11 +194,13 @@ function IOWrite_BINTABLE_data(hdu::FITS_HDU)
 
     Base.seekstart(o)
 
-    record = join(hdu.dataobject.data) # Array of ASCII records
-    nrecs = Base.length(record) # number of ASCII records
-    lrecs = Base.length(record[1])  # length of ASCII records
-    nchar = 2880 - (nrecs * lrecs) % 2880  # number of blanks to complement last data block
-    blank = Base.repeat(' ', nchar) # complement last data block with blanks
+    data = hdu.dataobject.data
+    nrow = Base.length(record) 
+    lrecs = Base.length(record[1])  
+    # number of blanks to complement last data block
+    nchar = 2880 - (nrecs * lrecs) % 2880
+    # complement last data block with blanks
+    blank = Base.repeat(' ', nchar)
     nbyte = Base.write(o, Array{UInt8,1}(record * blank))
 
     return o

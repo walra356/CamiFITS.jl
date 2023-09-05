@@ -375,29 +375,7 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         # this is the Vector{String} of table ROWS (equal-size fields)
         dataobject = FITS_dataobject(hdutype, data)
 
-    elseif (hdutype == "'BINTABLE'") & (eltype(data) ≠ Vector{String})
-
-        # data input as array of table COLUMNS
-        col = data
-        ncols = length(col)
-        nrows = length(col[1])
-
-        # make array of table format descriptors Xw.d
-        tform = [FORTRAN_fits_table_tform(col[i]) for i ∈ eachindex(col)]
-
-        # convert data to array of fortran strings
-        strcol = [FORTRAN_fits_table_string(col[i], tform[i]) for i ∈ eachindex(col)]
-
-        # w = required widths of fits data fields
-        w = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
-
-        # transpose matrix and join data into vector of strings
-        data = [join([lpad(strcol[i][j], w[i]) for i = 1:ncols]) for j = 1:nrows]
-        # data output as Vector{String}
-        # this is the Vector{String} of table ROWS (equal-size fields)
-        dataobject = FITS_dataobject(hdutype, data)
-
-    end
+     end
 
     return FITS_HDU(hduindex, header, dataobject)
 
@@ -717,23 +695,21 @@ end
 function _table_bindata_types(dataobject::FITS_dataobject)
 
     data = dataobject.data
-    ncols = length(data) # number of columns in table (= rows in input data !!)
-    nrows = length(data[1]) # number of rows in table (= columns in input data !!!!)
+    nrow = length(data)
 
-    fmtsp = Array{String,1}(undef, ncols)  # format specifier Xw.d
+    tfields = length(data[1])
 
-    for col ∈ eachindex(fmtsp)
-        T = eltype(data[col][1])
+    fmtsp = Array{String,1}(undef, tfields)      # format specifier Xw.d
+
+    for j = 1:tfields
+        field = data[j]
+        nrows = length(field)
+        T = eltype(field)
         x = T <: Integer ? "I" : T <: Real ? "E" :
             T == Float64 ? "D" : T <: Union{String,Char} ? "A" : "X"
-        w = string(maximum([length(string(data[col][row])) for row = 1:nrows]))
 
-        if T <: Union{Char,String}
-            isascii(join(data[1])) || Base.throw(FITSError(msgErr(36)))
-        end
-
-        if T <: Union{Float16,Float32,Float64}
-            v = string(data[col][1])
+        if T <: Union{Float32,Float64}
+            v = string(field)
             x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
             v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
             d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
@@ -746,36 +722,100 @@ function _table_bindata_types(dataobject::FITS_dataobject)
 
 end
 # ------------------------------------------------------------------------------
+function _bintable_tform_char(T::Type; msg=true)
 
+    if T <: Union{Char,String}
+        return 'A'
+    elseif T <: Integer
+        T == Bool   && return 'L'
+        T == UInt8  && return 'B'
+        T == Int16  && return 'I'
+        T == UInt16 && return 'I'
+        T == Int32  && return 'J'
+        T == UInt32 && return 'J'
+        T == Int64  && return 'K'
+        T == UInt64 && return 'K'
+    elseif T <: Real
+        T == Float32 && return 'E'
+        T == Float64 && return 'D'
+    elseif T <: Complex
+        T == ComplexF32 && return 'C'
+        T == ComplexF64 && return 'M'
+    else
+        return error("$T: datatype not part of the FITS standard")
+    end
+end
+# ------------------------------------------------------------------------------
+function _bintable_tform_bytes(T::Type; msg=true)
+
+    if T <: Union{Char,String}
+        return 1
+    elseif T <: Integer
+        T == Bool   && return 1
+        T == UInt8  && return 1
+        T == Int16  && return 2
+        T == UInt16 && return 2
+        T == Int32  && return 4
+        T == UInt32 && return 4
+        T == Int64  && return 8
+        T == UInt64 && return 8
+    elseif T <: Real
+        T == Float32 && return 4
+        T == Float64 && return 8
+    elseif T <: Complex
+        T == ComplexF32 && return 8
+        T == ComplexF64 && return 16
+    else
+        return error("$T: datatype not part of the FITS standard")
+    end
+end
+# ------------------------------------------------------------------------------
+function _tzero_value(T::Type)
+
+    T ∈ (Bool, Char, String) && return nothing
+
+    T ∈ (Int8, UInt16, UInt32, UInt64) || return 0.0
+
+    T == Int8 && return 128
+    T == UInt16 && return 32768
+    T == UInt32 && return 2147483648
+    T == UInt64 && return 9223372036854775808
+
+    # note workaround for InexactError:trunc(Int64, 9223372036854775808)
+
+end
+# ------------------------------------------------------------------------------
 function _header_record_bintable(dataobject::FITS_dataobject) 
 
     hdutype = dataobject.hdutype
-    #hdutype == "'BINTABLE'" && error("hdutype $(hdutype) not implemented")
     hdutype == "'BINTABLE'" || Base.throw(FITSError(msgErr(31)))
     data = dataobject.data
 
-    # data input as Any array of table COLUMNS
-    ncols = length(data) # number of columns in table (= rows in data)
-    nrows = length(data[1]) # number of rows in table (= columns in data)
-    ncols > 0 || Base.throw(FITSError(msgErr(34)))
-    ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
-    equal = sum(length.(data) .- nrows) == 0 # equal colum length test
-    equal || Base.throw(FITSError(msgErr(33)))
+    nrows = length(data)
+    tfields = length(data[1]) # number of rows in table (= columns in data)
+    tfields > 0 || Base.throw(FITSError(msgErr(34)))
+    tfields ≤ 999 || Base.throw(FITSError(msgErr(32)))
 
-    tform = _table_bindata_types(dataobject)
-    tzero = ntuple(i => fits_tzero(data[i]), ncols)
+    row = data[1]
+    nbyte = Vector{Int}(undef, tfields)
+    tform = Vector{Union{Char,String}}(undef, tfields)
+    tzero = Vector{Union{Nothing,Real}}(undef, tfields)
+    for j = 1:tfields
+        field = row[j]
+        r = length(field) # repeat count
+        T = eltype(field)
+        nbyte[j] = r * _bintable_tform_bytes(T)
+        tform[j] = "'" * Base.rpad(string(r) * _bintable_tform_char(T), 8) * "'"
+        tzero[j] = !isnothing(T) ? _tzero_value(T) : nothing
+    end
 
-    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
-    tform = [Base.rpad(tform[i], 20) for i = 1:ncols]
-    ttype = ["HEAD$i" for i = 1:ncols]
-    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]          # default column headers
-    tzero = [Base.lpad(tzero[i], 20) for i = 1:ncols]
+    tform = [Base.rpad(tform[j], 20) for j = 1:tfields]
+    ttype = ["'" * Base.rpad("HEAD$j", 18) * "'" for j = 1:tfields]          # default column headers
 
-    naxis1 = Base.lpad(nbyte, 20) 
+    naxis1 = Base.lpad(sum(nbyte), 20)
     naxis2 = Base.lpad(nrows, 20)
-    tfields = Base.lpad(ncols, 20)
 
-    r::Vector{String} = []
+    r = String[]
 
     Base.push!(r, "XTENSION= 'TABLE   '           / FITS standard extension                        ")
     Base.push!(r, "BITPIX  =                    8 / number of bits per data pixel                  ")
@@ -784,16 +824,21 @@ function _header_record_bintable(dataobject::FITS_dataobject)
     Base.push!(r, "NAXIS2  = " * naxis2 * " / number of rows                                 ")
     Base.push!(r, "PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
     Base.push!(r, "GCOUNT  =                    1 / data blocks contain single table               ")
-    Base.push!(r, "TFIELDS = " * tfields * " / number of data fields (columns)                ")
-    for i = 1:ncols
-        Base.push!(r, rpad("TTYPE$i", 8) * "= " * ttype[i] * " / header of column " * rpad(i, 30))
-        Base.push!(r, rpad("TFORM$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
-        Base.push!(r, rpad("TDISP$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
-        if !isnothing(tzero)
-            Base.push!(r, rpad("TZERO$i", 8) * "= " * tzero[i] * " / data type of column " * rpad(i, 27))
-            Base.push!(r, rpad("TSCAL$i", 8) * "=                  1.0 / data type of column " * rpad(i, 27))
+    Base.push!(r, "TFIELDS = " * lpad(tfields, 20) * rpad(" / number of data fields (columns)", 50))
+
+    println("tfields = $(tfields)")
+    for j = 1:tfields
+        Base.push!(r, repeat(' ', 80))
+        Base.push!(r, rpad("TTYPE$j", 8) * "= " * ttype[j] * rpad(" / field header", 50))
+        Base.push!(r, rpad("TFORM$j", 8) * "= " * tform[j] * rpad(" / field datatype specifier", 50))
+        Base.push!(r, rpad("TDISP$j", 8) * "= " * tform[j] * rpad(" / user preferred field display format", 50))
+        if !isnothing(tzero[j])
+            Base.push!(r, rpad("TZERO$j", 8) * "= " * lpad(tzero[j], 20) * rpad(" / data type of column ", 50))
+            Base.push!(r, rpad("TSCAL$j", 8) * "=                  1.0 / data type of column " * rpad(j, 27))
         end
     end
+
+    tfields > 0 ? Base.push!(r, repeat(' ', 80)) : false
     Base.push!(r, "END" * repeat(' ', 77))
 
     pass = sum(length.(r) .- 80) == false
