@@ -359,30 +359,25 @@ function _append_blanks!(records::Vector{String})
 
 end
 
-# ------------------------------------------------------------------------------
-#                  _rm_blanks(records::Vector{String})
-# ------------------------------------------------------------------------------  
-
-function _rm_blanks(records::Vector{String})          # remove blank records
-
-    record_B = repeat(' ', length(records[1]))
-
-    return [records[i] for i ∈ findall(records .≠ record_B)]
-
-end
 
 # ------------------------------------------------------------------------------
 #                  _rm_blanks!(records::Vector{String})
 # ------------------------------------------------------------------------------  
 
-function _rm_blanks!(records::Vector{String})         # remove blank records
+function _rm_blanks!(record::Vector{String})         # remove blank records
 
-    blank = repeat(' ', 80)
+    nrec = length(record)
 
-    for i ∈ findall(records .== blank)
-        Base.pop!(records)
+    i = 1
+    while record[i] ≠ "END" * repeat(' ', 77)
+        i += 1
     end
 
-    return records
+    while i < nrec 
+        Base.pop!(record) # remove records trailing after "END"  
+        i += 1
+    end
+
+    return record
 
 end
