@@ -507,7 +507,7 @@ function test_FORTRAN_format()
     
 end
 
-function test_FORTRAN_fits_table_tform()
+function dataset_1()
 
     a1 = Bool[1, 0, 1, 0, 1]
     a2 = UInt8[108, 108, 108, 108, 108]
@@ -523,6 +523,38 @@ function test_FORTRAN_fits_table_tform()
     a12 = ['a', 'b', 'c', 'd', 'e']
     a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
     data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+
+    return data
+
+end
+
+function dataset_2()
+
+    a1 = Bool(1)
+    a2 = UInt8[108, 109]
+    a3 = Int16[1001, 1002, 1003, 1004, 1005, 1006]
+    a3 = reshape(a3, 2, 3)
+    a4 = UInt16(1081)
+    a5 = Int32(1081)
+    a6 = UInt32(1081)
+    a7 = Int64(1081)
+    a8 = UInt64(1081)
+    a9 = 1.23
+    a0 = Float32(1.01e-6)
+    b1 = Float64(1.01e-6)
+    b2 = 'a'
+    b3 = "aaa"
+    b4 = BitVector([1,0,1,0,1,0])
+
+    data = Any[(a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, b1, b2, b3, b4)]
+
+    return data
+
+end
+
+function test_FORTRAN_fits_table_tform()
+
+    data = dataset_1()
 
     tform = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
     
@@ -538,20 +570,7 @@ end
 
 function test_FORTRAN_fits_table_tdisp()
 
-    a1 = Bool[1, 0, 1, 0, 1]
-    a2 = UInt8[108, 108, 108, 108, 108]
-    a3 = Int16[1081, 1082, 1083, 1084, 1085]
-    a4 = UInt16[1081, 1082, 1083, 1084, 1085]
-    a5 = Int32[1081, 1082, 1083, 1084, 10850]
-    a6 = UInt32[1081, 10820, 1083, 1084, 10850]
-    a7 = Int64[1081, 1082, 1083, 1084, 108500]
-    a8 = UInt64[1081, 1082, 1083, 1084, 108500]
-    a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
-    a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
-    a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
-    a12 = ['a', 'b', 'c', 'd', 'e']
-    a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+    data = dataset_1()
 
     tdisp = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
 
@@ -563,25 +582,12 @@ function test_FORTRAN_fits_table_tdisp()
 
 end
 
-function test_table_data_types()
+function test_table_datatype()
 
     filnam = "kanweg.fits"
     f = fits_create(filnam; protect=false)
 
-    a1 = Bool[1, 0, 1, 0, 1]
-    a2 = UInt8[108, 108, 108, 108, 108]
-    a3 = Int16[1081, 1082, 1083, 1084, 1085]
-    a4 = UInt16[1081, 1082, 1083, 1084, 1085]
-    a5 = Int32[1081, 1082, 1083, 1084, 10850]
-    a6 = UInt32[1081, 10820, 1083, 1084, 10850]
-    a7 = Int64[1081, 1082, 1083, 1084, 108500]
-    a8 = UInt64[1081, 1082, 1083, 1084, 108500]
-    a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
-    a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
-    a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
-    a12 = ['a', 'b', 'c', 'd', 'e']
-    a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
+    data = dataset_1()
 
     fits_extend!(f, data; hdutype="TABLE")
 
@@ -592,6 +598,27 @@ function test_table_data_types()
     str = " 1 108 1081 1081  1081  1081   1081   1081  1.23 1.01E-6 1.01D-6 a                    a"
 
     return table[1] == str
+
+end
+
+function test_bintable_datatype()
+
+    filnam = "kanweg.fits"
+    f = fits_create(filnam; protect=false)
+
+    data = dataset_2()
+
+    fits_extend!(f, data; hdutype="bintable")
+
+    data1 =f.hdu[2].dataobject.data
+
+    o =  data .== data1
+
+    pass = 1 == sum(o)÷length(data)
+
+    pass || println(o)
+
+    return pass
 
 end
 

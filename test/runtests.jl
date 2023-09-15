@@ -15,7 +15,8 @@ using Test
     @test test_fits_pointer()
     @test test_fits_zero_offset()
     @test test_format_hdutype()
-    @test test_table_data_types()
+    @test test_table_datatype()
+    @test test_bintable_datatype()
 
     @test test_fits_add_key!()
     @test test_fits_delete_key!()

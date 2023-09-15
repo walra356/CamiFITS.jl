@@ -112,11 +112,14 @@ export test_fits_collect
 export test_fits_pointer
 export test_fits_zero_offset
 export test_format_hdutype
-export test_table_data_types
+export test_table_datatype
+export test_bintable_datatype
 export test_FORTRAN_format
 export test_FORTRAN_fits_table_tform
 export test_FORTRAN_fits_table_tdisp
 export test_FORTRAN_eltype_char
+export dataset_1
+export dataset_2
 
 export test_fits_info
 export test_fits_keyword
