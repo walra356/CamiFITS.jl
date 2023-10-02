@@ -32,7 +32,6 @@ export _update_spaces
 export _offset
 export _format_long_data
 export _format_value_string
-export _fits_eltype
 
 export _format_keyword
 export _format_value
