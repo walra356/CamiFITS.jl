@@ -75,19 +75,27 @@ function _fits_obsolete_records(h::FITS_header, recordindex::Int)
 
 end
 
-function _fits_parse(str::String) 
+function _fits_dims(str::SubString)
+
+    s = strip(str, ['\'', ' ', '(', ')'])
+
+    return s[end] == ',' ? Tuple(parse(Int, s[1:end-1])) : Tuple(parse.(Int, split(s, ',')))
+
+end
+
+function _fits_parse(str::String)
 
     T = Float32
     s = Base.strip(str)
     c = Base.collect(s)
-    l = Base.length(s)
+    ℓ = Base.length(s)
 
     Base.length(s) == 0 && return 0
 
     d = [Base.Unicode.isdigit(c[i]) for i ∈ Base.eachindex(c)]  # d: digits
     p = [Base.Unicode.ispunct(c[i]) for i ∈ Base.eachindex(c)]  # p: punctuation
 
-    s[1] == '\'' && return str
+    s[1] == '\'' && s[2] ≠ '(' && return str
     s[1] == '-' && (d[1] = true) && (p[1] = false)      # change leading sign into digit (for type parsing only)
     s[1] == '+' && (d[1] = true) && (p[1] = false)      # change leading sign into digit (for type parsing only)
 
@@ -100,9 +108,12 @@ function _fits_parse(str::String)
     sp = Base.sum(p)                                    # sp: number of punctuation characters
     sa = Base.sum(a)                                    # sa: number of other non-digit or punctuation characters
 
+    # println("sd = $(sd), sp = $(sp), sa = $(sa)")
+
     E = ['E', 'D', 'e', 'p']
 
-    sd == l && return s ≠ "9223372036854775808" ? Base.parse(Int, s) : 9223372036854775808
+    sd == ℓ && return s ≠ "9223372036854775808" ? Base.parse(Int, s) : 9223372036854775808
+    sp == 5 && s[ip[2]] == '(' && s[ip[3]] == ',' && s[ip[4]] == ')' && return _fits_dims(s)
     sa >= 2 && return str
     sp >= 3 && return str
     sa == 1 && s == "T" && return true
@@ -358,7 +369,6 @@ function _append_blanks!(records::Vector{String})
     return records
 
 end
-
 
 # ------------------------------------------------------------------------------
 #                  _rm_blanks!(records::Vector{String})

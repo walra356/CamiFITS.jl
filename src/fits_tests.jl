@@ -528,27 +528,116 @@ function dataset_1()
 
 end
 
-function dataset_2()
+function dataset_bintable()
+#   type 1 - Int8 ----------------------
+    a1 = Int8(11)
+    a2 = Int8[11, 12]
+    a3 = Tuple(a2)
+#   type 2 -----------------------
+    b1 = UInt8(108)
+    b2 = UInt8[108, 109]
+    b3 = Tuple(b2)
+#   type 3 - Int16 ----------------------
+    c1 = Int16(1001)
+    c2 = Int16[1001, 1002, 1003, 1004, 1005, 1006]
+    c2 = reshape(c2, 2, 3)
+    c3 = Tuple(c2)
+#   type 4 -----------------------
+    d1 = UInt16(1081)
+    d2 = UInt16[1081, 1002]
+    d3 = Tuple(d2)
+    #   type 5 - Int32 ----------------------
+    e1 = Int32(1081)
+    e2 = Int32[1081, 1002]
+    e3 = Tuple(e2)
+#   type 6 -----------------------
+    f1 = UInt32(1081)
+    f2 = UInt32[1081, 1002]
+    f3 = Tuple(f2)
+#   type 7 - Int64 ----------------------
+    g1 = Int64(1081)
+    g2 = Int64[1081, 1002]
+    g3 = Tuple(g2)
+#   type 8 -----------------------
+    h1 = UInt64(1081)
+    h2 = UInt64[1081, 1002]
+    h3 = Tuple(h2)
+#   type 9 -----------------------
+    i1 = 1.23
+    i2 = [1.23, 123.14]
+    i3 = Tuple(i2)
+#   type 10 -----------------------
+    j1 = Float32(1.01e-6)
+    j2 = Float32[1.01e-6, 2, 01e-7]
+    j3 = Tuple(j2)
+#   type 11 -----------------------
+    k1 = Float64(1.01e-6)
+    k2 = Float64[1.01e-6, 2.02e-7]
+    k3 = Tuple(k2)
+#   type 12 -----------------------
+    l1 = ComplexF32(3.0, 3.0)
+    l2 = [ComplexF32(3.0, 3.0), ComplexF32(2.0, 2.0)]
+    l3 = Tuple(l2)
+#   type 13 -----------------------
+    m1 = ComplexF64(3.0,3.0)
+    m2 = [ComplexF64(3.0, 3.0), ComplexF64(2.0, 2.0)]
+    m3 = Tuple(m2)
+#   type 14 -----------------------
+    n1 = Bool(1)
+    n2 = Bool[1, 0]
+    n3 = Tuple(n2)
+#   type 15 -----------------------
+    o1 = 'a'
+    o2 = ['a', 'b']
+    o3 = Tuple(o2)
+    o4 = empty([], Char)
+#   type 16-----------------------
+    p1 = "aaa"
+    p2 = "abc def" # String Array not allowed - use String
+    p3 = p2 # Tuple{String} not allowed - use String
+#   type 17 -----------------------
+    q1 = BitVector([1, 0, 1, 0, 1, 0])
+    q2 = [BitVector([1, 0, 1, 0, 1, 0]), BitVector([1, 0, 1, 0, 1, 0])]
+    q3 = Tuple(q2)
 
-    a1 = Bool(1)
-    a2 = UInt8[108, 109]
-    a3 = Int16[1001, 1002, 1003, 1004, 1005, 1006]
-    a3 = reshape(a3, 2, 3)
-    a4 = UInt16(1081)
-    a5 = Int32(1081)
-    a6 = UInt32(1081)
-    a7 = Int64(1081)
-    a8 = UInt64(1081)
-    a9 = 1.23
-    a0 = Float32(1.01e-6)
-    b1 = Float64(1.01e-6)
-    b2 = 'a'
-    b3 = "aaa"
-    b4 = BitVector([1,0,1,0,1,0])
-
-    data = Any[(a1, a2, a3, a4, a5, a6, a7, a8, a9, a0, b1, b2, b3, b4)]
+    data = Any[
+        Any[a1, a2, a3],
+        Any[b1, b2, b3],
+        Any[c1, c2, c3],
+        Any[d1, d2, d3],
+        Any[e1, e2, e3],
+        Any[f1, f2, f3],
+        Any[g1, g2, g3],
+        Any[h1, h2, h3],
+        Any[i1, i2, i3],
+        Any[j1, j2, j3],
+        Any[k1, k2, k3],
+        Any[l1, l2, l3],
+        Any[m1, m2, m3],
+        Any[n1, n2, n3],
+        Any[o1, o2, o3],
+        Any[p1, p2, p3],
+        Any[q1, q2, q3]]
 
     return data
+
+end
+
+function dataset_2(; j=0)
+
+    data = dataset_bintable()
+
+    o = Any[]
+
+    for i ∈ eachindex(data)
+        if j > 0
+            push!(o, data[i][j])
+        else
+            append!(o, data[i])
+        end
+    end
+
+    return Any[o]
 
 end
 
@@ -562,7 +651,7 @@ function test_FORTRAN_fits_table_tform()
 
     pass = [FORTRAN_fits_table_tform(data[i]) for i = 1:13] == tform
 
-    pass || println(fits_tform(d) .== tform)
+    pass || println(fits_tform(data) .== tform)
 
     return pass
 
@@ -610,11 +699,13 @@ function test_bintable_datatype()
 
     fits_extend!(f, data; hdutype="bintable")
 
-    data1 =f.hdu[2].dataobject.data
+    g = fits_read(filnam)
 
-    o =  data .== data1
+    data1 = g.hdu[2].dataobject.data
 
-    pass = 1 == sum(o)÷length(data)
+    o = data .== data1
+
+    pass = 1 == sum(o) ÷ length(data)
 
     pass || println(o)
 

@@ -4,7 +4,7 @@ import CamiMath
 import Printf
 import Dates           # used in fits_private_sector
 
-export _read_TABLE_data
+#export _read_TABLE_data
 export IORead
 export IOWrite
 export _read_header
@@ -58,6 +58,9 @@ export FITS_HDU
 export FITS_header
 export FITS_card
 export FITS_dataobject
+export FITS_array
+
+export cast_FITS_array
 
 export cast_FITS
 export cast_FITS_filnam
@@ -91,6 +94,7 @@ export fits_zero_offset
 export fits_apply_offset
 export fits_remove_offset
 
+
 export fits_add_key!
 export fits_edit_key!
 export fits_delete_key!
@@ -120,6 +124,7 @@ export test_FORTRAN_fits_table_tdisp
 export test_FORTRAN_eltype_char
 export dataset_1
 export dataset_2
+export dataset_2b
 
 export test_fits_info
 export test_fits_keyword

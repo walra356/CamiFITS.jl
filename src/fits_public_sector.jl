@@ -304,20 +304,35 @@ function _fits_table_data(data)
     T = [eltype(data[i]) for i = 1:ncols]
     T = [T[i] == Bool ? Int : T[i] for i = 1:ncols]
 
-    return ntuple(i -> T[i].(col[i]), ncols)
+    o = [T[i].(col[i]) for i = 1:ncols] #ntuple(i -> T[i].(col[i]), ncols)
+
+    return o
 
 end
-# ------------------------------------------------------------------------------
+
 function _fits_bintable_data(data)
 
     hdutype = _format_hdutype("bintable")
 
-    ncols = length(col)
+    ncols = length(data)
 
-    T = [eltype(data[i]) for i = 1:ncols]
-    T = [T[i] == Bool ? Int : T[i] for i = 1:ncols]
+    T = []
 
-    return ntuple(i -> T[i].(col[i]), ncols)
+    tfields = length(data[1])
+
+    println("tfields = $(tfields)") ##################################################################################
+
+    for i = 1:ncols
+        for j = 1:tfields
+            push!(T, typeof(data[i][j]))
+        end
+    end
+
+    println("T = $T") ##################################################################################
+
+   # o = [T[i].(col[i]) for i = 1:ncols] #ntuple(i -> T[i].(col[i]), ncols)
+
+    return nothing
 
 end
 
@@ -374,9 +389,7 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
     push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))
 
-    if hdutype ≠ "'BINTABLE'"
-        fits_save(f)
-    end
+    fits_save(f)
 
     return f
 
@@ -979,14 +992,14 @@ julia> Int(0x80)
 """
 function fits_apply_offset(data)
 
-    T = eltype(data)
+    t = eltype(data)
 
-    T ∈ (Int8, UInt16, UInt32, UInt64) || return data
+    t ∈ (Int8, UInt16, UInt32, UInt64) || return data
 
-    T == Int8 && return UInt8.(Int.(data) .+ 128)
-    T == UInt16 && return Int16.(Int.(data) .- 32768)
-    T == UInt32 && return Int32.(Int.(data) .- 2147483648)
-    T == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808)
+    t == Int8 && return UInt8.(Int.(data) .+ 128)
+    t == UInt16 && return Int16.(Int.(data) .- 32768)
+    t == UInt32 && return Int32.(Int.(data) .- 2147483648)
+    t == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808)
 
     # note workaround for InexactError:trunc(Int64, 9223372036854775808)
 

@@ -691,78 +691,114 @@ end
 #                  _header_record_bintable(dataobject)
 # ------------------------------------------------------------------------------
 
+struct FITS_array
+
+    value
+    length
+    byte_offset
+
+end
 # ------------------------------------------------------------------------------
-function _table_bindata_type(field)
+function cast_FITS_array(arr::Array)
+
+    value = arr
+    length = length(arr)
+    offset = sizeof(arr)
+
+    return variable_length_array(value, length, offset)
+
+end
+# ------------------------------------------------------------------------------
+struct _bintable_field
+
+    value::Any
+    type::Type
+    eltype::Type
+    repeat::Int
+    char::Union{Char, String}
+    tdisp::Union{Nothing,String}
+    nbyte::Int
+    tzero::Union{Nothing, Integer}
+    dims::Union{Nothing, Tuple}
+
+end
+# ------------------------------------------------------------------------------
+function cast_bintable_field(field)
 
     T = typeof(field)
-    x = _bintable_tform_char(T)
-    v = T <:Array{} ? string(field[1]) : string(field)
-    w = string(length(v))
+    t = eltype(field)
 
-    if T <: Union{Float32,Float64}
-        x = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : x
+    if (t == BitVector) ⊻ (T == BitVector)
+        r = T == BitVector ? 1 : length(field)
+        X = 'X'
+        nbyte = sizeof(t)
+        tdisp = X * string(r)
+        tzero = nothing
+        tdims = T <: Tuple ? nothing : r > 1 ? size(field) : nothing 
+    elseif t <: Char
+        r = length(field)
+        X = 'A'
+        nbyte = r
+        tdisp = X * string(r)
+        tzero = nothing
+        tdims = T <: Array ? size(field) : nothing
+    elseif t <: String
+        error("Error: $(field) invalid datatype - use \"$(join(field))\")")
+    elseif t <: Tuple{String}
+        error("Error: $(field) invalid datatype - use \"$(join(field))\")")
+    elseif t <: Integer
+        r = length(field)
+        X = t == Bool  ? 'L' :
+            t == Int8  ? 'B' : t == UInt8 ? 'B' :
+            t == Int16 ? 'I' : t == UInt16 ? 'I' :
+            t == Int32 ? 'J' : t == UInt32 ? 'J' :
+            t == Int64 ? 'K' : t == UInt64 ? 'K' : '-'
+        nbyte = r * sizeof(t)
+        tdisp = X * string(length(string(typemax(t))))
+        tzero = _tzero_value(t)
+        # tzero = r > 1 ? nothing : _tzero_value(t) ##################################################################
+        tdims = T <: Tuple ? nothing : r > 1 ? size(field) : nothing 
+    elseif t <: Real
+        r = length(field)
+        X = t == Float32 ? 'E' : t == Float64 ? 'D' : '-'
+        f = T <: Array{} ? (r > 0 ? field[1] : field) : field
+        v = string(f)
+        w = string(length(v))
+        Y = (('e' ∉ v) & ('p' ∉ v)) ? 'F' : X
         v = 'e' ∈ v ? split(v, 'e')[1] : 'p' ∈ v ? split(v, 'p')[1] : v
         d = !isnothing(findfirst('.', v)) ? string(length(split(v, '.')[2])) : '0'
-    end
-
-    o = T <: Union{Float16,Float32,Float64} ? (x * w * '.' * d) : x * w
-
-    return o # format specifier Xw.d
-
-end
-# ------------------------------------------------------------------------------
-function _bintable_tform_char(T::Type; msg=true)
-
-    T ≠ BitVector || return 'X'
-
-    if T == NTuple{2,Int32}
-        eltype(T) == Int32 && return 'P'
-    elseif T == NTuple{2,Int64}
-        eltype(T) == Int64 && return 'Q'
+        nbyte = r * sizeof(t)
+        tdisp = Y * w * '.' * d
+        tzero = nothing
+        tdims = T <: Tuple ? nothing : r > 1 ? size(field) : nothing
+    elseif t <: Complex
+        r = length(field)
+        X = t == ComplexF32 ? 'C' : t == ComplexF64 ? 'M' : '-'
+        nbyte = r * sizeof(t)
+        tdisp = nothing
+        tzero = nothing
+        tdims = T <: Tuple ? nothing : r > 1 ? size(field) : nothing
     else
-        T = eltype(T)
-        if T <: Union{Char,String}
-            return 'A'
-        elseif T <: Integer
-            T == Bool && return 'L'
-            T == UInt8 && return 'B'
-            T == Int16 && return 'I'
-            T == UInt16 && return 'I'
-            T == Int32 && return 'J'
-            T == UInt32 && return 'J'
-            T == Int64 && return 'K'
-            T == UInt64 && return 'K'
-        elseif T <: Real
-            T == Float32 && return 'E'
-            T == Float64 && return 'D'
-        elseif T <: Complex
-            T == ComplexF32 && return 'C'
-            T == ComplexF64 && return 'M'
-        else
-            return error("$T: datatype not part of the FITS standard")
-        end
+        r = 0
+        X = '-'
+        nbyte = 0
+        tdims = tzero = tdisp = nothing
     end
+    
+    X ≠ '-' || error("$t: datatype not part of the FITS standard")
 
-end
-# ------------------------------------------------------------------------------
-function _bintable_tform_bytes(T::Type; msg=true)
+    o = _bintable_field(field, T, t, r, X, tdisp, nbyte, tzero, tdims)
 
-    T = eltype(T)
+    # println("T = $(o.ttype), t = $(o.eltype), r = $(o.repeat), X = $(o.char), tdisp = $(o.tdisp), nbyte = $(o.nbyte), tzero = $(o.tzero), tdims = $(o.dims)") ############################################
 
-    if T == Char
-        return 1
-    elseif T <: Number
-        return sizeof(T)
-    else
-        return error("$T: datatype not part of the FITS standard")
-    end
+   
+    return o
+
 end
 # ------------------------------------------------------------------------------
 function _tzero_value(T::Type)
 
-    T ∈ (Bool, Char, String) && return nothing
-
-    T ∈ (Int8, UInt16, UInt32, UInt64) || return 0.0
+    T ∈ (Int8, UInt16, UInt32, UInt64) || return nothing
 
     T == Int8 && return 128
     T == UInt16 && return 32768
@@ -773,7 +809,7 @@ function _tzero_value(T::Type)
 
 end
 # ------------------------------------------------------------------------------
-function _header_record_bintable(dataobject::FITS_dataobject) 
+function _header_record_bintable(dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
     hdutype == "'BINTABLE'" || Base.throw(FITSError(msgErr(31)))
@@ -784,34 +820,29 @@ function _header_record_bintable(dataobject::FITS_dataobject)
     tfields > 0 || Base.throw(FITSError(msgErr(34)))
     tfields ≤ 999 || Base.throw(FITSError(msgErr(32)))
 
-    row = data[1]
-    tsize = Vector{Any}(undef, tfields)
-    nbyte = Vector{Int}(undef, tfields)
-    tform = Vector{Union{Char,String}}(undef, tfields)
-    tdisp = Vector{String}(undef, tfields)
-    tzero = Vector{Union{Nothing,Real}}(undef, tfields)
+    ttype = []; tform = []; tdims = []; tdisp = []; tzero = []; nbyte = []
     for j = 1:tfields
-        field = row[j]
-        T = typeof(field)
-        rep = T ≠ BitVector ? length(field) : 1 # repeat count
-        tsize[j] = ((rep == 1) ⊻ (T == String)) ? nothing : size(field)
-        nbyte[j] = rep * _bintable_tform_bytes(T)
-        tform[j] = "'" * Base.rpad(string(rep) * _bintable_tform_char(T), 8) * "'"
-        tdisp[j] = "'" * Base.rpad(_table_bindata_type(field), 8) * "'"
-        if typeof(field) <: Array{}
-            tzero[j] = nothing
-        else
-            tzero[j] = !isnothing(T) ? _tzero_value(T) : nothing
-        end
+        field = cast_bintable_field(data[1][j])
+        r = string(field.repeat)
+        T = field.type
+        X = T <: Tuple ? field.char * "tuple" : field.char
+        push!(ttype, "'" * Base.rpad("HEAD$j", 8) * "'")
+        push!(tform, "'" * Base.rpad(r * X, 8) * "'")
+        push!(tdisp, "'" * Base.rpad(field.tdisp, 8) * "'")
+        push!(tdims, "'" * Base.rpad(field.dims, 8) * "'")
+        push!(tzero, field.tzero)
+        push!(nbyte, field.nbyte)
     end
+
+    tfield = Base.rpad(tfields, 20)
+    naxis1 = Base.lpad(sum(nbyte), 20)
+    naxis2 = Base.lpad(nrows, 20)
 
     tform = [Base.rpad(tform[j], 20) for j = 1:tfields]
     tdisp = [Base.rpad(tdisp[j], 20) for j = 1:tfields]
-    ttype = ["'" * Base.rpad("HEAD$j", 18) * "'" for j = 1:tfields]   # default column headers
-    tdim = ["'" * Base.rpad(tsize[j], 8) * "'          " for j = 1:tfields]
-
-    naxis1 = Base.lpad(sum(nbyte), 20)
-    naxis2 = Base.lpad(nrows, 20)
+    ttype = [Base.rpad(ttype[j], 20) for j = 1:tfields]
+    tzero = [Base.rpad(tzero[j], 20) for j = 1:tfields]
+    tdims = [Base.rpad(tdims[j], 20) for j = 1:tfields]
 
     r = String[]
 
@@ -822,23 +853,26 @@ function _header_record_bintable(dataobject::FITS_dataobject)
     Base.push!(r, "NAXIS2  = " * naxis2 * " / number of rows                                 ")
     Base.push!(r, "PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
     Base.push!(r, "GCOUNT  =                    1 / data blocks contain single table               ")
-    Base.push!(r, "TFIELDS = " * lpad(tfields, 20) * rpad(" / number of data fields (columns)", 50))
+    Base.push!(r, "TFIELDS = " * tfield * rpad(" / number of data fields (columns)", 50))
 
     for j = 1:tfields
         Base.push!(r, repeat(' ', 80))
         Base.push!(r, rpad("TTYPE$j", 8) * "= " * ttype[j] * rpad(" / field header", 50))
         Base.push!(r, rpad("TFORM$j", 8) * "= " * tform[j] * rpad(" / field datatype specifier", 50))
-        Base.push!(r, rpad("TDISP$j", 8) * "= " * tdisp[j] * rpad(" / user preferred field display format", 50))
-        if !isnothing(tsize[j])
-            Base.push!(r, rpad("TDIM$j", 8) * "= " * tdim[j] * rpad(" / array dimensions of field $j", 50))
+        if strip(tdisp[j], ['\'', ' ']) ≠ "nothing"
+            Base.push!(r, rpad("TDISP$j", 8) * "= " * tdisp[j] * rpad(" / proposed field display format", 50))
         end
-        if !isnothing(tzero[j])
-            Base.push!(r, rpad("TZERO$j", 8) * "= " * lpad(tzero[j], 20) * rpad(" / zero offset of field $j", 50))
+        if strip(tdims[j], ['\'', ' ']) ≠ "nothing"
+            Base.push!(r, rpad("TDIM$j", 8) * "= " * tdims[j] * rpad(" / array dimensions of field $j", 50))
+        end
+        if strip(tzero[j], ['\'', ' ']) ≠ "nothing"
+            Base.push!(r, rpad("TZERO$j", 8) * "= " * tzero[j] * rpad(" / zero offset of field $j", 50))
             Base.push!(r, rpad("TSCAL$j", 8) * "=                  1.0" * rpad(" / scale factor of field $j", 50))
         end
     end
 
-    #tfields > 0 ? Base.push!(r, repeat(' ', 80)) : false
+    tfields > 0 ? Base.push!(r, repeat(' ', 80)) : false
+    
     Base.push!(r, "END" * repeat(' ', 77))
 
     pass = sum(length.(r) .- 80) == false

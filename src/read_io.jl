@@ -38,6 +38,10 @@ function _read_header(o::IO, hduindex::Int)
     ptrhdu = _hdu_pointer(o)
     ptrdat = _data_pointer(o)
 
+    nhdu = length(ptrhdu)
+
+    hduindex ≤ nhdu || error("hduindex ≤ $(nhdu) required")
+
     Base.seek(o, ptrhdu[hduindex])
 
     record::Vector{String} = []
@@ -46,7 +50,7 @@ function _read_header(o::IO, hduindex::Int)
         rec = String(Base.read(o, 80))
         Base.push!(record, rec)
     end
-
+    
     return cast_FITS_header(record)
 
 end
@@ -170,7 +174,7 @@ function _t_char(str::String)
         n += 1
     end
 
-    x = str[n]
+    x = str[n:end]
 
     return x
 
@@ -200,28 +204,23 @@ function r_correct!(r::Vector{Int}, char::Vector{Char})
 
 end
 # ------------------------------------------------------------------------------
-function _set_type(x::Char, bzero::Float64)
+function _set_type(x::Char, bzero::Real)
 
-    X = ['L', 'B', 'I', 'J', 'K', 'A', 'E', 'D', 'C', 'M', 'P', 'Q']
-
-    x ≠ 'X' || return Base.throw(FITSError(msgErr(46))) # 'X' not a Julia type
+    X = ['L', 'B', 'I', 'J', 'K', 'A', 'E', 'D', 'C', 'M', 'P', 'Q', 'X']
 
     x ∈ X || return Base.throw(FITSError(msgErr(44))) # illegal datatype
 
     if x ∈ ['B', 'I', 'J', 'K']
-        if iszero(bzero)
-            T = x == 'B' ? UInt8 : x == 'I' ? Int16 : 
-                x == 'J' ? Int32 : x == 'K' ? Int64 : nothing
-        else
-            T = x == 'B' ? Int8 : x == 'I' ? UInt16 : 
-                x == 'J' ? UInt32 : x == 'K' ? UInt64 : nothing
-        end
+        T = x == 'B' ? UInt8 : x == 'I' ? Int16 :
+            x == 'J' ? Int32 : x == 'K' ? Int64 : nothing
     elseif x ∈ ['E', 'D', 'C', 'M']
         T = x == 'E' ? Float32 : x == 'D' ? Float64 :
             x == 'C' ? ComplexF32 : x == 'M' ? ComplexF64 : nothing
     elseif x ∈ ['P', 'Q']
         T = x == 'P' ? UInt32 : 
             x == 'Q' ? UInt64 : nothing
+    elseif x == 'X'
+        T = Int
     else
         T = UInt8
     end
@@ -239,14 +238,17 @@ function _read_indexed_keyword(h::FITS_header, key::String, n::Int, default)
     return o
 
 end
+
 function _remove_offset(data)
 
-    T = eltype(data)
+    t = eltype(data)
 
-    T == UInt8 && return Int8.(Int.(data) .- 128)
-    T == Int16 && return UInt16.(Int.(data) .+ 32768)
-    T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
-    T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
+    t ∈ (UInt8, Int16, Int32, Int64) || return data
+
+    t == UInt8 && return Int8.(Int.(data) .- 128)
+    t == Int16 && return UInt16.(Int.(data) .+ 32768)
+    t == Int32 && return UInt32.(Int.(data) .+ 2147483648)
+    t == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
 
     # workaround for InexactError:trunc(Int64, 9223372036854775808)
 
@@ -264,59 +266,107 @@ function _read_bintable_data(o::IO, hduindex::Int)
     tfields = h.card[h.map["TFIELDS"]].value
 
     tform = _read_indexed_keyword(h, "TFORM", tfields, "'U'")
-    tchar = [_t_char(tform[i]) for i = 1:tfields]
+    tchar = [_t_char(tform[i])[1] for i = 1:tfields]
+    tuple = [_t_char(tform[i])[2:6] == "tuple" for i = 1:tfields]
 
     r = [_repeat(tform[i]) for i = 1:tfields]
-    r = r_correct!(r ,tchar) # r=1 -> r=2 for 'P' and 'Q' arrays 
 
     tscal = _read_indexed_keyword(h, "TSCAL", tfields, 1.0)
     tzero = _read_indexed_keyword(h, "TZERO", tfields, 0.0)
+    tdims = _read_indexed_keyword(h, "TDIM", tfields, nothing)
+    tdisp = _read_indexed_keyword(h, "TDISP", tfields, nothing)
 
+#    println("r = $(r)")
+#    println("X = $(tchar)")
+#    println("tdisp = $(tdisp)")
+#    println("tzero = $(tzero)")
+#    println("tdims = $(tdims)")
+ ############################################
+    
     Base.seek(o, ptr[hduindex])
 
     data = Any[]
     for i = 1:nrow
-        val = Any[]
+        row = Any[]
         for j = 1:tfields
+            t = _set_type(tchar[j], tzero[j])
+            val = []
             for k = 1:r[j]
-                T = _set_type(tchar[j], tzero[j])
-                a = Base.read(o, T)
-                a = Base.ntoh(a) # change from network to host ordering
+                a = Base.ntoh(Base.read(o, t)) # change from network to host ordering
                 a = iszero(tzero[j]) ? a : _remove_offset(a)
                 push!(val, a)
             end
+            row = append!(data, val)
         end
-        data = append!(data, val)
-    end  
+        data = append!(data, row)
+    end
 
-    dat = Vector{Any}(nothing, tfields)
-    row = Vector{Any}(nothing, nrow) 
+    o = Any[]
 
     k = 0
     for i = 1:nrow
+        row = Any[]
         for j = 1:tfields
             n = r[j]
             if n > 0
                 if tchar[j] == 'A'
-                    row[j] = join(Char.(data[k+1:k+n]))
+                    if isnothing(tdims[j]) && !tuple[j]
+                        if n > 1
+                            d = join(Char.(data[k+1:k+n]))
+                        else
+                            d = Char(data[k+1])
+                        end
+                    else
+                        d = Char.(data[k+1:k+n])
+                        d = tuple[j] ? d : reshape(d, tdims[j])
+                    end
                     k += n
-                elseif tchar[j] == 'P'
-                    row[j] = (data[k+1], data[k+2])
-                    k += 2
-                elseif tchar[j] == 'Q'
-                    row[j] = (data[k+1], data[k+2])
-                    k += 2
+                elseif tchar[j] == 'L'
+                    if n > 1
+                        d = Bool.(data[k+1:k+n])
+                        d = isnothing(tdims[j]) ? d : reshape(d, tdims[j])
+                    else
+                        d = Bool(data[k+1])
+                    end
+                    k += n
+                elseif tchar[j] == 'X'
+                    if n > 1
+                        d = [data[k+m] for m = 1:n]
+                        d = bitstring.(d)
+                        p = findfirst.("1", d)
+                        d = [d[m][p[m].start:end] for m = 1:n]
+                        d = collect.(d)
+                        d = [BitVector(parse.(Int, d[m])) for m = 1:n]
+                        d = isnothing(tdims[j]) ? d : reshape(d, tdims[j])
+                    else
+                        d = data[k+1]
+                        d = bitstring(d)
+                        p = findfirst("1", d)
+                        d = d[p.start:end]
+                        d = collect(d)
+                        d = BitVector(parse.(Int, d))
+                    end
+                    k += n
+                    elseif (tchar[j] == 'P') ⊻ (tchar[j] == 'Q')  
+                        error("variable-length arrays not yet implemented")
+                    #    push!(row, Tuple([data[k+m] for m = 1:n])) 
+                    #    k += n
                 else
-                    row[j] = n > 1 ? Tuple([data[k+m] for m = 1:n]) : data[k+1] 
+                    if n > 1 
+                        d = [data[k+m] for m = 1:n]
+                        d = isnothing(tdims[j]) ? d : reshape(d, tdims[j])
+                    else
+                        d = data[k+1]
+                    end 
                     k += n
                 end
+                d = tuple[j] ? Tuple(d) : d
+                push!(row, d)
             end
         end
-        dat[i] = Tuple(row)
+        push!(o, row)
     end
 
-    data = Tuple(dat)
-
-    return data
+    return o
 
 end

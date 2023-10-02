@@ -42,6 +42,8 @@ function _block_pointer(o::IO) # pointer to start of block
 
     n = o.size ÷ 2880             # number of blocks in IO
 
+    o.size % 2880 > 0 && error("blocksize not multiple of 2880")
+
     ptr = [(i - 1) * 2880 for i = 1:n]
 
     return ptr

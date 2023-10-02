@@ -132,6 +132,10 @@ function IOWrite_data(hdu::FITS_HDU)
 
 end
 
+# ------------------------------------------------------------------------------
+#                          IOWrite_ARRAY_data(hdu)
+# ------------------------------------------------------------------------------
+
 function IOWrite_ARRAY_data(hdu::FITS_HDU)
 
     o = IOBuffer()
@@ -167,6 +171,10 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
 
 end
 
+# ------------------------------------------------------------------------------
+#                          IOWrite_TABLE_data(hdu)
+# ------------------------------------------------------------------------------
+
 function IOWrite_TABLE_data(hdu::FITS_HDU)
 
     o = IOBuffer()
@@ -188,6 +196,25 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
 
 end
 
+# ------------------------------------------------------------------------------
+#                          IOWrite_BINTABLE_data(hdu)
+# ------------------------------------------------------------------------------
+
+function _apply_offset(data)
+
+    t = eltype(data)
+
+    t ∈ (Int8, UInt16, UInt32, UInt64) || return data
+
+    t == Int8 && return UInt8.(Int.(data) .+ 128)
+    t == UInt16 && return Int16.(Int.(data) .- 32768)
+    t == UInt32 && return Int32.(Int.(data) .- 2147483648)
+    t == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808)
+
+    # note workaround for InexactError:trunc(Int64, 9223372036854775808)
+
+end
+# ------------------------------------------------------------------------------
 function IOWrite_BINTABLE_data(hdu::FITS_HDU)
 
     o = IOBuffer()
@@ -195,14 +222,55 @@ function IOWrite_BINTABLE_data(hdu::FITS_HDU)
     Base.seekstart(o)
 
     data = hdu.dataobject.data
-    nrow = Base.length(record) 
-    lrecs = Base.length(record[1])  
-    # number of blanks to complement last data block
-    nchar = 2880 - (nrecs * lrecs) % 2880
-    # complement last data block with blanks
-    blank = Base.repeat(' ', nchar)
-    nbyte = Base.write(o, Array{UInt8,1}(record * blank))
+    nrow = Base.length(data) 
+    tfields = Base.length(data[1])
 
+    nbyte = 0
+
+    for i = 1:nrow
+        for j = 1:tfields
+            field = data[i][j]
+            T = typeof(field)
+            if (T <: Vector) ⊻ (T <: Tuple)
+                t = eltype(field)
+            else
+                t = T == BitVector ? T : eltype(field)
+            end
+            # apply mapping between UInt-range and Int-range (if applicable):
+            field = _apply_offset(field)
+            # change from 'host' to 'network' ordering: 
+            if t <: Number
+                if t ≠ Bool
+                    field = hton.(field)
+                end
+            elseif t == BitVector
+                if (T <: Vector) ⊻ (T <: Tuple)
+                    field = [bitstring(field[k]) for k ∈ eachindex(field)]
+                    field = parse.(UInt, field; base=2)
+                    field = hton.(field)
+                else
+                    field = bitstring(field)
+                    field = parse(UInt, field; base=2)
+                    field = hton(field)
+                end
+            end
+            
+            # write data from field:
+            if (T <: Vector) ⊻ (T <: Tuple)
+                Any[Base.write(o, field[k]) for k ∈ eachindex(field)]
+            #elseif t == String
+            #    Base.write(o, collect(field))
+            else
+                Base.write(o, field)
+            end
+        end
+    end
+    # number of blanks to complement last data block
+    ndat = 2880 - o.size % 2880
+ 
+    # complete block with blanks:
+    [Base.write(o, UInt8(0)) for i = 1:ndat]
+    
     return o
 
 end
