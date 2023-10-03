@@ -276,17 +276,11 @@ function _read_bintable_data(o::IO, hduindex::Int)
     tdims = _read_indexed_keyword(h, "TDIM", tfields, nothing)
     tdisp = _read_indexed_keyword(h, "TDISP", tfields, nothing)
 
-#    println("r = $(r)")
-#    println("X = $(tchar)")
-#    println("tdisp = $(tdisp)")
-#    println("tzero = $(tzero)")
-#    println("tdims = $(tdims)")
- ############################################
-    
     Base.seek(o, ptr[hduindex])
 
-    data = Any[]
+    data = Vector{Any}(undef, nrow)
     for i = 1:nrow
+        data[i] = Any[]
         row = Any[]
         for j = 1:tfields
             t = _set_type(tchar[j], tzero[j])
@@ -296,15 +290,15 @@ function _read_bintable_data(o::IO, hduindex::Int)
                 a = iszero(tzero[j]) ? a : _remove_offset(a)
                 push!(val, a)
             end
-            row = append!(data, val)
+            append!(row, val)
         end
-        data = append!(data, row)
+        data[i] = append!(data[i], row)
     end
 
     o = Any[]
 
-    k = 0
     for i = 1:nrow
+        k = 0
         row = Any[]
         for j = 1:tfields
             n = r[j]
@@ -312,26 +306,26 @@ function _read_bintable_data(o::IO, hduindex::Int)
                 if tchar[j] == 'A'
                     if isnothing(tdims[j]) && !tuple[j]
                         if n > 1
-                            d = join(Char.(data[k+1:k+n]))
+                            d = join(Char.(data[i][k+1:k+n]))
                         else
-                            d = Char(data[k+1])
+                            d = Char(data[i][k+1])
                         end
                     else
-                        d = Char.(data[k+1:k+n])
+                        d = Char.(data[i][k+1:k+n])
                         d = tuple[j] ? d : reshape(d, tdims[j])
                     end
                     k += n
                 elseif tchar[j] == 'L'
                     if n > 1
-                        d = Bool.(data[k+1:k+n])
+                        d = Bool.(data[i][k+1:k+n])
                         d = isnothing(tdims[j]) ? d : reshape(d, tdims[j])
                     else
-                        d = Bool(data[k+1])
+                        d = Bool(data[i][k+1])
                     end
                     k += n
                 elseif tchar[j] == 'X'
                     if n > 1
-                        d = [data[k+m] for m = 1:n]
+                        d = [data[i][k+m] for m = 1:n]
                         d = bitstring.(d)
                         p = findfirst.("1", d)
                         d = [d[m][p[m].start:end] for m = 1:n]
@@ -339,7 +333,7 @@ function _read_bintable_data(o::IO, hduindex::Int)
                         d = [BitVector(parse.(Int, d[m])) for m = 1:n]
                         d = isnothing(tdims[j]) ? d : reshape(d, tdims[j])
                     else
-                        d = data[k+1]
+                        d = data[i][k+1]
                         d = bitstring(d)
                         p = findfirst("1", d)
                         d = d[p.start:end]
@@ -347,17 +341,17 @@ function _read_bintable_data(o::IO, hduindex::Int)
                         d = BitVector(parse.(Int, d))
                     end
                     k += n
-                    elseif (tchar[j] == 'P') ⊻ (tchar[j] == 'Q')  
-                        error("variable-length arrays not yet implemented")
-                    #    push!(row, Tuple([data[k+m] for m = 1:n])) 
+                elseif (tchar[j] == 'P') ⊻ (tchar[j] == 'Q')
+                    error("variable-length arrays not yet implemented")
+                    #    push!(row, Tuple([data[i][k+m] for m = 1:n])) 
                     #    k += n
                 else
-                    if n > 1 
-                        d = [data[k+m] for m = 1:n]
+                    if n > 1
+                        d = [data[i][k+m] for m = 1:n]
                         d = isnothing(tdims[j]) ? d : reshape(d, tdims[j])
                     else
-                        d = data[k+1]
-                    end 
+                        d = data[i][k+1]
+                    end
                     k += n
                 end
                 d = tuple[j] ? Tuple(d) : d

@@ -834,7 +834,7 @@ function _header_record_bintable(dataobject::FITS_dataobject)
         push!(nbyte, field.nbyte)
     end
 
-    tfield = Base.rpad(tfields, 20)
+    tfield = Base.lpad(tfields, 20)
     naxis1 = Base.lpad(sum(nbyte), 20)
     naxis2 = Base.lpad(nrows, 20)
 

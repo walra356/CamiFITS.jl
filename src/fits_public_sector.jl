@@ -320,8 +320,6 @@ function _fits_bintable_data(data)
 
     tfields = length(data[1])
 
-    println("tfields = $(tfields)") ##################################################################################
-
     for i = 1:ncols
         for j = 1:tfields
             push!(T, typeof(data[i][j]))
