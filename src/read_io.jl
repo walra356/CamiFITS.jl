@@ -292,13 +292,13 @@ function _read_bintable_data(o::IO, hduindex::Int)
             end
             append!(row, val)
         end
-        data[i] = append!(data[i], row)
+        append!(data[i], row)
     end
 
     o = Any[]
 
     for i = 1:nrow
-        k = 0
+        k = 0 # extra variable to handle bitvectors
         row = Any[]
         for j = 1:tfields
             n = r[j]
@@ -359,6 +359,14 @@ function _read_bintable_data(o::IO, hduindex::Int)
             end
         end
         push!(o, row)
+    end
+
+    for i = 1:nrow
+        for j = 1:tfields
+            V = typeof(o[1][j])
+            T = typeof(o[i][j])
+            T ≠ V && Base.throw(FITSError(msgErr(46)))
+        end
     end
 
     return o

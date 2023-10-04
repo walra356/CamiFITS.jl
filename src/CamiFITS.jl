@@ -122,8 +122,8 @@ export test_FORTRAN_fits_table_tform
 export test_FORTRAN_fits_table_tdisp
 export test_FORTRAN_eltype_char
 export dataset_1
-export dataset_2
-export dataset_2b
+export dataset_table
+export dataset_bintable
 
 export test_fits_info
 export test_fits_keyword

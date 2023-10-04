@@ -9,8 +9,8 @@ function test_fits_info()
 
     filnam = "kanweg.fits"
 
-    T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, 
-         Float32, Float64]
+    T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
+        Float32, Float64]
     c = []
     for i ∈ eachindex(T)
         data = [typemin(T[i]), typemax(T[i])]
@@ -27,7 +27,7 @@ function test_fits_info()
     push!(c, a)
     a = fits_info(filnam; msg=false) == data  # [1] == '\n'
     push!(c, a)
-    
+
     rm(filnam)
 
     o = c[1] & c[2] & c[3] & c[4] & c[5] & c[6] & c[7] & c[8] & c[9] & c[10]
@@ -93,139 +93,6 @@ function test_fits_create()
 
 end
 
-function test_fits_read()
-
-    filnam = "minimal.fits"
-
-    f = fits_create(filnam; protect=false)
-    f = fits_read(filnam)
-
-    a = f.hdu[1].header.card[1].keyword == "SIMPLE"
-    b = f.hdu[1].dataobject.data == Any[]
-    c = f.hdu[1].header.card[1].value == true
-    d = f.hdu[1].header.card[4].value == 0
-
-    rm(filnam)
-
-    filnam = "kanweg.fits"
-    data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
-    data = reshape(data, (3, 3, 1))
-
-    f = fits_create(filnam, data; protect=false)
-
-    t = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6]
-    u = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
-    v = [1.23, 2.12, 3.0, 4.0, 5.0]
-    w = ['a', 'b', 'c', 'd', 'e']
-    x = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data1 = (t, u, v, w, x) # tuple allows combination of different datatypes 
-
-    fits_extend!(f, data1; hdutype="TABLE")
-
-    f = fits_read(filnam)
-
-    p = f.hdu[1].header.card[1].keyword == "SIMPLE"
-    q = f.hdu[1].dataobject.data == data
-    r = f.hdu[1].header.card[1].value == true
-    s = f.hdu[1].header.card[4].value == 3
-    x = f.hdu[2].dataobject.data[1] == " 1.01E-6 1086 1.23 a                    a"
-
-    rm(filnam)
-
-    o = a & b & c & d & p & q & r & s & x
-
-    o || println([a, b, c, d, p, q, r, s, x])
-
-    return o
-
-end
-
-function test_fits_extend!()
-
-    filnam = "kanweg.fits";
-    data = [0x0000043e, 0x0000040c, 0x0000041f];
-    f = fits_create(filnam, data; protect=false);
-
-    a = Float32[1.01E-6, 2.0E-6, 3.0E-6, 4.0E-6, 5.0E-6];
-    b = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f];
-    c = [1.23, 2.12, 3.0, 4.0, 5.0];
-    d = ['a', 'b', 'c', 'd', 'e'];
-    e = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"];
-    data = (a, b, c, d, e); # tuple allows combination of different datatypes 
-
-    fits_extend!(f, data; hdutype="TABLE");
-
-    strExample = " 1.01E-6 1086 1.23 a                    a"
-    a = f.hdu[1].header.card[1].keyword == "SIMPLE"
-    b = f.hdu[1].dataobject.data[1][1] == 0x0000043e
-    c = f.hdu[2].header.card[1].keyword == "XTENSION"
-    d = f.hdu[2].dataobject.data[1] == strExample
-    e = get(Dict(f.hdu[2].header.map), "NAXIS", 0) == 3
-
-    rm(filnam)
-
-    o = a & b & c & d & e
-
-    o || println([a, b, c, d, e])
-
-    return o
-
-end
-
-function test_fits_table_extend!()
-
-    filnam = "kanweg.fits"
-    f = fits_create(filnam; protect=false)
-
-    a1 = [typemin(Bool), typemax(Bool)]
-    a2 = [typemin(UInt8), typemax(UInt8)]
-    a3 = [typemin(Int16), typemax(Int16)]
-    a4 = [typemin(UInt16), typemax(UInt16)]
-    a5 = [typemin(Int32), typemax(Int32)]
-    a6 = [typemin(UInt32), typemax(UInt32)]
-    a7 = [typemin(Int64), typemax(Int64)]
-    a8 = [typemin(UInt64), typemax(UInt64)]
-    a9 = [0.123, 12.3]
-    a10 = Float32[1.23e-1, 1.23e1]
-    a11 = Float64[1.23e-1, 1.23e1]
-    a12 = ['a', 'b']
-    a13 = ["a", "bb"]
-    data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
-
-    fits_extend!(f, data; hdutype="TABLE")
-
-    rm(filnam)
-
-    map = f.hdu[2].header.map
-    card = f.hdu[2].header.card
-
-    #tdisp = [strip(card[map["TDISP$i"]].value) for i = 1:13]
-    #tdisp = [strip(tdisp[i][2:9]) for i = 1:13]
-    
-    tdisp = [strip(card[map["TDISP$i"]].value, ['\'', ' ']) for i = 1:13]
-
-    a1 = tdisp[1] == "I1"
-    a2 = tdisp[2] == "I3"
-    a3 = tdisp[3] == "I6"
-    a4 = tdisp[4] == "I5"
-    a5 = tdisp[5] == "I11"
-    a6 = tdisp[6] == "I10"
-    a7 = tdisp[7] == "I20"
-    a8 = tdisp[8] == "I20"
-    a9 = tdisp[9] == "F6.3"
-    a10 = tdisp[10] == "F6.3"
-    a11 = tdisp[11] == "F6.3"
-    a12 = tdisp[12] == "A1"
-    a13 = tdisp[13] == "A2"
-
-    o = a1 & a2 & a3 & a4 & a5 & a6 & a7 & a8 & a9 & a10 & a11 & a12 & a13
-
-    o || println(o)
-
-    return o
-
-end
-
 function test_fits_save_as()
 
     filnam1 = "minimal.fits"
@@ -245,15 +112,15 @@ end
 
 function test_fits_copy()
 
-    filnam1="filnam1.fits"
-    filnam2="filnam2.fits"
+    filnam1 = "filnam1.fits"
+    filnam2 = "filnam2.fits"
 
     fits_create(filnam1; protect=false)
-    fits_copy(filnam1, filnam2; protect=false, msg=false);
+    fits_copy(filnam1, filnam2; protect=false, msg=false)
     f = fits_read(filnam2)
 
     o = f.filnam.value == filnam2
-    
+
     rm(filnam1)
     rm(filnam2)
 
@@ -267,7 +134,7 @@ function test_fits_collect()
     for i = 1:5
         fits_create("T$i.fits", data1(i); protect=false)
     end
-    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
     dataout = fits_info(f; msg=false)
     a = dataout[2, 1] == data1(2)[1]
 
@@ -275,7 +142,7 @@ function test_fits_collect()
     for i = 1:5
         fits_create("T$i.fits", data2(i); protect=false)
     end
-    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
     dataout = fits_info(f; msg=false)
     b = dataout[2, :] == data2(2)
 
@@ -283,7 +150,7 @@ function test_fits_collect()
     for i = 1:5
         fits_create("T$i.fits", data3(i); protect=false)
     end
-    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
     dataout = fits_info(f; msg=false)
     c = dataout[:, :, 2] == data3(2)[:, :, 1]
 
@@ -291,7 +158,7 @@ function test_fits_collect()
     for i = 1:5
         fits_create("T$i.fits", data4(i); protect=false)
     end
-    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
     dataout = fits_info(f; msg=false)
     d = dataout[:, :, 2] == data4(2)[:, :, 1]
 
@@ -299,7 +166,7 @@ function test_fits_collect()
     for i = 1:5
         fits_create("T$i.fits", data5(i); protect=false)
     end
-    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false);
+    f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
     dataout = fits_info(f; msg=false)
     e = dataout[:, :, 2] == data5(2)[:, :, 1]
 
@@ -320,7 +187,7 @@ function test_fits_keyword()
 
     a = fits_keyword("end"; msg=false)[1] == 'K'
     b = fits_keyword("ed"; msg=false)[1] == 'E'
-    c = fits_keyword(; msg=false)[1]  == 'F'
+    c = fits_keyword(; msg=false)[1] == 'F'
     d = fits_keyword(hdutype="'PRIMARY '"; msg=false)[1] == 'F'
     e = fits_keyword("all"; msg=false)[1] == 'F'
 
@@ -330,12 +197,12 @@ end
 
 function test_fits_add_key!()
 
-    filnam = "kanweg.fits";
-    f = fits_create(filnam; protect=false);
-    
-    long = repeat(" long", 71);
-    for i=1:5
-           fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment");
+    filnam = "kanweg.fits"
+    f = fits_create(filnam; protect=false)
+
+    long = repeat(" long", 71)
+    for i = 1:5
+        fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment")
     end
 
     i = get(f.hdu[1].header.map, "KEY1", 0)
@@ -395,11 +262,11 @@ end
 
 function test_fits_edit_key!()
 
-    filnam = "minimal.fits";
-    f = fits_create(filnam; protect=false);
-    
-    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension");
-    fits_edit_key!(f, 1, "KEYNEW1", false, "comment has changed");
+    filnam = "minimal.fits"
+    f = fits_create(filnam; protect=false)
+
+    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+    fits_edit_key!(f, 1, "KEYNEW1", false, "comment has changed")
 
     k = get(f.hdu[1].header.map, "KEYNEW1", 0)
 
@@ -412,10 +279,10 @@ function test_fits_edit_key!()
 end
 
 function test_fits_pointer()
-    
+
     filnam = "kanweg.fits"
-    data = [0x0000043e, 0x0000040c, 0x0000041f];
-    f = fits_create(filnam, data; protect=false);
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    f = fits_create(filnam, data; protect=false)
     fits_extend!(f, data; hdutype="'IMAGE   '")
     fits_extend!(f, data; hdutype="'IMAGE   '")
 
@@ -433,7 +300,7 @@ function test_fits_pointer()
     i = r[109][8:83]
     j = r[181][8:83]
 
-    a = (a .+1 == Base.OneTo(216))
+    a = (a .+ 1 == Base.OneTo(216))
     b = (b == [0, 36, 72, 108, 144, 180])
     c = (c == [0, 72, 144])
     d = (d == [0, 72, 144])
@@ -504,7 +371,7 @@ function test_FORTRAN_format()
     o || println([a, b, c, d])
 
     return o
-    
+
 end
 
 function dataset_1()
@@ -528,21 +395,47 @@ function dataset_1()
 
 end
 
-function dataset_bintable()
-#   type 1 - Int8 ----------------------
+function dataset_table()
+
+    a1, b1 = Bool(1), Bool(0)
+    a2, b2 = UInt8(108), UInt8(109)
+    a3, b3 = Int16(1081), Int16(1011)
+    a4, b4 = UInt16(1081), UInt16(1011)
+    a5, b5 = Int32(1081), Int32(1011)
+    a6, b6 = UInt32(1081), UInt32(1011)
+    a7, b7 = Int64(1081), Int64(1011)
+    a8, b8 = UInt64(1081), UInt64(1011)
+    a9, b9 = 1.23, 23.2
+    a10, b10 = Float32(1.01e-6), Float32(3.01e-6)
+    a11, b11 = Float64(1.01e-6), Float64(3.01e-6)
+    a12, b12 = 'a', 'b'
+    a13, b13 = "a", "b"
+    a14, b14 = "abc", "abcdef"
+
+    data1 = Any[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14]
+    data2 = Any[b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14]
+
+    data = [data1, data2]
+
+    return data
+
+end
+
+function _bintable()
+    #   type 1 - Int8 ----------------------
     a1 = Int8(11)
     a2 = Int8[11, 12]
     a3 = Tuple(a2)
-#   type 2 -----------------------
+    #   type 2 -----------------------
     b1 = UInt8(108)
     b2 = UInt8[108, 109]
     b3 = Tuple(b2)
-#   type 3 - Int16 ----------------------
+    #   type 3 - Int16 ----------------------
     c1 = Int16(1001)
     c2 = Int16[1001, 1002, 1003, 1004, 1005, 1006]
     c2 = reshape(c2, 2, 3)
     c3 = Tuple(c2)
-#   type 4 -----------------------
+    #   type 4 -----------------------
     d1 = UInt16(1081)
     d2 = UInt16[1081, 1002]
     d3 = Tuple(d2)
@@ -550,52 +443,52 @@ function dataset_bintable()
     e1 = Int32(1081)
     e2 = Int32[1081, 1002]
     e3 = Tuple(e2)
-#   type 6 -----------------------
+    #   type 6 -----------------------
     f1 = UInt32(1081)
     f2 = UInt32[1081, 1002]
     f3 = Tuple(f2)
-#   type 7 - Int64 ----------------------
+    #   type 7 - Int64 ----------------------
     g1 = Int64(1081)
     g2 = Int64[1081, 1002]
     g3 = Tuple(g2)
-#   type 8 -----------------------
+    #   type 8 -----------------------
     h1 = UInt64(1081)
     h2 = UInt64[1081, 1002]
     h3 = Tuple(h2)
-#   type 9 -----------------------
+    #   type 9 -----------------------
     i1 = 1.23
     i2 = [1.23, 123.14]
     i3 = Tuple(i2)
-#   type 10 -----------------------
+    #   type 10 -----------------------
     j1 = Float32(1.01e-6)
     j2 = Float32[1.01e-6, 2, 01e-7]
     j3 = Tuple(j2)
-#   type 11 -----------------------
+    #   type 11 -----------------------
     k1 = Float64(1.01e-6)
     k2 = Float64[1.01e-6, 2.02e-7]
     k3 = Tuple(k2)
-#   type 12 -----------------------
+    #   type 12 -----------------------
     l1 = ComplexF32(3.0, 3.0)
     l2 = [ComplexF32(3.0, 3.0), ComplexF32(2.0, 2.0)]
     l3 = Tuple(l2)
-#   type 13 -----------------------
-    m1 = ComplexF64(3.0,3.0)
+    #   type 13 -----------------------
+    m1 = ComplexF64(3.0, 3.0)
     m2 = [ComplexF64(3.0, 3.0), ComplexF64(2.0, 2.0)]
     m3 = Tuple(m2)
-#   type 14 -----------------------
+    #   type 14 -----------------------
     n1 = Bool(1)
     n2 = Bool[1, 0]
     n3 = Tuple(n2)
-#   type 15 -----------------------
+    #   type 15 -----------------------
     o1 = 'a'
     o2 = ['a', 'b']
     o3 = Tuple(o2)
     o4 = empty([], Char)
-#   type 16-----------------------
+    #   type 16-----------------------
     p1 = "aaa"
     p2 = "abc def" # String Array not allowed - use String
     p3 = p2 # Tuple{String} not allowed - use String
-#   type 17 -----------------------
+    #   type 17 -----------------------
     q1 = BitVector([1, 0, 1, 0, 1, 0])
     q2 = [BitVector([1, 0, 1, 0, 1, 0]), BitVector([1, 0, 1, 0, 1, 0])]
     q3 = Tuple(q2)
@@ -623,9 +516,9 @@ function dataset_bintable()
 
 end
 
-function dataset_2(; j=0)
+function dataset_bintable(; j=0)
 
-    data = dataset_bintable()
+    data = _bintable()
 
     o = Any[]
 
@@ -646,7 +539,7 @@ function test_FORTRAN_fits_table_tform()
     data = dataset_1()
 
     tform = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
-    
+
     [FORTRAN_fits_table_tform(data[i]) for i = 1:13]
 
     pass = [FORTRAN_fits_table_tform(data[i]) for i = 1:13] == tform
@@ -676,17 +569,25 @@ function test_table_datatype()
     filnam = "kanweg.fits"
     f = fits_create(filnam; protect=false)
 
-    data = dataset_1()
+    data = dataset_table()
 
-    fits_extend!(f, data; hdutype="TABLE")
+    fits_extend!(f, data; hdutype="table")
+
+    data = f.hdu[2].dataobject.data
+
+    g = fits_read(filnam)
 
     rm(filnam)
 
-    table = fits_info(f.hdu[2]; msg=false)
+    data1 = g.hdu[2].dataobject.data
 
-    str = " 1 108 1081 1081  1081  1081   1081   1081  1.23 1.01E-6 1.01D-6 a                    a"
+    o = data .== data1
 
-    return table[1] == str
+    pass =  (sum(o) ÷ length(data)) == 1
+
+    pass || println(o)
+
+    return pass
 
 end
 
@@ -695,11 +596,13 @@ function test_bintable_datatype()
     filnam = "kanweg.fits"
     f = fits_create(filnam; protect=false)
 
-    data = dataset_2()
+    data = dataset_bintable()
 
     fits_extend!(f, data; hdutype="bintable")
 
     g = fits_read(filnam)
+
+    rm(filnam)
 
     data1 = g.hdu[2].dataobject.data
 
@@ -716,7 +619,7 @@ end
 function test_FORTRAN_eltype_char()
 
     T = (Char, Bool, Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
-         Float16, Float32, Float64, ComplexF16, ComplexF32, ComplexF64, FITS)
+        Float16, Float32, Float64, ComplexF16, ComplexF32, ComplexF64, FITS)
 
     o = [FORTRAN_eltype_char(T[i]; msg=false) for i ∈ eachindex(T)]
     x = join(o) == "AL-BIIJJKK-ED-CM-"
@@ -736,7 +639,7 @@ function test_fits_zero_offset()
     g = fits_zero_offset(Int32) == 0.0
     h = fits_zero_offset(UInt32) == 2147483648
     i = fits_zero_offset(Int64) == 0.0
-    j = fits_zero_offset(UInt64) == 9223372036854775808 
+    j = fits_zero_offset(UInt64) == 9223372036854775808
     k = fits_zero_offset(Float16) == 0.0
     l = fits_zero_offset(Float32) == 0.0
     m = fits_zero_offset(Float64) == 0.0

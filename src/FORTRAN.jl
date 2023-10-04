@@ -376,18 +376,20 @@ function FORTRAN_datatype_char(T::Type; msg=true)
 end
 
 # ------------------------------------------------------------------------------
-function FORTRAN_fits_table_string(col::Vector{T}, tform::String) where {T}
+function FORTRAN_fits_table_string(field::Any, tform::Vector{String})
 
-    strcol = string.(col)
-    fmt = cast_FORTRAN_format(tform)
-    x = fmt.char
-    w = fmt.width
-    d = fmt.ndec
+    strcol = string.(field)
+    fmt = cast_FORTRAN_format.(tform)
 
-    for j ∈ eachindex(col)
+
+    for j ∈ eachindex(field)
+        x = fmt[j].char
+        w = fmt[j].width
+        d = fmt[j].ndec
+
         if x == 'I'
-            if eltype(col) == Bool
-                strcol[j] = col[j] ? "1" : "0" #  "T" : "F"
+            if eltype(field) == Bool
+                strcol[j] = field[j] ? "1" : "0" #  "T" : "F"
             end
         elseif x == 'F'
             n = [w - d - 1, d]

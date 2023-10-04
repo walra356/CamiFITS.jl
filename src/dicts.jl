@@ -86,7 +86,7 @@ dictErr = Dict(0 => nothing,
     30 => "HDU type 'TABLE    ' expected",
     31 => "HDU type 'BINTABLE ' expected",
     32 => "TFIELDS > 999 (number of columns exceeds maximum value)",
-    33 => "cannot create table (columns not of equal length)",
+    33 => "cannot create table (rows not of equal length)",
     34 => "cannot create table (minimum of one column mandatory)",
     36 => "ASCII table contains non-ASCII character",
     37 => "hduindex exceeds maximum value",
@@ -97,7 +97,8 @@ dictErr = Dict(0 => nothing,
     42 => "undefined numeric type",
     43 => "undefined FORTRAN data type",
     44 => "illegal BINTABLE TFORM datatype",
-    45 => "missing BINTABLE TFORM datatype"
+    45 => "missing BINTABLE TFORM datatype",
+    46 => "cannot create table (rows not all of the same type)"
 )
 
 # ------------------------------------------------------------------------------

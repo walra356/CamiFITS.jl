@@ -296,44 +296,22 @@ end
 
 function _fits_table_data(data)
 
-    hdutype = _format_hdutype("table")
-
-    col = data
-    ncols = length(col)
-
-    T = [eltype(data[i]) for i = 1:ncols]
-    T = [T[i] == Bool ? Int : T[i] for i = 1:ncols]
-
-    o = [T[i].(col[i]) for i = 1:ncols] #ntuple(i -> T[i].(col[i]), ncols)
-
-    return o
-
-end
-
-function _fits_bintable_data(data)
-
-    hdutype = _format_hdutype("bintable")
-
-    ncols = length(data)
-
-    T = []
-
+    nrows = length(data)
     tfields = length(data[1])
 
-    for i = 1:ncols
-        for j = 1:tfields
-            push!(T, typeof(data[i][j]))
+    T = typeof.(data[1])
+
+    for i=1:nrows
+        for j=1:tfields
+            data[i][j] = T[j] == Bool ? Int(data[i][j] ) : data[i][j] 
         end
     end
 
-    println("T = $T") ##################################################################################
+    return data
 
-   # o = [T[i].(col[i]) for i = 1:ncols] #ntuple(i -> T[i].(col[i]), ncols)
-
-    return nothing
 
 end
-
+# ------------------------------------------------------------------------------
 @doc raw"""
     fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
 
@@ -382,7 +360,7 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
     end
 
     dataobject = cast_FITS_dataobject(hdutype, data_extend)
-   
+
     header = cast_FITS_header(dataobject)
 
     push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))

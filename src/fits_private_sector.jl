@@ -291,7 +291,7 @@ function _append_blanks!(records::Vector{String})
     nrec > 0 || Base.throw(FITSError(msgErr(13))) # "END keyword not present
 
     remainder = nrec % 36
-    nblanks = 36 - remainder
+    nblanks = remainder > 0 ? 36 - remainder : 0
 
     if nblanks > 0
         blanks = [Base.repeat(' ', 80) for i = 1:nblanks]

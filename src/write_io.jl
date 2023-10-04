@@ -187,7 +187,7 @@ function IOWrite_TABLE_data(hdu::FITS_HDU)
     nblank = 2880 - nchars % 2880
     # complement last data block with blanks:
     blanks = Base.repeat(' ', nblank)
-    nbyte = Base.write(o, Array{UInt8,1}(record * blanks))
+    nbyte = Base.write(o, Vector{UInt8}(record * blanks))
     remain = nbyte % 2880                      # remainder (incomplete block)
 
     remain > 0 && Base.throw(FITSError(msgErr(6)))
@@ -230,7 +230,9 @@ function IOWrite_BINTABLE_data(hdu::FITS_HDU)
     for i = 1:nrow
         for j = 1:tfields
             field = data[i][j]
+            V = typeof(data[1][j])
             T = typeof(field)
+            T ≠ V && Base.throw(FITSError(msgErr(46)))
             if (T <: Vector) ⊻ (T <: Tuple)
                 t = eltype(field)
             else

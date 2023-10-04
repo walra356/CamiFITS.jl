@@ -353,29 +353,30 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         # data input as array of table COLUMNS
         col = data
         map = header.map
-        ncols = length(col)
-        nrows = length(col[1])
-        
-        # make array of table format descriptors Xw.d
-       
-        cardindex = [max(get(map, "TDISP$i", 0), map["TFORM$i"]) for i = 1:ncols]
+        nrows = length(data)
+        tfields = length(data[1])
 
-        tdisp = [strip(card[cardindex[i]].value, ['\'', ' ']) for i = 1:ncols]
+        # make array of table format descriptors Xw.d
+
+        cardindex = [max(get(map, "TDISP$i", 0), map["TFORM$i"]) for i = 1:tfields]
+
+        tdisp = [strip(card[cardindex[i]].value, ['\'', ' ']) for i = 1:tfields]
         tdisp = string.(tdisp)
 
         # convert data to array of fortran strings
-        strcol = [FORTRAN_fits_table_string(col[i], tdisp[i]) for i = 1:ncols]
+        strcol = [FORTRAN_fits_table_string(data[i], tdisp) for i = 1:nrows]
 
         # w = required widths of fits data fields
-        w = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
+        w = [maximum([length(strcol[i][j]) + 1 for i = 1:nrows]) for j = 1:tfields]
 
         # transpose matrix and join data into vector of strings
-        data = [join([lpad(strcol[i][j], w[i]) for i = 1:ncols]) for j = 1:nrows]
+        data = [join([lpad(strcol[i][j], w[j]) for j = 1:tfields]) for i = 1:nrows]
         # data output as Vector{String}
         # this is the Vector{String} of table ROWS (equal-size fields)
         dataobject = FITS_dataobject(hdutype, data)
 
-     end
+    end
+
 
     return FITS_HDU(hduindex, header, dataobject)
 
@@ -616,43 +617,108 @@ function _header_record_image(dataobject::FITS_dataobject)
 end
 
 # ------------------------------------------------------------------------------
-#                  _header_record_table(dataobject)
+#                  _fits_table_form(col)
 # ------------------------------------------------------------------------------
 
+function _fits_table_form(col::Vector{T}) where {T} #FORTRAN_fits_table_tform(col::Vector{T}) where {T}
+
+
+    x = FORTRAN_eltype_char(T)
+    x ≠ '-' || Base.throw(FITSError(msgErr(40)))
+
+    x = x ∈ ('L', 'B', 'I', 'J', 'K') ? 'I' :
+        (x ∈ ['E', 'D']) & ('e' ∉ string(col[1])) ? 'F' : x
+
+    if x == 'I' # NB. hdutype 'table' does not accept the 'L' descriptor
+        if T == Bool
+            tform = "I1"
+        else
+            strcol = string.(col)
+            w = maximum(length.(strcol))
+            tform = x * string(w)
+        end
+    elseif x == 'F'
+        strcol = string.(col)
+        n = [0, 0]
+        for i ∈ eachindex(col)
+            k = findfirst('.', strcol[i])
+            s = [strcol[i][1:k-1], strcol[i][k+1:end]]
+            m = length.(s)
+            n = max.(n, m)
+        end
+        w = 1 + sum(n)
+        d = n[2]
+        tform = x * string(w) * '.' * string(d)
+    elseif x ∈ ('E', 'D')
+        strcol = string.(col)
+        n = [0, 0, 0]
+        for i ∈ eachindex(col)
+            k = findfirst('.', strcol[i])
+            l = findfirst('e', strcol[i])
+            s = [strcol[i][1:k-1], strcol[i][k+1:l-1], strcol[i][l+1:end]]
+            m = length.(s)
+            n = max.(n, m)
+        end
+        w = 2 + sum(n)
+        d = n[2]
+        tform = x * string(w) * '.' * string(d)
+    elseif x == 'A'
+        strcol = string.(col)
+        w = T == Char ? 1 : maximum(length.(strcol))
+        tform = x * string(w)
+    end
+
+    return tform
+
+end
+
+# ------------------------------------------------------------------------------
+#                  _header_record_table(dataobject)
+# ------------------------------------------------------------------------------
 function _header_record_table(dataobject::FITS_dataobject)
 
     hdutype = dataobject.hdutype
     hdutype == "'TABLE   '" || Base.throw(FITSError(msgErr(30)))
-    col = dataobject.data
+    data = dataobject.data
 
     # data input as Any array of table COLUMNS
-    ncols = length(col) # number of columns in table (= rows in data)
-    nrows = length(col[1]) # number of rows in table (= columns in data)
-    ncols > 0 || Base.throw(FITSError(msgErr(34)))
-    ncols ≤ 999 || Base.throw(FITSError(msgErr(32)))
-    equal = sum(length.(col) .- nrows) == 0 # equal column length test
+    nrows = length(data) # number of rows in table
+    tfields = length(data[1]) # number of fields in table
+    tfields > 0 || Base.throw(FITSError(msgErr(34)))
+    tfields ≤ 999 || Base.throw(FITSError(msgErr(32)))
+
+    # test equal row length
+    equal = [tfields .== length(data[i]) for i = 1:nrows]
+    equal = sum(equal) ÷ nrows == 1
     equal || Base.throw(FITSError(msgErr(33)))
 
+    # test equal row type
+    T = [eltype.(data[i]) for i = 1:nrows]
+    equal = [T[1] .== T[i] for i = 1:nrows]
+    equal = [sum(equal[i]) ÷ tfields for i = 1:nrows]
+    equal = sum(equal) ÷ nrows == 1
+    equal || Base.throw(FITSError(msgErr(46)))
+
     # make array of table format descriptors Xw.d
-    tform = [FORTRAN_fits_table_tform(col[i]) for i=1:ncols]
-    tzero = ntuple(i -> fits_tzero(col[i]), ncols)
-    
+    tform = [_fits_table_form([data[i][j] for i = 1:nrows]) for j = 1:tfields]
+    tzero = Any[fits_zero_offset(T[1][j]) for j = 1:tfields]
+
     # w = required widths of fits data fields
-    w = [cast_FORTRAN_format(tform[i]).width .+ 1 for i=1:ncols]
-    #####width = [maximum([length(strcol[i][j]) + 1 for j = 1:nrows]) for i = 1:ncols]
-    tbcol = [sum(w[1:i-1]) + 1 for i ∈ eachindex(col)]
-    lrow = sum(w[i] for i ∈ eachindex(col))
+    w = [cast_FORTRAN_format(tform[j]).width .+ 1 for j = 1:tfields]
+    tbcol = [sum(w[1:i-1]) + 1 for i = 1:tfields]
+    lrow = sum(w[i] for i = 1:tfields)
 
-    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:ncols]
-    tform = [Base.rpad(tform[i], 20) for i ∈ eachindex(col)]
-    ttype = ["HEAD$i" for i ∈ eachindex(col)]
-    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:ncols]  # default column headers
+    tform = ["'" * Base.rpad(tform[i], 8) * "'" for i = 1:tfields]
+    tform = [Base.rpad(tform[i], 20) for i = 1:tfields]
+    ttype = ["HEAD$i" for i = 1:tfields]
+    ttype = ["'" * Base.rpad(ttype[i], 18) * "'" for i = 1:tfields]  # default column headers
 
-    naxis1 = Base.lpad(lrow, 20) 
+    naxis1 = Base.lpad(lrow, 20)
     naxis2 = Base.lpad(nrows, 20)
-    tfields = Base.lpad(ncols, 20)
-    tbcol = [Base.lpad(tbcol[i], 20) for i = 1:ncols]
-    tzero = [Base.lpad(tzero[i], 20) for i = 1:ncols]
+    tbcol = [Base.lpad(tbcol[i], 20) for i = 1:tfields]
+    tzero = [Base.lpad(tzero[i], 20) for i = 1:tfields]
+
+    ncols = Base.lpad(tfields, 20)
 
     r::Array{String,1} = []
 
@@ -663,18 +729,23 @@ function _header_record_table(dataobject::FITS_dataobject)
     Base.push!(r, "NAXIS2  = " * naxis2 * " / number of rows                                 ")
     Base.push!(r, "PCOUNT  =                    0 / number of bytes in supplemetal data area       ")
     Base.push!(r, "GCOUNT  =                    1 / data blocks contain single table               ")
-    Base.push!(r, "TFIELDS = " * tfields * " / number of data fields (columns)                ")
+    Base.push!(r, "TFIELDS = " * ncols * " / number of data fields (columns)                ")
     Base.push!(r, "COLSEP  =                    1 / number of spaces in column separator           ")
-    for i = 1:ncols
-        Base.push!(r, rpad("TTYPE$i", 8) * "= " * ttype[i] * " / header of column " * rpad(i, 30))
-        Base.push!(r, rpad("TBCOL$i", 8) * "= " * tbcol[i] * " / pointer to column " * rpad(i, 29))
-        Base.push!(r, rpad("TFORM$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
-        Base.push!(r, rpad("TDISP$i", 8) * "= " * tform[i] * " / data type of column " * rpad(i, 27))
-        if strip(tzero[i]) ∉ ("0.0", "nothing")
-            Base.push!(r, rpad("TZERO$i", 8) * "= " * tzero[i] * " / offset data range to that of unsigned integer  ")
-            Base.push!(r, rpad("TSCAL$i", 8) * "=                  1.0 / default scaling factor                         ")
+
+    for j = 1:tfields
+        Base.push!(r, repeat(' ', 80))
+        Base.push!(r, rpad("TTYPE$j", 8) * "= " * ttype[j] * rpad(" / field header", 50))
+        Base.push!(r, rpad("TBCOL$j", 8) * "= " * tbcol[j] * rpad(" / pointer to field column $j", 50))
+        Base.push!(r, rpad("TFORM$j", 8) * "= " * tform[j] * rpad(" / field datatype specifier", 50))
+        Base.push!(r, rpad("TDISP$j", 8) * "= " * tform[j] * rpad(" / proposed field display format", 50))
+        if strip(tzero[j]) ∉ ("0.0", "nothing")
+            Base.push!(r, rpad("TZERO$j", 8) * "= " * tzero[j] * rpad(" / zero offset of field $j", 50))
+            Base.push!(r, rpad("TSCAL$j", 8) * "=                  1.0" * rpad(" / scale factor of field $j", 50)) 
         end
     end
+
+    tfields > 0 ? Base.push!(r, repeat(' ', 80)) : false
+
     Base.push!(r, "END" * repeat(' ', 77))
 
     pass = sum(length.(r) .- 80) == false
@@ -686,6 +757,7 @@ function _header_record_table(dataobject::FITS_dataobject)
     return r
 
 end
+
 
 # ==============================================================================
 #                  _header_record_bintable(dataobject)
@@ -788,9 +860,6 @@ function cast_bintable_field(field)
     X ≠ '-' || error("$t: datatype not part of the FITS standard")
 
     o = _bintable_field(field, T, t, r, X, tdisp, nbyte, tzero, tdims)
-
-    # println("T = $(o.ttype), t = $(o.eltype), r = $(o.repeat), X = $(o.char), tdisp = $(o.tdisp), nbyte = $(o.nbyte), tzero = $(o.tzero), tdims = $(o.dims)") ############################################
-
    
     return o
 
