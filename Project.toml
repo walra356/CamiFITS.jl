@@ -1,13 +1,14 @@
 name = "CamiFITS"
 uuid = "e3d38e7e-66c0-4598-81c1-d1e9bcf43bf0"
 authors = ["Jook Walraven <69215586+walra356@users.noreply.github.com> and contributors"]
-version = "0.2.19" 
+version = "0.2.19"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CamiMath = "d302b3f7-c8ae-418d-9fc2-2c0a42bddda0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+LibGit2_jll = "e37daf67-58a4-590a-8e99-b0245dd2ffc5"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [compat]
