@@ -7,7 +7,7 @@ using Test
     @test test_fits_copy()
     @test test_fits_create()
     @test test_fits_keyword()
-    ###@test test_fits_read()
+    ##@test test_fits_read()
     @test test_fits_save_as()
     @test test_fits_collect()
     @test test_fits_pointer()
