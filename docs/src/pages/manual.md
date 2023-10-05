@@ -207,7 +207,7 @@ For users primarily interested in image processing, the casting
 procedures typically remain hidden as they are called internally by 
 [`fits_create`](@ref) and [`fits_read`](@ref). 
 
-## Example: extending a primary FITS file with 3 standard HDUs
+## Extending a FITS file with standard HDUs
 
 In this section we demonstrate the [`fits_extend!`](@ref) tool to extend the 
 primary hdu of a FITS object by examples of the three *STANDARD* HDU types
@@ -462,6 +462,10 @@ julia> fits_info(f.hdu[3]; hdr=false)
 
 julia> fits_info(f.hdu[4]; hdr=false)
 2-element Vector{Any}:
- Any[1, 0x6c, 1081, 0x0439, 1081, 0x00000439, 1081, 0x0000000000000439, 1.23, 1.01f-6, 1.01e-6, 'a', 'a', "   abc"]
- Any[0, 0x6d, 1011, 0x03f3, 1011, 0x000003f3, 1011, 0x00000000000003f3, 123.4, 3.01f-6, 3.02e-5, 'b', 'b', "abcdef"]
+ Any[1, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, 'a', 'a', "   abc"]
+ Any[0, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 3.001e-5, 'b', 'b', "abcdef"]
+```
+Finally we remove the example: 
+```
+julia> rm(filnam); f = nothing
 ```
