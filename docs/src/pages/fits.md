@@ -45,3 +45,22 @@ fits_zero_offset(T::Type)
 fits_apply_offset(data)
 fits_remove_offset(data, header::FITS_header)
 ```
+
+## Fortran objects 
+
+```@docs
+FORTRAN_format
+```
+
+## Fortran-object casting
+
+```@docs
+cast_FORTRAN_format(str::String)
+```
+
+## FORTRAN-related methods
+
+```@docs
+FORTRAN_eltype_char(T::Type)
+parse_FITS_TABLE(hdu::FITS_HDU)
+```
