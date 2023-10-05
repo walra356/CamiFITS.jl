@@ -314,40 +314,29 @@ end
 # ------------------------------------------------------------------------------
 @doc raw"""
     fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+    fits_extend!(filnam::String, data_extend; hdutype="IMAGE")
 
-HDU array in which the FITS object `f` is extended with the data 
-of `data_extend` in the format of the specified `hdutype`.
+HDU array in which the FITS object `f` or FITS file `filnam` is extended 
+with the data of `data_extend` in the format of the specified `hdutype`.
 #### Examples:
 ```
-julia> filnam = "test.fits";
+julia> filnam = "example.fits";
 
-julia> f = fits_create(filnam; protect=false);
+julia> fits_create(filnam; protect=false);
 
-julia> data = let
-        a1 = Bool[1, 0, 1, 0, 1]
-        a2 = UInt8[108, 108, 108, 108, 108]
-        a3 = Int16[1081, 1082, 1083, 1084, 1085]
-        a4 = UInt16[1081, 1082, 1083, 1084, 1085]
-        a5 = Int32[1081, 1082, 1083, 1084, 10850]
-        a6 = UInt32[1081, 10820, 1083, 1084, 10850]
-        a7 = Int64[1081, 1082, 1083, 1084, 108500]
-        a8 = UInt64[1081, 1082, 1083, 1084, 108500]
-        a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
-        a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
-        a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
-        a12 = ['a', 'b', 'c', 'd', 'e']
-        a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-        data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
-       end;
+julia> table = let
+              [true, 0x6c, 1081, 0x0439, 1.23, 1.01f-6, 1.01e-6, 'a', "a", "abc"],
+              [false, 0x6d, 1011, 0x03f3, 23.2, 3.01f-6, 3.01e-6, 'b', "b", "abcdef"]
+              end;
 
-julia> fits_extend!(f, data; hdutype="table");
+julia> fits_extend!(filnam, table; hdutype="table");
 
-julia> table = fits_info(f.hdu[2]; msg=false);
+julia> fits_info(filnam, 2; hdr=false)
+2-element Vector{String}:
+ " 1 108 1081 1081  1.23 1.01E-6 1.01D-6 a a    abc"
+ " 0 109 1011 1011 23.20 3.01E-6 3.01D-6 b b abcdef"
 
-julia> table[1]
-" T 108 1081 1081  1081  1081   1081   1081  1.23 1.01E-6 1.01D-6 a                    a"
-
-julia> rm(filnam); f = nothing
+julia> rm(filnam)
 ```
 """
 function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")

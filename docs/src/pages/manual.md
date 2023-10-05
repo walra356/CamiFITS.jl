@@ -178,7 +178,7 @@ from disk but it is simpler to access the data using [`fits_info`](@ref) for
 image processing in Julia:
 
 ```
-julia> image = fits_info(filnam; msg=false)
+julia> image = fits_info(filnam; hdr=false)
 3×3×1 Array{Int64, 3}:
 [:, :, 1] =
  11  12  13
