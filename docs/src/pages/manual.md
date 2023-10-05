@@ -113,7 +113,7 @@ above), CamiFITS offers the [`fits_info`](@ref) and
 [`fits_record_dump`](@ref) tools. These tools will be demonstrated in the next 
 sections to demonstrate several [`FITS_HDU`](@ref) types.
 
-## The FITS file for a simple image
+## FITS file for a simple image
 
 In this section we demonstrate the [`fits_info`](@ref) tool to inspect the 
 primary hdu of a FITS object.

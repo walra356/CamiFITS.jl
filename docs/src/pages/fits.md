@@ -1,4 +1,4 @@
-# FITS
+# FITS stucture files
 
 ## Introduction
 
