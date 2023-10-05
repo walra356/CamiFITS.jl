@@ -513,36 +513,6 @@ function dataset_bintable(; j=0)
 
 end
 
-function test_FORTRAN_fits_table_tform()
-
-    data = dataset_1()
-
-    tform = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
-
-    [FORTRAN_fits_table_tform(data[i]) for i = 1:13]
-
-    pass = [FORTRAN_fits_table_tform(data[i]) for i = 1:13] == tform
-
-    pass || println(fits_tform(data) .== tform)
-
-    return pass
-
-end
-
-function test_FORTRAN_fits_table_tdisp()
-
-    data = dataset_1()
-
-    tdisp = ["I1", "I3", "I4", "I4", "I5", "I5", "I6", "I6", "F5.2", "E7.2", "D7.2", "A1", "A20"]
-
-    o = [FORTRAN_fits_table_tdisp(data[i]) for i = 1:13] == tdisp
-
-    o || println([FORTRAN_fits_table_tdisp(data[i]) for i = 1:13] .== tdisp)
-
-    return o
-
-end
-
 function test_table_datatype()
 
     filnam = "kanweg.fits"

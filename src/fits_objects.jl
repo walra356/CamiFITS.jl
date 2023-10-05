@@ -619,7 +619,7 @@ end
 #                  _fits_table_form(col)
 # ------------------------------------------------------------------------------
 
-function _fits_table_form(col::Vector{T}) where {T} #FORTRAN_fits_table_tform(col::Vector{T}) where {T}
+function _fits_table_form(col::Vector{T}) where {T} 
 
 
     x = FORTRAN_eltype_char(T)

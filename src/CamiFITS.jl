@@ -72,7 +72,6 @@ export cast_FITS_test
 
 export FORTRAN_format
 export FORTRAN_eltype_char
-export FORTRAN_fits_table_tform
 
 export cast_FORTRAN_format
 
@@ -118,8 +117,6 @@ export test_format_hdutype
 export test_table_datatype
 export test_bintable_datatype
 export test_FORTRAN_format
-#export test_FORTRAN_fits_table_tform
-#export test_FORTRAN_fits_table_tdisp
 export test_FORTRAN_eltype_char
 export dataset_table
 export dataset_bintable
