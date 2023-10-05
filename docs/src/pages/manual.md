@@ -369,70 +369,17 @@ keyword values.
 #### Adding a binary table HDU extension
 
 The same two-line table can also be included as a *BINARY TABLE* HDU by setting 
-the `hdutype` to 'bintable'. 
-
+the `hdutype` to 'bintable'.
 ```
 julia> fits_extend!(filnam, table; hdutype="bintable");
-```
-```
+
 julia> fits_info(filnam, 4; hdr=true)
-
-File: example.fits
-hdu: 4
-hdutype: 'BINTABLE'
-
-  nr | Metainformation:
----------------------------------------------------------------------------------------
-   1 | XTENSION= 'BINTABLE'           / FITS standard extension
-   2 | BITPIX  =                    8 / number of bits per data pixel
-   3 | NAXIS   =                    2 / number of data axes
-   4 | NAXIS1  =                   52 / number of bytes/row
-   5 | NAXIS2  =                    2 / number of rows
-   6 | PCOUNT  =                    0 / number of bytes in supplemetal data area
-   7 | GCOUNT  =                    1 / data blocks contain single table
-   8 | TFIELDS =                   11 / number of data fields (columns)
-   9 |
-  10 | TTYPE1  = 'HEAD1   '           / field header
-  11 | TFORM1  = '1K      '           / field datatype specifier
-  12 |
-  13 | TTYPE2  = 'HEAD2   '           / field header
-  14 | TFORM2  = '1B      '           / field datatype specifier
-  15 |
-  16 | TTYPE3  = 'HEAD3   '           / field header
-  17 | TFORM3  = '1K      '           / field datatype specifier
-  18 |
-  19 | TTYPE4  = 'HEAD4   '           / field header
-  20 | TFORM4  = '1I      '           / field datatype specifier
-  21 | TZERO4  = 32768                / zero offset of field 4
-  22 | TSCAL4  =                  1.0 / scale factor of field 4
-  23 |
-  24 | TTYPE5  = 'HEAD5   '           / field header
-  25 | TFORM5  = '1K      '           / field datatype specifier
-  26 |
-  27 | TTYPE6  = 'HEAD6   '           / field header
-  28 | TFORM6  = '1D      '           / field datatype specifier
-  29 |
-  30 | TTYPE7  = 'HEAD7   '           / field header
-  31 | TFORM7  = '1E      '           / field datatype specifier
-  32 |
-  33 | TTYPE8  = 'HEAD8   '           / field header
-  34 | TFORM8  = '1D      '           / field datatype specifier
-  35 |
-  36 | TTYPE9  = 'HEAD9   '           / field header
-  37 | TFORM9  = '1A      '           / field datatype specifier
-  38 |
-  39 | TTYPE10 = 'HEAD10  '           / field header
-  40 | TFORM10 = '1A      '           / field datatype specifier
-  41 |
-  42 | TTYPE11 = 'HEAD11  '           / field header
-  43 | TFORM11 = '6A      '           / field datatype specifier
-  44 |
-  45 | END
 
 2-element Vector{Any}:
  Any[1, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, 'a', 'a', "   abc"]
  Any[0, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 3.001e-5, 'b', 'b', "abcdef"]
- ```
+
+```
 
  Note that the two rows are of the same type (with Strings of equal length).
 
