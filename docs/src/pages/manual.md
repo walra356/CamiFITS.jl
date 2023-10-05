@@ -430,7 +430,6 @@ hdutype: 'BINTABLE'
 2-element Vector{Any}:
  Any[1, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, 'a', 'a', "   abc"]
  Any[0, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 3.001e-5, 'b', 'b', "abcdef"]
-
 ```
 
  Note that the two rows are of the same type (with Strings of equal length).
@@ -440,8 +439,8 @@ hdutype: 'BINTABLE'
  By assigning the FITS object to the variable 'f' we have access to the 4 HDUs
  without the overhead of 4 times reading `filnam` into the info.
 
- ```
- julia> f = fits_read(filnam);
+```
+julia> f = fits_read(filnam);
 
 julia> fits_info(f.hdu[1]; hdr=false)
 3×3×1 Array{Int64, 3}:
@@ -465,4 +464,4 @@ julia> fits_info(f.hdu[4]; hdr=false)
 2-element Vector{Any}:
  Any[1, 0x6c, 1081, 0x0439, 1081, 0x00000439, 1081, 0x0000000000000439, 1.23, 1.01f-6, 1.01e-6, 'a', 'a', "   abc"]
  Any[0, 0x6d, 1011, 0x03f3, 1011, 0x000003f3, 1011, 0x00000000000003f3, 123.4, 3.01f-6, 3.02e-5, 'b', 'b', "abcdef"]
- ```
+```
