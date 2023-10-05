@@ -18,7 +18,7 @@ record numbering.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `nr`: include cardindex (::Bool - default: `false`)
-* `msg`: show header (::Bool)
+* `hdr`: show header (::Bool)
 #### Example:
 To demonstrate `fits_info` we first create the fits object `f` for subsequent 
 inspection.
@@ -309,7 +309,6 @@ function _fits_table_data(data)
 
     return data
 
-
 end
 # ------------------------------------------------------------------------------
 @doc raw"""
@@ -325,9 +324,9 @@ julia> filnam = "example.fits";
 julia> fits_create(filnam; protect=false);
 
 julia> table = let
-              [true, 0x6c, 1081, 0x0439, 1.23, 1.01f-6, 1.01e-6, 'a', "a", "abc"],
-              [false, 0x6d, 1011, 0x03f3, 23.2, 3.01f-6, 3.01e-6, 'b', "b", "abcdef"]
-              end;
+        [true, 0x6c, 1081, 0x0439, 1.23, 1.01f-6, 1.01e-6, 'a', "a", "abc"],
+        [false, 0x6d, 1011, 0x03f3, 23.2, 3.01f-6, 3.01e-6, 'b', "b", "abcdef"]
+        end;
 
 julia> fits_extend!(filnam, table; hdutype="table");
 
