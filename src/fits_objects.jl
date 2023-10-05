@@ -319,7 +319,6 @@ end
 #             cast_FITS_HDU(hduindex, header, dataobject)
 # ------------------------------------------------------------------------------
 
-
 @doc raw"""
     cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 
@@ -828,7 +827,6 @@ function cast_bintable_field(field)
         nbyte = r * sizeof(t)
         tdisp = X * string(length(string(typemax(t))))
         tzero = _tzero_value(t)
-        # tzero = r > 1 ? nothing : _tzero_value(t) ##################################################################
         tdims = T <: Tuple ? nothing : r > 1 ? size(field) : nothing 
     elseif t <: Real
         r = length(field)
@@ -903,6 +901,22 @@ function _header_record_bintable(dataobject::FITS_dataobject)
         push!(nbyte, field.nbyte)
     end
 
+    for j = 1:tfields
+        r = 0
+        if typeof(data[1][j]) == String
+            for i = 1:nrows
+                d = data[i][j]
+                ℓ = length(d)
+                r = ℓ > r ? ℓ : r
+            end
+            for i = 1:nrows
+                d = data[i][j]
+                data[i][j] = lpad(d, r)
+            end
+            tform[j] = "'" * Base.rpad(string(r) * 'A', 8) * "'"
+        end
+    end
+
     tfield = Base.lpad(tfields, 20)
     naxis1 = Base.lpad(sum(nbyte), 20)
     naxis2 = Base.lpad(nrows, 20)
@@ -929,7 +943,7 @@ function _header_record_bintable(dataobject::FITS_dataobject)
         Base.push!(r, rpad("TTYPE$j", 8) * "= " * ttype[j] * rpad(" / field header", 50))
         Base.push!(r, rpad("TFORM$j", 8) * "= " * tform[j] * rpad(" / field datatype specifier", 50))
         if strip(tdisp[j], ['\'', ' ']) ≠ "nothing"
-            Base.push!(r, rpad("TDISP$j", 8) * "= " * tdisp[j] * rpad(" / proposed field display format", 50))
+            #Base.push!(r, rpad("TDISP$j", 8) * "= " * tdisp[j] * rpad(" / proposed field display format", 50))
         end
         if strip(tdims[j], ['\'', ' ']) ≠ "nothing"
             Base.push!(r, rpad("TDIM$j", 8) * "= " * tdims[j] * rpad(" / array dimensions of field $j", 50))

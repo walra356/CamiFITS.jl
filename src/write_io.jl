@@ -260,8 +260,6 @@ function IOWrite_BINTABLE_data(hdu::FITS_HDU)
             # write data from field:
             if (T <: Vector) ⊻ (T <: Tuple)
                 Any[Base.write(o, field[k]) for k ∈ eachindex(field)]
-            #elseif t == String
-            #    Base.write(o, collect(field))
             else
                 Base.write(o, field)
             end

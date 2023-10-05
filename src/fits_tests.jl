@@ -384,9 +384,9 @@ function dataset_table()
     a6, b6 = UInt32(1081), UInt32(1011)
     a7, b7 = Int64(1081), Int64(1011)
     a8, b8 = UInt64(1081), UInt64(1011)
-    a9, b9 = 1.23, 23.2
+    a9, b9 = 1.23, 123.4
     a10, b10 = Float32(1.01e-6), Float32(3.01e-6)
-    a11, b11 = Float64(1.01e-6), Float64(3.01e-6)
+    a11, b11 = Float64(1.01e-6), Float64(30.01e-6)
     a12, b12 = 'a', 'b'
     a13, b13 = "a", "b"
     a14, b14 = "abc", "abcdef"
@@ -394,7 +394,7 @@ function dataset_table()
     data1 = Any[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14]
     data2 = Any[b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14]
 
-    data = [data1, data2]
+    data = Any[data1, data2]
 
     return data
 
