@@ -207,7 +207,7 @@ For users primarily interested in image processing, the casting
 procedures typically remain hidden as they are called internally by 
 [`fits_create`](@ref) and [`fits_read`](@ref). 
 
-## Example: Extending a primary FITS file with 3 standard HDUs
+## Example: extending a primary FITS file with 3 standard HDUs
 
 In this section we demonstrate the [`fits_extend!`](@ref) tool to extend the 
 primary hdu of a FITS object by examples of the three *STANDARD* HDU types
@@ -265,13 +265,17 @@ Datasize: (2, 3, 1)
 ```
 #### Adding a table HDU extension
 We first define (or load) the table (in this example a two-row table):
+
 ```
-julia> table = [
-       [true, 0x6c, 1081, 0x0439, 1081, 0x00000439, 1081, 0x0000000000000439, 1.23, 1.01f-6, 1.01e-6, 'a', "a", "abc"],
-       [false, 0x6d, 1011, 0x03f3, 1011, 0x000003f3, 1011, 0x00000000000003f3, 23.2, 3.01f-6, 3.01e-6, 'b', "b", "abcdef"]];
+julia> table = let
+       [true, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, 'a', "a", "abc"],
+       [false, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 30.01e-6, 'b', "b", "abcdef"]
+       end;
 ```
+
 We extend the file by a table HDU by setting the `hdutype`` to 'table'. The
 result is inspected using `fits_info()` by setting the hduindex to 3
+
 ```
 julia> fits_extend!(filnam, table; hdutype="table");
 
@@ -286,11 +290,11 @@ hdutype: 'TABLE   '
    1 | XTENSION= 'TABLE   '           / FITS standard extension
    2 | BITPIX  =                    8 / number of bits per data pixel
    3 | NAXIS   =                    2 / number of data axes
-   4 | NAXIS1  =                   70 / number of bytes/row
+   4 | NAXIS1  =                   56 / number of bytes/row
    5 | NAXIS2  =                    2 / number of rows
    6 | PCOUNT  =                    0 / number of bytes in supplemetal data area
    7 | GCOUNT  =                    1 / data blocks contain single table
-   8 | TFIELDS =                   14 / number of data fields (columns)
+   8 | TFIELDS =                   11 / number of data fields (columns)
    9 | COLSEP  =                    1 / number of spaces in column separator
   10 |
   11 | TTYPE1  = 'HEAD1             ' / field header
@@ -322,64 +326,51 @@ hdutype: 'TABLE   '
   37 |
   38 | TTYPE6  = 'HEAD6             ' / field header
   39 | TBCOL6  =                   22 / pointer to field column 6
-  40 | TFORM6  = 'I4      '           / field datatype specifier
-  41 | TDISP6  = 'I4      '           / proposed field display format
-  42 | TZERO6  =           2147483648 / zero offset of field 6
-  43 | TSCAL6  =                  1.0 / scale factor of field 6
-  44 |
-  45 | TTYPE7  = 'HEAD7             ' / field header
-  46 | TBCOL7  =                   27 / pointer to field column 7
-  47 | TFORM7  = 'I4      '           / field datatype specifier
-  48 | TDISP7  = 'I4      '           / proposed field display format
-  49 |
-  50 | TTYPE8  = 'HEAD8             ' / field header
-  51 | TBCOL8  =                   32 / pointer to field column 8
-  52 | TFORM8  = 'I4      '           / field datatype specifier
-  53 | TDISP8  = 'I4      '           / proposed field display format
-  54 | TZERO8  =  9223372036854775808 / zero offset of field 8
-  55 | TSCAL8  =                  1.0 / scale factor of field 8
-  56 |
-  57 | TTYPE9  = 'HEAD9             ' / field header
-  58 | TBCOL9  =                   37 / pointer to field column 9
-  59 | TFORM9  = 'F6.2    '           / field datatype specifier
-  60 | TDISP9  = 'F6.2    '           / proposed field display format
-  61 |
-  62 | TTYPE10 = 'HEAD10            ' / field header
-  63 | TBCOL10 =                   44 / pointer to field column 10
-  64 | TFORM10 = 'E7.2    '           / field datatype specifier
-  65 | TDISP10 = 'E7.2    '           / proposed field display format
-  66 |
-  67 | TTYPE11 = 'HEAD11            ' / field header
-  68 | TBCOL11 =                   52 / pointer to field column 11
-  69 | TFORM11 = 'D7.2    '           / field datatype specifier
-  70 | TDISP11 = 'D7.2    '           / proposed field display format
-  71 |
-  72 | TTYPE12 = 'HEAD12            ' / field header
-  73 | TBCOL12 =                   60 / pointer to field column 12
-  74 | TFORM12 = 'A1      '           / field datatype specifier
-  75 | TDISP12 = 'A1      '           / proposed field display format
-  76 |
-  77 | TTYPE13 = 'HEAD13            ' / field header
-  78 | TBCOL13 =                   62 / pointer to field column 13
-  79 | TFORM13 = 'A1      '           / field datatype specifier
-  80 | TDISP13 = 'A1      '           / proposed field display format
-  81 |
-  82 | TTYPE14 = 'HEAD14            ' / field header
-  83 | TBCOL14 =                   64 / pointer to field column 14
-  84 | TFORM14 = 'A6      '           / field datatype specifier
-  85 | TDISP14 = 'A6      '           / proposed field display format
-  86 |
-  87 | END
+  40 | TFORM6  = 'F6.2    '           / field datatype specifier
+  41 | TDISP6  = 'F6.2    '           / proposed field display format
+  42 |
+  43 | TTYPE7  = 'HEAD7             ' / field header
+  44 | TBCOL7  =                   29 / pointer to field column 7
+  45 | TFORM7  = 'E7.2    '           / field datatype specifier
+  46 | TDISP7  = 'E7.2    '           / proposed field display format
+  47 |
+  48 | TTYPE8  = 'HEAD8             ' / field header
+  49 | TBCOL8  =                   37 / pointer to field column 8
+  50 | TFORM8  = 'D8.3    '           / field datatype specifier
+  51 | TDISP8  = 'D8.3    '           / proposed field display format
+  52 |
+  53 | TTYPE9  = 'HEAD9             ' / field header
+  54 | TBCOL9  =                   46 / pointer to field column 9
+  55 | TFORM9  = 'A1      '           / field datatype specifier
+  56 | TDISP9  = 'A1      '           / proposed field display format
+  57 |
+  58 | TTYPE10 = 'HEAD10            ' / field header
+  59 | TBCOL10 =                   48 / pointer to field column 10
+  60 | TFORM10 = 'A1      '           / field datatype specifier
+  61 | TDISP10 = 'A1      '           / proposed field display format
+  62 |
+  63 | TTYPE11 = 'HEAD11            ' / field header
+  64 | TBCOL11 =                   50 / pointer to field column 11
+  65 | TFORM11 = 'A6      '           / field datatype specifier
+  66 | TDISP11 = 'A6      '           / proposed field display format
+  67 |
+  68 | END
 
 2-element Vector{String}:
- " 1 108 1081 1081 1081 1081 1081 1081   1.23 1.01E-6 1.01D-6 a a    abc"
- " 0 109 1011 1011 1011 1011 1011 1011 123.40 3.01E-6 3.02D-5 b b abcdef"
+ " 1 108 1081 1081 1081   1.23 1.01E-6 1.010D-6 a a    abc"
+ " 0 109 1011 1011 1011 123.40 3.01E-6 3.001D-5 b b abcdef"
 ```
-Note that the numerical-input 'table' has been reformatted in the form of an
-array of strings as required for *ASCII TABLE* HDUs.
+
+Note that the numerical-input 'table' has been cast in the form of an
+array of printable-ASCII characters ordered in columns of width defined by the 
+'TBCOL#' keyword values in a FORTRAN format as specified by the 'TFORM#' 
+keyword values.
+
 #### Adding a binary table HDU extension
-The same two-line table can also be includen as a *BINAR TABLE* HDU by setting 
+
+The same two-line table can also be included as a *BINARY TABLE* HDU by setting 
 the `hdutype` to 'bintable'. 
+
 ```
 julia> fits_extend!(filnam, table; hdutype="bintable");
 
@@ -394,11 +385,11 @@ hdutype: 'BINTABLE'
    1 | XTENSION= 'BINTABLE'           / FITS standard extension
    2 | BITPIX  =                    8 / number of bits per data pixel
    3 | NAXIS   =                    2 / number of data axes
-   4 | NAXIS1  =                   72 / number of bytes/row
+   4 | NAXIS1  =                   52 / number of bytes/row
    5 | NAXIS2  =                    2 / number of rows
    6 | PCOUNT  =                    0 / number of bytes in supplemetal data area
    7 | GCOUNT  =                    1 / data blocks contain single table
-   8 | TFIELDS =                   14 / number of data fields (columns)
+   8 | TFIELDS =                   11 / number of data fields (columns)
    9 |
   10 | TTYPE1  = 'HEAD1   '           / field header
   11 | TFORM1  = '1K      '           / field datatype specifier
@@ -418,43 +409,34 @@ hdutype: 'BINTABLE'
   25 | TFORM5  = '1K      '           / field datatype specifier
   26 |
   27 | TTYPE6  = 'HEAD6   '           / field header
-  28 | TFORM6  = '1J      '           / field datatype specifier
-  29 | TZERO6  = 2147483648           / zero offset of field 6
-  30 | TSCAL6  =                  1.0 / scale factor of field 6
-  31 |
-  32 | TTYPE7  = 'HEAD7   '           / field header
-  33 | TFORM7  = '1K      '           / field datatype specifier
-  34 |
-  35 | TTYPE8  = 'HEAD8   '           / field header
-  36 | TFORM8  = '1K      '           / field datatype specifier
-  37 | TZERO8  = 9223372036854775808  / zero offset of field 8
-  38 | TSCAL8  =                  1.0 / scale factor of field 8
-  39 |
-  40 | TTYPE9  = 'HEAD9   '           / field header
-  41 | TFORM9  = '1D      '           / field datatype specifier
-  42 |
-  43 | TTYPE10 = 'HEAD10  '           / field header
-  44 | TFORM10 = '1E      '           / field datatype specifier
-  45 |
-  46 | TTYPE11 = 'HEAD11  '           / field header
-  47 | TFORM11 = '1D      '           / field datatype specifier
-  48 |
-  49 | TTYPE12 = 'HEAD12  '           / field header
-  50 | TFORM12 = '1A      '           / field datatype specifier
-  51 |
-  52 | TTYPE13 = 'HEAD13  '           / field header
-  53 | TFORM13 = '1A      '           / field datatype specifier
-  54 |
-  55 | TTYPE14 = 'HEAD14  '           / field header
-  56 | TFORM14 = '6A      '           / field datatype specifier
-  57 |
-  58 | END
+  28 | TFORM6  = '1D      '           / field datatype specifier
+  29 |
+  30 | TTYPE7  = 'HEAD7   '           / field header
+  31 | TFORM7  = '1E      '           / field datatype specifier
+  32 |
+  33 | TTYPE8  = 'HEAD8   '           / field header
+  34 | TFORM8  = '1D      '           / field datatype specifier
+  35 |
+  36 | TTYPE9  = 'HEAD9   '           / field header
+  37 | TFORM9  = '1A      '           / field datatype specifier
+  38 |
+  39 | TTYPE10 = 'HEAD10  '           / field header
+  40 | TFORM10 = '1A      '           / field datatype specifier
+  41 |
+  42 | TTYPE11 = 'HEAD11  '           / field header
+  43 | TFORM11 = '6A      '           / field datatype specifier
+  44 |
+  45 | END
 
 2-element Vector{Any}:
- Any[1, 0x6c, 1081, 0x0439, 1081, 0x00000439, 1081, 0x0000000000000439, 1.23, 1.01f-6, 1.01e-6, 'a', 'a', "   abc"]
- Any[0, 0x6d, 1011, 0x03f3, 1011, 0x000003f3, 1011, 0x00000000000003f3, 123.4, 3.01f-6, 3.02e-5, 'b', 'b', "abcdef"]
+ Any[1, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, 'a', 'a', "   abc"]
+ Any[0, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 3.001e-5, 'b', 'b', "abcdef"]
  ```
+
+ Note that the two rows are of the same type (with Strings of equal length).
+
  #### Easy navigation
+ 
  By assigning the FITS object to the variable 'f' we have access to the 4 HDUs
  without the overhead of 4 times reading `filnam` into the info.
  ```
