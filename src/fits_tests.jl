@@ -15,17 +15,17 @@ function test_fits_info()
     for i ∈ eachindex(T)
         data = [typemin(T[i]), typemax(T[i])]
         f = fits_create(filnam, data; protect=false)
-        a = fits_info(f; msg=false) == data
+        a = fits_info(f; hdr=false) == data
         push!(c, a)
-        a = fits_info(filnam; msg=false) == data  # [1] == '\n'
+        a = fits_info(filnam; hdr=false) == data  # [1] == '\n'
         push!(c, a)
     end
 
     data = [1.23, 4.56]
     f = fits_create(filnam, data; protect=false)
-    a = fits_info(f; msg=false) == data
+    a = fits_info(f; hdr=false) == data
     push!(c, a)
-    a = fits_info(filnam; msg=false) == data  # [1] == '\n'
+    a = fits_info(filnam; hdr=false) == data  # [1] == '\n'
     push!(c, a)
 
     rm(filnam)
@@ -48,8 +48,8 @@ function test_fits_info1()
 
     f = fits_create(filnam, data; protect=false)
 
-    a = fits_info(f; msg=false) == data
-    b = fits_info(filnam; msg=false) == data  # [1] == '\n'
+    a = fits_info(f; hdr=false) == data
+    b = fits_info(filnam; hdr=false) == data  # [1] == '\n'
 
     rm(filnam)
 
@@ -135,7 +135,7 @@ function test_fits_collect()
         fits_create("T$i.fits", data1(i); protect=false)
     end
     f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
-    dataout = fits_info(f; msg=false)
+    dataout = fits_info(f; hdr=false)
     a = dataout[2, 1] == data1(2)[1]
 
     data2(i) = [0, i, 0]
@@ -143,7 +143,7 @@ function test_fits_collect()
         fits_create("T$i.fits", data2(i); protect=false)
     end
     f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
-    dataout = fits_info(f; msg=false)
+    dataout = fits_info(f; hdr=false)
     b = dataout[2, :] == data2(2)
 
     data3(i) = [0 i 0]
@@ -151,7 +151,7 @@ function test_fits_collect()
         fits_create("T$i.fits", data3(i); protect=false)
     end
     f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
-    dataout = fits_info(f; msg=false)
+    dataout = fits_info(f; hdr=false)
     c = dataout[:, :, 2] == data3(2)[:, :, 1]
 
     data4(i) = [0 0 0; 0 i 0; 0 0 0]
@@ -159,7 +159,7 @@ function test_fits_collect()
         fits_create("T$i.fits", data4(i); protect=false)
     end
     f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
-    dataout = fits_info(f; msg=false)
+    dataout = fits_info(f; hdr=false)
     d = dataout[:, :, 2] == data4(2)[:, :, 1]
 
     data5(i) = [0 0 0; 0 i 0; 0 0 0;;;]
@@ -167,7 +167,7 @@ function test_fits_collect()
         fits_create("T$i.fits", data5(i); protect=false)
     end
     f = fits_collect("T1.fits", "T5.fits"; protect=false, msg=false)
-    dataout = fits_info(f; msg=false)
+    dataout = fits_info(f; hdr=false)
     e = dataout[:, :, 2] == data5(2)[:, :, 1]
 
     for i = 1:5
@@ -371,27 +371,6 @@ function test_FORTRAN_format()
     o || println([a, b, c, d])
 
     return o
-
-end
-
-function dataset_1()
-
-    a1 = Bool[1, 0, 1, 0, 1]
-    a2 = UInt8[108, 108, 108, 108, 108]
-    a3 = Int16[1081, 1082, 1083, 1084, 1085]
-    a4 = UInt16[1081, 1082, 1083, 1084, 1085]
-    a5 = Int32[1081, 1082, 1083, 1084, 10850]
-    a6 = UInt32[1081, 10820, 1083, 1084, 10850]
-    a7 = Int64[1081, 1082, 1083, 1084, 108500]
-    a8 = UInt64[1081, 1082, 1083, 1084, 108500]
-    a9 = [1.23, 2.12, 3.0, 40.0, 5.0]
-    a10 = Float32[1.01e-6, 2e-6, 3.0e-6, 4.0e6, 5.0e-6]
-    a11 = Float64[1.01e-6, 2.0e-6, 3.0e-6, 4.0e-6, 50.0e-6]
-    a12 = ['a', 'b', 'c', 'd', 'e']
-    a13 = ["a", "bb", "ccc", "dddd", "ABCeeaeeEEEEEEEEEEEE"]
-    data = (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13)
-
-    return data
 
 end
 

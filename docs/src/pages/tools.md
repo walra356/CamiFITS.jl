@@ -3,7 +3,7 @@
 ## FITS metainformation
 
 ```@docs
-fits_info(hdu::FITS_HDU; nr=true, msg=true)
+fits_info(hdu::FITS_HDU; nr=true, hdr=true)
 fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=true)
 ```
 
@@ -12,6 +12,7 @@ fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=tr
 ```@docs
 fits_create(filnam::String, data=nothing; protect=true, msg=true)
 fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+fits_extend!(filnam::String, data_extend; hdutype="IMAGE")
 fits_collect(filnamFirst::String, filnamLast::String; protect=true)
 ```
 

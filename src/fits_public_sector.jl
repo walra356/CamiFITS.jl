@@ -6,19 +6,19 @@
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-#                   fits_info(f::FITS, hduindex=1; msg=true)
+#                   fits_info(f::FITS, hduindex=1; hdr=true)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_info(f::FITS [, hduindex=1] [; nr=false [, msg=true]])
-    fits_info(hdu::FITS_HDU; nr=false, msg=true)
+    fits_info(f::FITS [, hduindex=1] [; nr=false [, hdr=true]])
+    fits_info(hdu::FITS_HDU; nr=false, hdr=true)
 
 Metafinformation and data of a given [`FITS_HDU`](@ref) object with *optional*
 record numbering. 
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `nr`: include cardindex (::Bool - default: `false`)
-* `msg`: print message (::Bool)
+* `msg`: show header (::Bool)
 #### Example:
 To demonstrate `fits_info` we first create the fits object `f` for subsequent 
 inspection.
@@ -47,14 +47,14 @@ Any[]
 
 julia> rm(filnam); f = nothing
 ```
-    fits_info(filnam::String [, hduindex=1] [; nr=true [, msg=true]])
+    fits_info(filnam::String [, hduindex=1] [; nr=true [, hdr=true]])
 
 Same as above but creating the fits object by reading `filnam` from disc and
 with *default* record nubering.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `nr`: include cardindex (::Bool - default: `true`)
-* `msg`: print message (::Bool)
+* `hdr`: show header (::Bool)
 #### Example:
 ```
 julia> filnam = "minimal.fits";
@@ -83,7 +83,7 @@ Any[]
 julia> rm(filnam)
 ```
 """
-function fits_info(hdu::FITS_HDU; nr=false, msg=true)
+function fits_info(hdu::FITS_HDU; nr=false, hdr=true)
 
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
@@ -113,22 +113,22 @@ function fits_info(hdu::FITS_HDU; nr=false, msg=true)
 
     Base.append!(str, record)
 
-    msg && println(Base.join(str .* "\r\n"))
+    hdr && println(Base.join(str .* "\r\n"))
 
     return hdu.dataobject.data
 
 end
 # ------------------------------------------------------------------------------
-function fits_info(f::FITS, hduindex=1; nr=false, msg=true)
+function fits_info(f::FITS, hduindex=1; nr=false, hdr=true)
 
     str = "\nFile: " * f.filnam.value
-    msg && println(str)
+    hdr && println(str)
 
-    return fits_info(f.hdu[hduindex]; nr, msg)
+    return fits_info(f.hdu[hduindex]; nr, hdr)
 
 end
 # ------------------------------------------------------------------------------
-function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
+function fits_info(filnam::String, hduindex=1; nr=true, hdr=true)
 
     o = IORead(filnam)
 
@@ -138,9 +138,9 @@ function fits_info(filnam::String, hduindex=1; nr=true, msg=true)
 
     str = "\nFile: " * filnam
     
-    msg && println(str)
+    hdr && println(str)
 
-    return fits_info(hdu; nr, msg)
+    return fits_info(hdu; nr, hdr)
 
 end
 
@@ -368,6 +368,17 @@ function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
     fits_save(f)
 
     return f
+
+end
+function fits_extend!(filnam::String, data_extend; hdutype="IMAGE")
+
+    Base.Filesystem.isfile(filnam) || return println("file not found")
+
+    f = fits_read(filnam)
+    
+    o = fits_extend!(f, data_extend; hdutype)
+
+    return o
 
 end
 
