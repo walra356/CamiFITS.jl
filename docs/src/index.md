@@ -40,8 +40,3 @@ julia> using Pkg; Pkg.add("CamiFITS")
 
 julia> using CamiFITS
 ```
-
-## Index
-
-```@index
-```
