@@ -286,7 +286,7 @@ hdu: 3
 hdutype: 'TABLE   '
 
   nr | Metainformation:
----------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
    1 | XTENSION= 'TABLE   '           / FITS standard extension
    2 | BITPIX  =                    8 / number of bits per data pixel
    3 | NAXIS   =                    2 / number of data axes
@@ -373,7 +373,8 @@ the `hdutype` to 'bintable'.
 
 ```
 julia> fits_extend!(filnam, table; hdutype="bintable");
-
+```
+```
 julia> fits_info(filnam, 4; hdr=true)
 
 File: example.fits
@@ -439,6 +440,7 @@ hdutype: 'BINTABLE'
  
  By assigning the FITS object to the variable 'f' we have access to the 4 HDUs
  without the overhead of 4 times reading `filnam` into the info.
+
  ```
  julia> f = fits_read(filnam);
 
