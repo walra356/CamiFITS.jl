@@ -15,7 +15,7 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 BenchmarkTools = "1"
 CamiMath = "0.1"
 LaTeXStrings = "1"
-julia = "1.9"
+julia = "1.9.4"
 Statistics = "1.9.0"
 
 [extras]
