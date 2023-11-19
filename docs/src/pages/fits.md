@@ -1,4 +1,4 @@
-# FITS stucture
+# FITS structure
 
 ## Introduction
 
