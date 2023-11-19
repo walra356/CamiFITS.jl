@@ -106,7 +106,7 @@ Once ready it is good practice to remove the example:
 julia> rm(filnam); f = nothing
 ```
 
-### Fits inspection tools
+### FITS inspection tools
 
 Rather than inspecting the [`FITS`](@ref) object directly (as demonstrated 
 above), CamiFITS offers the [`fits_info`](@ref) and 
@@ -273,7 +273,7 @@ julia> table = let
        end;
 ```
 
-We extend the file by a table HDU by setting the `hdutype`` to 'table'. The
+We extend the file by a table HDU by setting the `hdutype` to 'table'. The
 result is inspected using `fits_info()` by setting the hduindex to 3
 
 ```
