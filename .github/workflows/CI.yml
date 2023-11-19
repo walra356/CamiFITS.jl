@@ -14,7 +14,7 @@ jobs:
       matrix:
         version:
           - '1'       # current stable
-        #  - 'nightly'
+          - 'nightly'
         os:
           - ubuntu-latest
           - macOS-latest
@@ -68,7 +68,7 @@ jobs:
           cache-name: cache-artifacts
         with:
           path: ~/.julia/artifacts
-          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
+          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('Project.toml') }}
           restore-keys: |
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
