@@ -8,7 +8,7 @@ makedocs(;
     sitename = "CamiFITS.jl",
     format=Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://walra356.github.io/CamiFITS.jl",
+        repolink = "https://walra356.github.io/CamiFITS.jl",
         assets = String[]
     ),
     pages=[
