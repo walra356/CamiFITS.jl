@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+    ],
+    "settings": {
+        "workbench.colorTheme": "Visual Studio Dark",
+        "terminal.integrated.commandsToSkipShell": [
+            "language-julia.interrupt"
+        ],
+        "julia.enableTelemetry": true,
+        "git.confirmSync": false,
+        "explorer.confirmDelete": false
+    }
+}
