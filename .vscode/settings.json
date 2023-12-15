@@ -17,9 +17,12 @@
         80
     ],
     "diffEditor.ignoreTrimWhitespace": false,
+    "editor.fontSize": 12,
     "editor.renderWhitespace": "none",
     "editor.detectIndentation": false,
-    "editor.fontSize": 12,
-    "julia.environmentPath": "c:\\Users\\jwalrav1\\.julia\\dev\\CamiFITS.jl",
+    "settingsSync.ignoredSettings": [
+        "-julia.executablePath"
+    ],
+    "julia.environmentPath": "c:\\Users\\jwalrav1\\.julia\\dev\\CamiFits.jl",
     "julia.executablePath": "\"C:\\Julia\\julia-1.9.4\\bin\\julia.exe\""
 }
