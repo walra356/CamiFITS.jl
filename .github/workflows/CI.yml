@@ -28,17 +28,6 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v1
-        with:
-            cache-name: julia-cache-CI-test
-            include-matrix: true
-            cache-artifacts: true
-            cache-packages: true
-            cache-registries: false
-            cache-compiled: true
-            cache-scratchspaces: true
-            cache-logs: true
-            delete-old-caches: true
-            #token: ***
         env:
           cache-name: cache-artifacts
       - uses: julia-actions/julia-buildpkg@v1
