@@ -1,8 +1,10 @@
 {
-	"folders": [
-		{
-			"path": ".."
-		}
+    "folders": [
+        {
+            "path": ".."
+        }
     ],
-    "settings": {}
+    "settings": {
+        "julia.environmentPath": "c:\\Users\\jwalrav1\\.julia\\dev\\CamiMath.jl"
+    }
 }
