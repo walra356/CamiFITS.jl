@@ -14,7 +14,7 @@ jobs:
       matrix:
         version:
           - '1'       # current stable
-        #  - 'nightly' 
+          - 'nightly' 
         os:
           - ubuntu-latest
           - macOS-latest
@@ -22,7 +22,7 @@ jobs:
         arch:
           - x64
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
@@ -46,12 +46,12 @@ jobs:
         format:
           - html
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         name: Check out repository
       - uses: actions/setup-node@v3
         name: Set up Node.js
         with:
-          node-version: 16
+          node-version: 20
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
