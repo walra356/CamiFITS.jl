@@ -6,12 +6,14 @@ version = "0.2.22"
 [deps]
 CamiMath = "d302b3f7-c8ae-418d-9fc2-2c0a42bddda0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+#LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 # DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [compat]
 julia = "1"
 CamiMath = "0.1.13"
+#LaTeXStrings = "1.4.0"
 #DocumenterTools = "0.1.18"
 
 [extras]

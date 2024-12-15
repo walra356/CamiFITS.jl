@@ -1,8 +1,12 @@
 module CamiFITS
 
 import CamiMath
-import Printf
-import Dates           # used in fits_private_sector
+#import Printf
+#import Dates           # used in fits_private_sector
+
+using Printf
+using Dates           # used in fits_private_sector
+using LinearAlgebra
 
 #export _read_TABLE_data
 export IORead

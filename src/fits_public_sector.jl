@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_info(f::FITS [, hduindex=1] [; nr=false [, hdr=true]])
+    fits_info(f::FITS [, hduindex=1 [; nr=false [, hdr=true]]])
     fits_info(hdu::FITS_HDU; nr=false, hdr=true)
 
 Metafinformation and data of a given [`FITS_HDU`](@ref) object with *optional*
@@ -47,7 +47,7 @@ Any[]
 
 julia> rm(filnam); f = nothing
 ```
-    fits_info(filnam::String [, hduindex=1] [; nr=true [, hdr=true]])
+    fits_info(filnam::String [, hduindex=1 [; nr=true [, hdr=true]]])
 
 Same as above but creating the fits object by reading `filnam` from disc and
 with *default* record numbering.
@@ -149,7 +149,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_record_dump(filnam [, hduindex=0] [; hdr=true [, dat=true [, nr=true [, msg=true]]]])
+    fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true [, msg=true]]]])
 
 Listing of all single-line records (card records) as read from `filnam` on disc.
 The dump proceeds *without casting of FITS objects*; i.e., *without* 
@@ -312,8 +312,8 @@ function _fits_table_data(data)
 end
 # ------------------------------------------------------------------------------
 @doc raw"""
-    fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
-    fits_extend!(filnam::String, data_extend; hdutype="IMAGE")
+    fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
+    fits_extend!(filnam::String, data_extend [; hdutype="IMAGE"])
 
 HDU array in which the FITS object `f` or FITS file `filnam` is extended 
 with the data of `data_extend` in the format of the specified `hdutype`.
@@ -428,7 +428,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_copy(filnam1 [, filnam2=""] [; protect=true]])
+    fits_copy(filnam1 [, filnam2="" [; protect=true]])
 
 Copy `filnam1` to `filnam2` (with mandatory `.fits` extension)
 Key:
@@ -465,7 +465,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_collect(fileStart::String, fileStop::String [; protect=true[], msg=true]])
+    fits_collect(fileStart::String, fileStop::String [; protect=true [, msg=true]])
 
 Combine "fileStart" with "fileStop" (with mandatory ".fits" extension)
 
