@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Manual · CamiFITS.jl</title><meta name="title" content="Manual · CamiFITS.jl"/><meta property="og:title" content="Manual · CamiFITS.jl"/><meta property="twitter:title" content="Manual · CamiFITS.jl"/><meta name="description" content="Documentation for CamiFITS.jl."/><meta property="og:description" content="Documentation for CamiFITS.jl."/><meta property="twitter:description" content="Documentation for CamiFITS.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CamiFITS.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li class="is-active"><a class="tocitem" href>Manual</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#FITS-file-for-a-simple-image"><span>FITS file for a simple image</span></a></li><li><a class="tocitem" href="#Extending-a-FITS-file-with-standard-HDUs"><span>Extending a FITS file with standard HDUs</span></a></li></ul></li><li><a class="tocitem" href="../tools/">Basic tools</a></li><li><a class="tocitem" href="../fits/">FITS structure</a></li><li><a class="tocitem" href="../">Index</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Manual</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Manual</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/walra356/CamiFITS.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/walra356/CamiFITS.jl/blob/main/docs/src/pages/manual.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Manual"><a class="docs-heading-anchor" href="#Manual">Manual</a><a id="Manual-1"></a><a class="docs-heading-anchor-permalink" href="#Manual" title="Permalink"></a></h1><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>A FITS file (with defining extension <code>.fits</code>) consists of a sequence  of one or more <em>Header and Data Units</em> (<a href="../fits/#CamiFITS.FITS_HDU"><code>FITS_HDU</code></a>s), each containing  a <a href="../fits/#CamiFITS.FITS_dataobject"><code>FITS_dataobject</code></a> preceeded by a <a href="../fits/#CamiFITS.FITS_header"><code>FITS_header</code></a> of records  with metainformation.</p><p>The first HDU in a <code>.fits</code> file  is called the <em>PRIMARY HDU</em>. It is an  <em>IMAGE HDU</em>, one of the <em>STANDARD</em> HDU types <em>IMAGE</em>, <em>ASCII TABLE</em> and  <em>BINTABLE</em>.</p><p>Let &quot;example.fits&quot; be an <em>existing</em> <code>.fits</code> file. By the commands </p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;example.fits&quot;
+&quot;example.fits&quot;
+
+julia&gt; f = fits_read(filnam);</code></pre><p>we asign the <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object (read from the <code>.fits</code> file <code>filnam</code> on disc)  to the variable <code>f</code>. All information of a given <code>.fits</code> file is stored in  this <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object, its structure is shown in the diagram below.</p><p><img src="../../assets/flowchart.png" alt="Image"/></p><p>The fields of <code>f</code> (<code>f.hdu[1]</code>, <code>f.hdu[2]</code>, ...) correspond to  <a href="../fits/#CamiFITS.FITS_HDU"><code>FITS_HDU</code></a> objects. The <em>PRIMARY HDU</em> of the <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object is represented by <code>f.hdu[1]</code>. The header records are contained in an array of  <em>single-record</em> <code>card</code>s.</p><p>The formal terminology of the <a href="https://fits.gsfc.nasa.gov/fits_standard.html">FITS standard</a> can be consulted using  <a href="../tools/#CamiFITS.fits_terminology-Tuple{String}"><code>fits_terminology</code></a>: </p><pre><code class="nohighlight hljs">julia&gt; fits_terminology(&quot;HDU&quot;)
+HDU:
+Header and Data Unit. A data structure consisting of a header and the data the 
+header describes. Note that an HDU may consist entirely of a header with no 
+data blocks.</code></pre><p>The words <em>must</em>, <em>shall</em>, <em>may</em>, <em>recommended</em>, <em>required</em> and <em>optional</em> are  to be interpreted as described in the <a href="https://www.rfc-editor.org/info/rfc2119">IETF standard - RFC 2119</a>.</p><h4 id="Creating-a-simple-FITS-file"><a class="docs-heading-anchor" href="#Creating-a-simple-FITS-file">Creating a simple FITS file</a><a id="Creating-a-simple-FITS-file-1"></a><a class="docs-heading-anchor-permalink" href="#Creating-a-simple-FITS-file" title="Permalink"></a></h4><p>FITS files can be created with the command <a href="../tools/#CamiFITS.fits_create"><code>fits_create</code></a>. This process proceeds in two steps: (a) first a <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object is constructed  starting from the data provided (in Julia format); (b) this <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a>  object is <em>autosaved</em> under the specifified name (e.g., <code>name.fits</code>).</p><h6 id="Example:"><a class="docs-heading-anchor" href="#Example:">Example:</a><a id="Example:-1"></a><a class="docs-heading-anchor-permalink" href="#Example:" title="Permalink"></a></h6><p>The minimal file conforming to the FITS standard consists of a single HDU  with an empty data field.</p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;minimal.fits&quot;;
+
+julia&gt; f = fits_create(filnam; protect=false);
+
+julia&gt; fits_info(f)
+
+File: minimal.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+EXTEND  =                    T / FITS dataset may contain extensions
+END
+
+Any[]</code></pre><p>Note how the <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object is inspected using the  <a href="../tools/#CamiFITS.fits_info-Tuple{FITS_HDU}"><code>fits_info</code></a> tool.</p><p>The <a href="../fits/#CamiFITS.FITS_header"><code>FITS_header</code></a> of a <a href="../fits/#CamiFITS.FITS_HDU"><code>FITS_HDU</code></a> is contained in an array  of <em>single-record</em> <a href="../fits/#CamiFITS.FITS_card"><code>FITS_card</code></a> objects as illustrated in the flow  diagram above. To find the <code>cardindex</code> associated with a keyword  (e.g., &quot;NAXIS&quot;) we can use the <code>header.map</code>:</p><pre><code class="nohighlight hljs">julia&gt; i = f.hdu[1].header.map[&quot;NAXIS&quot;]
+3</code></pre><p>The result is easily verified by inspecting the field <code>card[i].cardindex</code>:</p><pre><code class="nohighlight hljs">julia&gt; f.hdu[1].header.card[i].cardindex
+3</code></pre><p>Likewise, by inspecting the field <code>card[i].keyword</code> we confirm</p><pre><code class="nohighlight hljs">julia&gt; f.hdu[1].header.card[i].keyword
+&quot;NAXIS&quot;</code></pre><p>The full record is:</p><pre><code class="nohighlight hljs">julia&gt; f.hdu[1].header.card[i].record
+&quot;NAXIS   =                    1 / number of data axes                            &quot;</code></pre><p>Once ready it is good practice to remove the example: </p><pre><code class="nohighlight hljs">julia&gt; rm(filnam); f = nothing</code></pre><h3 id="FITS-inspection-tools"><a class="docs-heading-anchor" href="#FITS-inspection-tools">FITS inspection tools</a><a id="FITS-inspection-tools-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-inspection-tools" title="Permalink"></a></h3><p>Rather than inspecting the <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object directly (as demonstrated  above), CamiFITS offers the <a href="../tools/#CamiFITS.fits_info-Tuple{FITS_HDU}"><code>fits_info</code></a> and  <a href="../tools/#CamiFITS.fits_record_dump"><code>fits_record_dump</code></a> tools. These tools will be demonstrated in the next  sections to demonstrate several <a href="../fits/#CamiFITS.FITS_HDU"><code>FITS_HDU</code></a> types.</p><h2 id="FITS-file-for-a-simple-image"><a class="docs-heading-anchor" href="#FITS-file-for-a-simple-image">FITS file for a simple image</a><a id="FITS-file-for-a-simple-image-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-file-for-a-simple-image" title="Permalink"></a></h2><p>In this section we demonstrate the <a href="../tools/#CamiFITS.fits_info-Tuple{FITS_HDU}"><code>fits_info</code></a> tool to inspect the  primary hdu of a FITS object.</p><p>We start by creating a simple image in the form of a 3x3 matrix:</p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;matrix.fits&quot;;
+
+julia&gt; data = [11,21,31,12,22,23,13,23,33];
+
+julia&gt; data = reshape(data,(3,3,1))
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33</code></pre><p>We next create the FITS object for <code>data</code> (our image).</p><pre><code class="nohighlight hljs">julia&gt; f = fits_create(filnam, data; protect=false);</code></pre><p>We then inspect the FITS object using the info tool:</p><pre><code class="nohighlight hljs">julia&gt; fits_info(f)
+
+File: matrix.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Int64
+Datasize: (3, 3, 1)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
+NAXIS3  =                    1 / length of data axis 3
+EXTEND  =                    T / FITS dataset may contain extensions
+END
+
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia&gt; f = nothing</code></pre><p>The keywords <code>NAXIS1</code>, <code>NAXIS2</code> and <code>NAXIS3</code> represent the dimensions  of the <span>$x, y$</span> data matrix stacked in the <span>$z$</span> direction. </p><p>The matrix elements are referred to as <code>pixels</code> and their bit size is  represented by the keyword <code>BITPIX</code>. In the above example the pixel value  is used to indicate the matrix indices, typically it will be an integer representing the gray tone of an image pixel.</p><p>Above, the <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object <code>f</code> was removed from memory but its contents  was <em>autosaved</em> under the name <code>filnam</code> = &#39;matrix.fits&#39;. To access the image  data of <code>filnam</code> we can <a href="../tools/#CamiFITS.fits_read-Tuple{String}"><code>fits_read</code></a> the <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object  from disk but it is simpler to access the data using <a href="../tools/#CamiFITS.fits_info-Tuple{FITS_HDU}"><code>fits_info</code></a> for  image processing in Julia:</p><pre><code class="nohighlight hljs">julia&gt; image = fits_info(filnam; hdr=false)
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia&gt; image == data
+true
+
+julia&gt; rm(filnam); f = data = nothing</code></pre><p>At this point the variable &#39;image&#39; is available for further processing  (e.g. plotting) in julia.</p><h3 id="Comment-on-the-casting-procedures"><a class="docs-heading-anchor" href="#Comment-on-the-casting-procedures">Comment on the casting procedures</a><a id="Comment-on-the-casting-procedures-1"></a><a class="docs-heading-anchor-permalink" href="#Comment-on-the-casting-procedures" title="Permalink"></a></h3><p>Note that the relevant mandatory keywords are <em>autogenerated</em> by  <a href="../tools/#CamiFITS.fits_create"><code>fits_create</code></a>, <em>starting from the Julia datatype</em> and using the  <em>FITS object casting procedures</em>, <a href="../fits/#CamiFITS.cast_FITS-Tuple{String, Vector{FITS_HDU}}"><code>cast_FITS</code></a>,  <a href="../fits/#CamiFITS.cast_FITS_filnam-Tuple{String}"><code>cast_FITS_filnam</code></a>, <a href="../fits/#CamiFITS.cast_FITS_HDU-Tuple{Int64, FITS_header, FITS_dataobject}"><code>cast_FITS_HDU</code></a>,  <a href="../fits/#CamiFITS.cast_FITS_header-Tuple{FITS_dataobject}"><code>cast_FITS_header</code></a>, <a href="../fits/#CamiFITS.cast_FITS_card-Tuple{Int64, String}"><code>cast_FITS_card</code></a> and  <a href="../fits/#CamiFITS.cast_FITS_dataobject-Tuple{String, Any}"><code>cast_FITS_dataobject</code></a>. Aside from constructing the FITS objects  these procedures impose comformance to the  <a href="https://fits.gsfc.nasa.gov/fits_standard.html"><code>FITS standard</code></a>. </p><p>For users primarily interested in image processing, the casting  procedures typically remain hidden as they are called internally by  <a href="../tools/#CamiFITS.fits_create"><code>fits_create</code></a> and <a href="../tools/#CamiFITS.fits_read-Tuple{String}"><code>fits_read</code></a>. </p><h2 id="Extending-a-FITS-file-with-standard-HDUs"><a class="docs-heading-anchor" href="#Extending-a-FITS-file-with-standard-HDUs">Extending a FITS file with standard HDUs</a><a id="Extending-a-FITS-file-with-standard-HDUs-1"></a><a class="docs-heading-anchor-permalink" href="#Extending-a-FITS-file-with-standard-HDUs" title="Permalink"></a></h2><p>In this section we demonstrate the <a href="../tools/#CamiFITS.fits_extend!-Tuple{FITS, Any}"><code>fits_extend!</code></a> tool to extend the  primary hdu of a FITS object by examples of the three <em>STANDARD</em> HDU types (<em>IMAGE</em>, <em>ASCII TABLE</em> and <em>BINTABLE</em>).</p><p>We start by defining a simple image by reshaping a data vector into the form  of a 3x3 matrix (as ilustrated above):</p><pre><code class="nohighlight hljs">julia&gt; data1 = [11,21,31,12,22,23,13,23,33];
+
+julia&gt; data1 = reshape(data1,(3,3,1));</code></pre><p>We next create a <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> file named &#39;example.fits&#39; for  further use:</p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;example.fits&quot;;
+
+julia&gt; fits_create(filnam, data1; protect=false);</code></pre><p>At this point we could inspect <code>filnam</code> with the <code>fits_info(filnam)</code> command (see above), here we proceed by extending the file with an image HDU. </p><h4 id="Adding-an-image-HDU-extension"><a class="docs-heading-anchor" href="#Adding-an-image-HDU-extension">Adding an image HDU extension</a><a id="Adding-an-image-HDU-extension-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-an-image-HDU-extension" title="Permalink"></a></h4><p>We first define (or load) another image</p><pre><code class="nohighlight hljs">julia&gt; data2 = [11,21,12,22,13,23];
+
+julia&gt; data2 = reshape(data2,(2,3,1));</code></pre><p>Next we apply the extension and inspect the new HDU (hdu[2]):</p><pre><code class="nohighlight hljs">julia&gt; fits_extend!(filnam, data2; hdutype=&quot;image&quot;);
+
+julia&gt; fits_info(filnam, 2; hdr=true)
+
+File: example.fits
+hdu: 2
+hdutype: &#39;IMAGE   &#39;
+DataType: Int64
+Datasize: (2, 3, 1)
+
+  nr | Metainformation:
+--------------------------------------------------------------------------------
+   1 | XTENSION= &#39;IMAGE   &#39;           / FITS standard extension
+   2 | BITPIX  =                   64 / number of bits per data pixel
+   3 | NAXIS   =                    3 / number of data axes
+   4 | NAXIS1  =                    2 / length of data axis 1
+   5 | NAXIS2  =                    3 / length of data axis 2
+   6 | NAXIS3  =                    1 / length of data axis 3
+   7 | END
+
+2×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23</code></pre><h4 id="Adding-a-table-HDU-extension"><a class="docs-heading-anchor" href="#Adding-a-table-HDU-extension">Adding a table HDU extension</a><a id="Adding-a-table-HDU-extension-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-a-table-HDU-extension" title="Permalink"></a></h4><p>We first define (or load) the table (in this example a two-row table):</p><pre><code class="nohighlight hljs">julia&gt; table = let
+       [true, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, &#39;a&#39;, &quot;a&quot;, &quot;abc&quot;],
+       [false, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 30.01e-6, &#39;b&#39;, &quot;b&quot;, &quot;abcdef&quot;]
+       end;</code></pre><p>We extend the file by a table HDU by setting the <code>hdutype</code> to &#39;table&#39;. The result is inspected using <code>fits_info()</code> by setting the hduindex to 3</p><pre><code class="nohighlight hljs">julia&gt; fits_extend!(filnam, table; hdutype=&quot;table&quot;);
+
+julia&gt; fits_info(filnam, 3; hdr=true)
+
+File: example.fits
+hdu: 3
+hdutype: &#39;TABLE   &#39;
+
+  nr | Metainformation:
+--------------------------------------------------------------------------------
+   1 | XTENSION= &#39;TABLE   &#39;           / FITS standard extension
+   2 | BITPIX  =                    8 / number of bits per data pixel
+   3 | NAXIS   =                    2 / number of data axes
+   4 | NAXIS1  =                   56 / number of bytes/row
+   5 | NAXIS2  =                    2 / number of rows
+   6 | PCOUNT  =                    0 / number of bytes in supplemetal data area
+   7 | GCOUNT  =                    1 / data blocks contain single table
+   8 | TFIELDS =                   11 / number of data fields (columns)
+   9 | COLSEP  =                    1 / number of spaces in column separator
+  10 |
+  11 | TTYPE1  = &#39;HEAD1             &#39; / field header
+  12 | TBCOL1  =                    1 / pointer to field column 1
+  13 | TFORM1  = &#39;I1      &#39;           / field datatype specifier
+  14 | TDISP1  = &#39;I1      &#39;           / proposed field display format
+  15 |
+  16 | TTYPE2  = &#39;HEAD2             &#39; / field header
+  17 | TBCOL2  =                    3 / pointer to field column 2
+  18 | TFORM2  = &#39;I3      &#39;           / field datatype specifier
+  19 | TDISP2  = &#39;I3      &#39;           / proposed field display format
+  20 |
+  21 | TTYPE3  = &#39;HEAD3             &#39; / field header
+  22 | TBCOL3  =                    7 / pointer to field column 3
+  23 | TFORM3  = &#39;I4      &#39;           / field datatype specifier
+  24 | TDISP3  = &#39;I4      &#39;           / proposed field display format
+  25 |
+  26 | TTYPE4  = &#39;HEAD4             &#39; / field header
+  27 | TBCOL4  =                   12 / pointer to field column 4
+  28 | TFORM4  = &#39;I4      &#39;           / field datatype specifier
+  29 | TDISP4  = &#39;I4      &#39;           / proposed field display format
+  30 | TZERO4  =                32768 / zero offset of field 4
+  31 | TSCAL4  =                  1.0 / scale factor of field 4
+  32 |
+  33 | TTYPE5  = &#39;HEAD5             &#39; / field header
+  34 | TBCOL5  =                   17 / pointer to field column 5
+  35 | TFORM5  = &#39;I4      &#39;           / field datatype specifier
+  36 | TDISP5  = &#39;I4      &#39;           / proposed field display format
+  37 |
+  38 | TTYPE6  = &#39;HEAD6             &#39; / field header
+  39 | TBCOL6  =                   22 / pointer to field column 6
+  40 | TFORM6  = &#39;F6.2    &#39;           / field datatype specifier
+  41 | TDISP6  = &#39;F6.2    &#39;           / proposed field display format
+  42 |
+  43 | TTYPE7  = &#39;HEAD7             &#39; / field header
+  44 | TBCOL7  =                   29 / pointer to field column 7
+  45 | TFORM7  = &#39;E7.2    &#39;           / field datatype specifier
+  46 | TDISP7  = &#39;E7.2    &#39;           / proposed field display format
+  47 |
+  48 | TTYPE8  = &#39;HEAD8             &#39; / field header
+  49 | TBCOL8  =                   37 / pointer to field column 8
+  50 | TFORM8  = &#39;D8.3    &#39;           / field datatype specifier
+  51 | TDISP8  = &#39;D8.3    &#39;           / proposed field display format
+  52 |
+  53 | TTYPE9  = &#39;HEAD9             &#39; / field header
+  54 | TBCOL9  =                   46 / pointer to field column 9
+  55 | TFORM9  = &#39;A1      &#39;           / field datatype specifier
+  56 | TDISP9  = &#39;A1      &#39;           / proposed field display format
+  57 |
+  58 | TTYPE10 = &#39;HEAD10            &#39; / field header
+  59 | TBCOL10 =                   48 / pointer to field column 10
+  60 | TFORM10 = &#39;A1      &#39;           / field datatype specifier
+  61 | TDISP10 = &#39;A1      &#39;           / proposed field display format
+  62 |
+  63 | TTYPE11 = &#39;HEAD11            &#39; / field header
+  64 | TBCOL11 =                   50 / pointer to field column 11
+  65 | TFORM11 = &#39;A6      &#39;           / field datatype specifier
+  66 | TDISP11 = &#39;A6      &#39;           / proposed field display format
+  67 |
+  68 | END
+
+2-element Vector{String}:
+ &quot; 1 108 1081 1081 1081   1.23 1.01E-6 1.010D-6 a a    abc&quot;
+ &quot; 0 109 1011 1011 1011 123.40 3.01E-6 3.001D-5 b b abcdef&quot;</code></pre><p>Note that the numerical-input &#39;table&#39; has been cast in the form of an array of printable-ASCII characters ordered in columns of width defined by the  &#39;TBCOL#&#39; keyword values in a FORTRAN format as specified by the &#39;TFORM#&#39;  keyword values.</p><h4 id="Adding-a-binary-table-HDU-extension"><a class="docs-heading-anchor" href="#Adding-a-binary-table-HDU-extension">Adding a binary table HDU extension</a><a id="Adding-a-binary-table-HDU-extension-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-a-binary-table-HDU-extension" title="Permalink"></a></h4><p>The same two-line table can also be included as a <em>BINARY TABLE</em> HDU by setting  the <code>hdutype</code> to &#39;bintable&#39;.</p><pre><code class="nohighlight hljs">julia&gt; fits_extend!(filnam, table; hdutype=&quot;bintable&quot;);
+
+julia&gt; fits_info(filnam, 4; hdr=true)
+
+File: example.fits
+hdu: 4
+hdutype: &#39;BINTABLE&#39;
+
+  nr | Metainformation:
+--------------------------------------------------------------------------------
+   1 | XTENSION= &#39;BINTABLE&#39;           / FITS standard extension
+   2 | BITPIX  =                    8 / number of bits per data pixel
+   3 | NAXIS   =                    2 / number of data axes
+   4 | NAXIS1  =                   52 / number of bytes/row
+   5 | NAXIS2  =                    2 / number of rows
+   6 | PCOUNT  =                    0 / number of bytes in supplemetal data area
+   7 | GCOUNT  =                    1 / data blocks contain single table
+   8 | TFIELDS =                   11 / number of data fields (columns)
+   9 |
+  10 | TTYPE1  = &#39;HEAD1   &#39;           / field header
+  11 | TFORM1  = &#39;1K      &#39;           / field datatype specifier
+  12 |
+  13 | TTYPE2  = &#39;HEAD2   &#39;           / field header
+  14 | TFORM2  = &#39;1B      &#39;           / field datatype specifier
+  15 |
+  16 | TTYPE3  = &#39;HEAD3   &#39;           / field header
+  17 | TFORM3  = &#39;1K      &#39;           / field datatype specifier
+  18 |
+  19 | TTYPE4  = &#39;HEAD4   &#39;           / field header
+  20 | TFORM4  = &#39;1I      &#39;           / field datatype specifier
+  21 | TZERO4  = 32768                / zero offset of field 4
+  22 | TSCAL4  =                  1.0 / scale factor of field 4
+  23 |
+  24 | TTYPE5  = &#39;HEAD5   &#39;           / field header
+  25 | TFORM5  = &#39;1K      &#39;           / field datatype specifier
+  26 |
+  27 | TTYPE6  = &#39;HEAD6   &#39;           / field header
+  28 | TFORM6  = &#39;1D      &#39;           / field datatype specifier
+  29 |
+  30 | TTYPE7  = &#39;HEAD7   &#39;           / field header
+  31 | TFORM7  = &#39;1E      &#39;           / field datatype specifier
+  32 |
+  33 | TTYPE8  = &#39;HEAD8   &#39;           / field header
+  34 | TFORM8  = &#39;1D      &#39;           / field datatype specifier
+  35 |
+  36 | TTYPE9  = &#39;HEAD9   &#39;           / field header
+  37 | TFORM9  = &#39;1A      &#39;           / field datatype specifier
+  38 |
+  39 | TTYPE10 = &#39;HEAD10  &#39;           / field header
+  40 | TFORM10 = &#39;1A      &#39;           / field datatype specifier
+  41 |
+  42 | TTYPE11 = &#39;HEAD11  &#39;           / field header
+  43 | TFORM11 = &#39;6A      &#39;           / field datatype specifier
+  44 |
+  45 | END
+
+2-element Vector{Any}:
+ Any[1, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, &#39;a&#39;, &#39;a&#39;, &quot;   abc&quot;]
+ Any[0, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 3.001e-5, &#39;b&#39;, &#39;b&#39;, &quot;abcdef&quot;]</code></pre><p>Note that the two rows are of the same type (with Strings of equal length).</p><h4 id="Easy-navigation"><a class="docs-heading-anchor" href="#Easy-navigation">Easy navigation</a><a id="Easy-navigation-1"></a><a class="docs-heading-anchor-permalink" href="#Easy-navigation" title="Permalink"></a></h4><p>By assigning the FITS object to the variable &#39;f&#39; we have access to the 4 HDUs  without the overhead of 4 times reading <code>filnam</code> into the info.</p><pre><code class="nohighlight hljs">julia&gt; f = fits_read(filnam);
+
+julia&gt; fits_info(f.hdu[1]; hdr=false)
+3×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+ 31  23  33
+
+julia&gt; fits_info(f.hdu[2]; hdr=false)
+2×3×1 Array{Int64, 3}:
+[:, :, 1] =
+ 11  12  13
+ 21  22  23
+
+julia&gt; fits_info(f.hdu[3]; hdr=false)
+2-element Vector{String}:
+ &quot; 1 108 1081 1081 1081 1081 1081 1081   1.23 1.01E-6 1.01D-6 a a    abc&quot;
+ &quot; 0 109 1011 1011 1011 1011 1011 1011 123.40 3.01E-6 3.02D-5 b b abcdef&quot;
+
+julia&gt; fits_info(f.hdu[4]; hdr=false)
+2-element Vector{Any}:
+ Any[1, 0x6c, 1081, 0x0439, 1081, 1.23, 1.01f-6, 1.01e-6, &#39;a&#39;, &#39;a&#39;, &quot;   abc&quot;]
+ Any[0, 0x6d, 1011, 0x03f3, 1011, 123.4, 3.01f-6, 3.001e-5, &#39;b&#39;, &#39;b&#39;, &quot;abcdef&quot;]</code></pre><p>Finally we remove the example: </p><pre><code class="nohighlight hljs">julia&gt; rm(filnam); f = nothing</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><a class="docs-footer-nextpage" href="../tools/">Basic tools »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Monday 23 December 2024 19:06">Monday 23 December 2024</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
