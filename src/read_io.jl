@@ -12,7 +12,7 @@
 #   - test for integral number of blocks of 2880 bytes/block
 # ------------------------------------------------------------------------------  
 
-function IORead(filnam::String)
+function IORead(filnam::String; msg=false)
 
     o = IOBuffer()
 
@@ -21,6 +21,17 @@ function IORead(filnam::String)
     remain = nbytes % 2880                      # remainder (incomplete block)
 
     remain > 0 && Base.throw(FITSError(msgErr(6)))
+
+    if msg
+        println("===========================================")
+        println("IORead:") 
+        println("-------------------------------------------")
+        for i=1:2880:nbytes     
+            str = String(o.data[i:i+7])                                                                                                                                                                                    
+            str ∈ ["SIMPLE  ", "XTENSION"] && println("$i: " * str)                                                                                                                                            
+        end
+        println("-------------------------------------------")
+    end
 
     return o
 

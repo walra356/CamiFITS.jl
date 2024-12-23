@@ -8,17 +8,38 @@
 # ------------------------------------------------------------------------------
 #                        fits_save(f::FITS)
 # ------------------------------------------------------------------------------
-
 function fits_save(f::FITS)
-
-    o = IOBuffer()
+     
+    n = 0
 
     for i ∈ eachindex(f.hdu)
         o1 = IOWrite_header(f.hdu[i])
-        Base.write(o, Array{UInt8,1}(o1.data))
         o2 = IOWrite_data(f.hdu[i])
-        o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data))
+        n += o1.size
+        n += o2.size > 0 ? o2.size : 0
     end
+
+    maxsize = n
+    
+    # buffersize must be actively restricted to the correct number of blocks of 2880 bytes,
+    # because the memory allocated by julia when using Base.write() is larger
+    o = IOBuffer(maxsize=n) 
+
+    ptr2 = 1
+    for i ∈ eachindex(f.hdu)
+        o1 = IOWrite_header(f.hdu[i])
+        Base.write(o, Array{UInt8,1}(o1.data[1:o1.size]))
+            ptr1 = o.ptr
+            ptr0 = ptr2 + o1.size
+            ptr1 == ptr0 || println("fits_save: ptr = $(ptr1) ($(ptr0) expected)")
+        o2 = IOWrite_data(f.hdu[i]) 
+        o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data[1:o2.size]))
+            ptr2 = o.ptr
+            ptr0 = ptr1 + o2.size
+            ptr2 == ptr0 || println("fits_save: ptr = $(ptr2) ($(ptr0) expected)")
+    end
+
+    length(o.data) == maxsize || println("Warning - fits_save: FITS filesize error")
 
     return IOWrite(o, f.filnam.value)
 
@@ -63,7 +84,18 @@ Any[]
 """
 function fits_save_as(f::FITS, filnam::String; protect=true)
 
-    o = IOBuffer()
+    n = 0
+
+    for i ∈ eachindex(f.hdu)
+        o1 = IOWrite_header(f.hdu[i])
+        o2 = IOWrite_data(f.hdu[i])
+        n += o1.size
+        n += o2.size > 0 ? o2.size : 0
+    end
+    
+    # buffersize restricted to the correct number of blocks 0f 2880 bytes
+    # NB. the memory allocated by julia when using Base.write() is larger
+    o = IOBuffer(maxsize=n) 
 
     for i ∈ eachindex(f.hdu)
         o1 = IOWrite_header(f.hdu[i])
@@ -84,11 +116,22 @@ end
 #                        IOWrite(o, filnam)
 # ------------------------------------------------------------------------------
 
-function IOWrite(o::IO, filnam::String)
+function IOWrite(o::IO, filnam::String; msg=false)
 
     s = Base.open(filnam, "w")
     Base.write(s, o.data)
     Base.close(s)
+
+    if msg
+        println("===========================================")
+        println("IOWrite:") 
+        println("-------------------------------------------")
+        for i=1:2880:o.size    
+            str = String(o.data[i:i+7])                                                                                                                                                                                    
+            str ∈ ["SIMPLE  ", "XTENSION"] && println("$i: " * str)                                                                                      
+        end
+        println("-------------------------------------------")
+    end
 
 end
 
@@ -138,7 +181,7 @@ end
 
 function IOWrite_ARRAY_data(hdu::FITS_HDU)
 
-    o = IOBuffer()
+    o = IOBuffer() #maxsize=2880) # uitgaand van 1 block (kan fout zijn)
 
     Base.seekstart(o)
 
@@ -154,7 +197,7 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
 
     data = Base.vec(data)
 
-    # data = data .+ T(bzero)
+    #data = data .+ T(bzero)
     # apply mapping between UInt-range and Int-range (if applicable):
     data = fits_apply_offset(data)
 
@@ -166,7 +209,8 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
     # write data:
     [Base.write(o, data[i]) for i ∈ eachindex(data)] 
     # complete block with blanks:
-    [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat%(2880÷nbyte))]  
+    [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat % (2880÷nbyte))]  
+
     return o
 
 end

@@ -7,6 +7,8 @@
 
 function test_fits_info()
 
+#println("test_fits_info - A")
+
     filnam = "kanweg.fits"
 
     T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
@@ -16,10 +18,15 @@ function test_fits_info()
         data = [typemin(T[i]), typemax(T[i])]
         f = fits_create(filnam, data; protect=false)
         a = fits_info(f; hdr=false) == data
+#println("A: i = $i, a = $a")
         push!(c, a)
         a = fits_info(filnam; hdr=false) == data  # [1] == '\n'
+#println("B: i = $i, a = $a")
         push!(c, a)
     end
+    
+
+#println("test_fits_info - B")
 
     data = [1.23, 4.56]
     f = fits_create(filnam, data; protect=false)
@@ -39,14 +46,16 @@ function test_fits_info()
 
 end
 
-function test_fits_info1()
+function test_fits_read()
 
     filnam = "kanweg.fits"
 
     data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
     data = reshape(data, (3, 3, 1))
 
-    f = fits_create(filnam, data; protect=false)
+    fits_create(filnam, data; protect=false)
+
+    f = fits_read(filnam)
 
     a = fits_info(f; hdr=false) == data
     b = fits_info(filnam; hdr=false) == data  # [1] == '\n'
@@ -394,7 +403,7 @@ function dataset_table()
     data1 = Any[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14]
     data2 = Any[b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14]
 
-    data = Any[data1, data2]
+    data = [data1, data2]
 
     return data
 

@@ -9,12 +9,14 @@ Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 #LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 # DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [compat]
 julia = "1"
 CamiMath = "0.1.13"
 #LaTeXStrings = "1.4.0"
 #DocumenterTools = "0.1.18"
+LinearAlgebra = "1.11.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

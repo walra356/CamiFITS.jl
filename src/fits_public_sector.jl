@@ -129,7 +129,7 @@ function fits_info(f::FITS, hduindex=1; nr=false, hdr=true)
 end
 # ------------------------------------------------------------------------------
 function fits_info(filnam::String, hduindex=1; nr=true, hdr=true)
-
+  
     o = IORead(filnam)
 
     Base.seekstart(o)
@@ -271,7 +271,7 @@ END
 julia> rm("minimal.fits"); f = nothing
 ```
 """
-function fits_create(filnam::String, data=[]; protect=true)
+function fits_create(filnam::String, data=Int[]; protect=true)
 
     if Base.Filesystem.isfile(filnam) & protect
         Base.throw(FITSError(msgErr(4)))

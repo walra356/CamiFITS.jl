@@ -42,6 +42,8 @@ function _block_pointer(o::IO) # pointer to start of block
 
     n = o.size ÷ 2880             # number of blocks in IO
 
+ # println("number of blocks in IO = $n")
+
     o.size % 2880 > 0 && error("blocksize not multiple of 2880")
 
     ptr = [(i - 1) * 2880 for i = 1:n]
@@ -58,6 +60,8 @@ end
 function _block_row(o::IO) # pointer to start of block
 
     nr = _block_pointer(o) .÷ 80
+    
+# println("# pointer to start of block = ", nr)
 
     return nr
 
@@ -73,11 +77,18 @@ function _header_pointer(o::IO)
     b = _block_pointer(o::IO)    # b: start-of-block pointers
 
     ptr::Array{Int,1} = []       # ptr: init start-of-header pointers
+#    key = " "
 
+#println("b = ", b)
     for i ∈ Base.eachindex(b)    # i: start-of-block pointer
         Base.seek(o, b[i])
         key = String(Base.read(o, 8))
-        key ∈ ["SIMPLE  ", "XTENSION"] ? Base.push!(ptr, b[i]) : false
+        if key ∈ ["SIMPLE  ", "XTENSION"] 
+            Base.push!(ptr, b[i])
+#println(b[i], ": ", key, ", ptr = ", ptr) 
+        else
+#println(b[i], ": ", (key ∈ ["SIMPLE  ", "XTENSION"])) 
+        end
     end
 
     return ptr  # return start-of-header pointers

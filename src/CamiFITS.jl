@@ -1,12 +1,20 @@
 module CamiFITS
 
-import CamiMath
+using CamiMath
 #import Printf
 #import Dates           # used in fits_private_sector
 
 using Printf
 using Dates           # used in fits_private_sector
 using LinearAlgebra
+
+# _files wegdoen?
+export _row_nr
+export _block_row
+export _hdu_row
+export _header_row
+export _data_row
+export _end_row
 
 #export _read_TABLE_data
 export IORead
@@ -112,7 +120,6 @@ export test_fits_create
 export test_fits_read
 export test_fits_extend!
 export test_fits_table_extend!
-export test_fits_read
 export test_fits_save_as
 export test_fits_collect
 export test_fits_pointer
