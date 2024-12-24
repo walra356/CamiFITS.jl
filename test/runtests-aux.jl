@@ -22,6 +22,5 @@ f = fits_extend!(filnam, data; hdutype="'IMAGE   '");
 #fits_info(filnam)
 #fits_record_dump(filnam)
 
-#fits_extend!(f, data; hdutype="'IMAGE   '")
-#fits_extend!(f, data; hdutype="'IMAGE   '")
+
 #test_fits_pointer()
