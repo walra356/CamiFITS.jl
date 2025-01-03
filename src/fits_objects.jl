@@ -250,7 +250,7 @@ end
 @doc raw"""
     Ptr
 
-IO pointer object holding `start`` and `stop`` values for reading/writing `IOStream`.
+Pointer object holding `start`` and `stop`` values for reading/writing `IOStream`.
 
 The fields are:
 * `.start`:  start_of_IOStream (`::Int`)
