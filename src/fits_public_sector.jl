@@ -216,7 +216,7 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
     hduval = hduindex
     ptrhdu = p.hdu_start #_hdu_pointer(o)
     ptrdat = p.data_start #_data_pointer(o)
-    ptrend = p.data_end #_end_pointer(o)
+    ptrend = p.data_stop #_end_pointer(o)
 
     rec = []
     for hduindex ∈ eachindex(ptrhdu)

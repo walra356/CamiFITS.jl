@@ -334,17 +334,32 @@ function test_fits_pointer()
     c = p.block_start  == (0, 2880, 5760, 8640, 11520, 14400)
     d = p.block_stop == (2880, 5760, 8640, 11520, 14400, 17280)
     e = p.hdu_start == (0, 5760, 11520)
-    f = p.hdr_stop == (2880, 8640, 14400)
+    f = p.hdu_stop == (2880, 8640, 14400)
     g = p.hdr_start == (0, 5760, 11520)
     h = p.hdr_stop == (2880, 8640, 14400)
     i = p.data_start == (2880, 8640, 14400)
-    j = p.data_stop == (8640, 14400, 17280)
+    j = p.data_stop == (5760, 11520, 17280)
+
+    r = fits_record_dump(filnam; msg=false)
+    k = r[8][8:10]
+    l = r[37][8:83]
+    m = r[109][8:83]
+    n = r[181][8:83]
+
+    x = "UInt8["
+    x *= "0x80, 0x00, 0x04, 0x3e, "
+    x *= "0x80, 0x00, 0x04, 0x0c, "
+    x *= "0x80, 0x00, 0x04, 0x1f"
+    k = (k == "END")
+    l = (l == x)
+    m = (m == x)
+    n = (n == x)
     
     rm(filnam)
 
-    o = a & b & c & d & e & f & g & h & i & j
+    o = a & b & c & d & e & f & g & h & i & j & k & l & m & n
 
-    o || println([a, b, c, d, e, f, g, h, i, j])
+    o || println([a, b, c, d, e, f, g, h, i, j, k, l, m, n])
 
 end
 
@@ -362,7 +377,7 @@ function test_fits_ptr()
     a = p.hdu[2].header.start == 5760 
     b = p.hdu[2].header.stop == 8640 
     c = p.hdu[2].data.start == 8640
-    d = p.hdu[2].data.stop == 14400 
+    d = p.hdu[2].data.stop == 11520
     
     rm(filnam)
 

@@ -210,7 +210,7 @@ function cast_FITS_pointer(o::IO; msg=false)
     end
    
     data_start = hdr_stop
-    data_stop = [(hdr_stop[i-1] == hdr_start[i] ? data_start[i-1] : hdr_stop[i]) for i=2:nhdu]
+    data_stop = [(hdr_stop[i-1] == hdr_start[i] ? data_start[i-1] : hdr_start[i]) for i=2:nhdu]
     data_stop = append!(data_stop, nbytes)    
  # ------------------------------------------------------------------------    
 
