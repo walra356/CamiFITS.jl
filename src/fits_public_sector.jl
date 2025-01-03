@@ -425,7 +425,7 @@ end
 
 Read `.fits` file and return Array of `FITS_HDU`s
 
-![Image](../docs/src/assets/fits_read.png)
+![Image](../assets/fits_read.png)
 
 #### Example:
 ```
