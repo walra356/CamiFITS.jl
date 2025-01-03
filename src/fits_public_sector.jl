@@ -265,6 +265,8 @@ Create `.fits` file of given filnam and return Array of HDUs.
 Key:
 * `data`: data primary hdu (::DataType)
 * `protect`: overwrite protection (::Bool)
+
+![Image](../assets/fits_create.png)
 #### Examples:
 ```
 julia> filnam = "test.fits";
@@ -345,6 +347,8 @@ end
 
 HDU array in which the FITS object `f` or FITS file `filnam` is extended 
 with the `data` in the format of the specified `hdutype`.
+
+![Image](../assets/fits_extend.png)
 #### Examples:
 ```
 julia> filnam = "example.fits";
@@ -418,6 +422,8 @@ end
     fits_read(filnam::String)
 
 Read `.fits` file and return Array of `FITS_HDU`s
+
+![Image](../assets/fits_read.png)
 #### Example:
 ```
 julia> filnam = "minimal.fits";

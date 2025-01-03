@@ -47,6 +47,10 @@ cast_FITS_ptr(o::IO; msg=false)
 ## FITS methods
 
 ```@docs
+fits_create(filnam::String, data=Int[]; protect=true, msg=false)
+fits_read(filnam::String; msg=false)
+fits_extend!(f::FITS, data; hdutype="IMAGE", msg=false)
+fits_save(f::FITS; protect=true)
 fits_zero_offset(T::Type)
 fits_apply_zero_offset(data)
 fits_remove_zero_offset(data)
