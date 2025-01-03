@@ -266,7 +266,7 @@ Key:
 * `data`: data primary hdu (::DataType)
 * `protect`: overwrite protection (::Bool)
 
-![Image](../docs/src/assets/fits_create.png)
+![Image](../assets/fits_create.png)
 
 #### Examples:
 ```
@@ -349,7 +349,7 @@ end
 HDU array in which the FITS object `f` or FITS file `filnam` is extended 
 with the `data` in the format of the specified `hdutype`.
 
-![Image](../docs/src/assets/fits_extend.png)
+![Image](../dassets/fits_extend.png)
 
 #### Examples:
 ```
