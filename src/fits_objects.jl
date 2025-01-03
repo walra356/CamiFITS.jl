@@ -332,7 +332,7 @@ start-of-header pointers: [0, 5760, 11520]
   start-of-data pointers: [2880, 8640, 14400]
     end-of-data pointers: [8640, 14400, 17280]
 
-FITS_ptr(HDU_ptr[HDU_ptr(Ptr(0, 2880), Ptr(2880, 8640)), HDU_ptr(Ptr(5760, 8640), Ptr(8640, 14400)), HDU_ptr(Ptr(11520, 14400), Ptr(14400, 17280))])
+FITS_ptr(HDU_ptr[HDU_ptr(Ptrs(0, 2880), Ptrs(2880, 8640)), HDU_ptr(Ptrs(5760, 8640), Ptrs(8640, 14400)), HDU_ptr(Ptrs(11520, 14400), Ptrs(14400, 17280))])
 
 julia> p.hdu[2].header.start, p.hdu[2].data.start
 (5760, 8640)

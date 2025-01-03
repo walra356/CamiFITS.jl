@@ -27,7 +27,9 @@
 # ------------------------------------------------------------------------------
 #                        fits_save(f::FITS)
 # ------------------------------------------------------------------------------
-
+@doc raw"""
+![Image](../assets/fits_save.png)
+"""
 function fits_save(f::FITS; protect=true)
 
     if Base.Filesystem.isfile(f.filnam.value) & protect
