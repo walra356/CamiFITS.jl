@@ -17,7 +17,7 @@ FITS_HDU
 FITS_header
 FITS_card
 FITS_dataobject
-Ptr
+Ptrs
 HDU_ptr
 FITS_pointer
 FITS_ptr

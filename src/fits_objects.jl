@@ -248,7 +248,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    Ptr
+    Ptrs
 
 Pointer object holding `start`` and `stop`` values for reading/writing `IOStream`.
 
@@ -256,7 +256,7 @@ The fields are:
 * `.start`:  start_of_IOStream (`::Int`)
 * ` .stop`:   end_of_IOStream (`::Int`)
 """
-struct Ptr
+struct Ptrs
 
     start::Int
     stop::Int
@@ -270,16 +270,16 @@ end
 @doc raw"""
     HDU_ptr
 
-Object holding `header` and `data` [`Ptr`](@ref) objects.
+Object holding `header` and `data` [`Ptrs`](@ref) objects.
 
 The fields are:
-* `.header`:  IO pointing object (`::Ptr`)
-* `  .data`:  IO data object (`::Ptr`)
+* `.header`:  IO pointing object (`::Ptrs`)
+* `  .data`:  IO data object (`::Ptrs`)
 """
 struct HDU_ptr
 
-    header::Ptr
-    data::Ptr
+    header::Ptrs
+    data::Ptrs
     
 end
 
@@ -347,7 +347,7 @@ function cast_FITS_ptr(o::IO; msg=false)
     d1 = p.data_start
     d2 = p.data_stop
 
-    return FITS_ptr( [HDU_ptr( Ptr(h1[i], h2[i]), Ptr(d1[i], d2[i]) ) for i=1:p.nhdu] )
+    return FITS_ptr( [HDU_ptr( Ptrs(h1[i], h2[i]), Ptrs(d1[i], d2[i]) ) for i=1:p.nhdu] )
 
 end
 function cast_FITS_ptr(p::FITS_pointer)
@@ -357,7 +357,7 @@ function cast_FITS_ptr(p::FITS_pointer)
     d1 = p.data_start
     d2 = p.data_stop
 
-    return FITS_ptr( [HDU_ptr( Ptr(h1[i], h2[i]), Ptr(d1[i], d2[i]) ) for i=1:p.nhdu] )
+    return FITS_ptr( [HDU_ptr( Ptrs(h1[i], h2[i]), Ptrs(d1[i], d2[i]) ) for i=1:p.nhdu] )
 
 end
 
