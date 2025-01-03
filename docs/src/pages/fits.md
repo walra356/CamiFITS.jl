@@ -48,8 +48,8 @@ cast_FITS_ptr(o::IO; msg=false)
 
 ```@docs
 fits_zero_offset(T::Type)
-fits_apply_offset(data)
-fits_remove_offset(data, header::FITS_header)
+fits_apply_zero_offset(data)
+fits_remove_zero_offset(data)
 ```
 
 ## Fortran objects 

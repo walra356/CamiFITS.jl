@@ -123,8 +123,6 @@ export fits_tzero
 export fits_apply_zero_offset
 export fits_remove_zero_offset
 export fits_zero_offset
-export fits_apply_offset
-export fits_remove_offset
 
 
 export fits_add_key!

@@ -181,38 +181,43 @@ function _restore_datatype(data, bzero)
     return data
     
 end
-function _shift_data_positive(data, bzero) # to have double range for natural numbers
 
-    T = eltype(data)
-    
-println("bzero = ", bzero, ", ", T)
-    if bzero > 0
-        T ∈ (UInt8, Int16, Int32, Int64) || error("Error: datatype inconsistent with BZERO > 0")
-        T == UInt8 && return Int8.(Int.(data) .- 128)
-        T == Int16 && return UInt16.(Int.(data) .+ 32768)
-        T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
-        T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808) # workaround for InexactError:trunc(Int64, 9223372036854775808)
-    end  
+# ------------------------------------------------------------------------------
+#                      fits_remove_zero_offset(data)
+# ------------------------------------------------------------------------------
 
+@doc raw"""
+    fits_remove_zero_offset(data)
+ 
+Shift the `Int` range of values onto the `UInt` range by *adding* to the `data`
+the appropriate integer offset value as specified by the `BZERO` keyword.
 
-    return data
-    
-end
-function _remove_offset(data)
+NB. Since the FITS format *does not support a native unsigned integer data 
+type* (except `UInt8`), unsigned values of the types `UInt16`, `UInt32` and 
+`UInt64`, are recovered from stored native signed integers of the types `Int16`,
+`Int32` and `Int64`, respectively, by *adding* the appropriate integer offset 
+specified by the (positive) `BZERO` keyword value. For the byte data type 
+(`UInt8`), the converse technique can be used to recover the signed byte values
+(`Int8`) from the stored native unsigned values (`UInt`) by *adding* the 
+(negative) `BZERO` offset value. 
 
-    t = eltype(data)
+This method is included and used in *reading* stored data to ensure backward 
+compatibility with software not supporting native values of the types 
+`Int8`, `UInt16`, `UInt32` and `UInt64`.
+#### Example:
+```
+julia> fits_remove_zero_offset(Int32[-2147483648])
+1-element Vector{UInt32}:
+ 0x00000000
 
-    t ∈ (UInt8, Int16, Int32, Int64) || return data
+julia> Int(0x00000000)
+0
 
-    t == UInt8 && return Int8.(Int.(data) .- 128)
-    t == Int16 && return UInt16.(Int.(data) .+ 32768)
-    t == Int32 && return UInt32.(Int.(data) .+ 2147483648)
-    t == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
-
-    # workaround for InexactError:trunc(Int64, 9223372036854775808)
-
-end
-
+julia> fits_remove_zero_offset(UInt8[128])
+1-element Vector{Int8}:
+ 0
+```
+"""
 function fits_remove_zero_offset(data) # to have double range for natural numbers
 
     T = eltype(data)

@@ -257,7 +257,43 @@ end
 # ------------------------------------------------------------------------------
 #                          IOWrite_BINTABLE_data(hdu)
 # ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+#                      fits_apply_offset(data)
+# ------------------------------------------------------------------------------
 
+@doc raw"""
+    fits_apply_zero_offset(data)
+ 
+Shift the `UInt` range of values onto the `Int` range by *substracting* from 
+the `data` the appropriate integer offset value as specified by the `BZERO` 
+keyword.
+
+NB. Since the FITS format *does not support a native unsigned integer data 
+type* (except `UInt8`), unsigned values of the types `UInt16`, `UInt32` and 
+`UInt64`, are stored as native signed integers of the types `Int16`, `Int32` 
+and `Int64`, respectively, after *substracting* the appropriate integer offset 
+specified by the (positive) `BZERO` keyword value. For the byte data type 
+(`UInt8`), the converse technique can be used to store signed byte values 
+(`Int8`) as native unsigned values (`UInt`) after subtracting the (negative) 
+`BZERO` offset value. 
+
+This method is included and used in storing of data to ensure backward 
+compatibility with software not supporting native values of the types `Int8`, 
+`UInt16`, `UInt32` and `UInt64`.
+#### Example:
+```
+julia> fits_apply_zero_offset(UInt32[0])
+1-element Vector{Int32}:
+ -2147483648
+
+julia> fits_apply_zero_offset(Int8[0])
+1-element Vector{UInt8}:
+ 0x80
+
+julia> Int(0x80)
+128
+```
+"""
 function fits_apply_zero_offset(data) # to store double range for natural numbers
 
     T = eltype(data)
@@ -273,36 +309,6 @@ function fits_apply_zero_offset(data) # to store double range for natural number
 
 end
 
-function _apply_offset(data)
-
-    t = eltype(data)
-
-    t ∈ (Int8, UInt16, UInt32, UInt64) || return data
-
-    t == Int8 && return UInt8.(Int.(data) .+ 128)
-    t == UInt16 && return Int16.(Int.(data) .- 32768)
-    t == UInt32 && return Int32.(Int.(data) .- 2147483648)
-    t == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808)
-
-    # note workaround for InexactError:trunc(Int64, 9223372036854775808)
-
-end
-
-function _shift_data_negative(data, bzero) # to store double range for natural numbers
-
-    T = eltype(data)
-
-    if bzero > 0
-        T ∈ (Int8, UInt16, UInt32, UInt64) || error("Error: datatype inconsistent with BZERO > 0")
-        T == Int8 && return UInt8.(Int.(data) .+ 128)
-        T == UInt16 && return Int16.(Int.(data) .- 32768)
-        T == UInt32 && return Int32.(Int.(data) .- 2147483648)
-        T == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808) # note workaround for InexactError:trunc(Int64, 9223372036854775808)
-    end   
-    
-    return data
-    
-end
 # ------------------------------------------------------------------------------
 function IOWrite_BINTABLE_data(f::FITS, hduindex::Int; msg=false)
 
