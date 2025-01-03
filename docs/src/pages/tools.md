@@ -10,14 +10,15 @@ fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=tr
 ## FITS creation, extension and collection
 
 ```@docs
-fits_create(filnam::String, data=nothing; protect=true, msg=true)
-fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+fits_create(filnam::String, data=Int[]; protect=true, msg=false)
+fits_extend!(f::FITS, data; hdutype="IMAGE", msg=false)
 fits_collect(filnamFirst::String, filnamLast::String; protect=true)
 ```
 
 ## FITS reading, copying and saving
 ```@docs
-fits_read(filnam::String)
+fits_read(filnam::String; msg=false)
+fits_save(f::FITS; protect=true)
 fits_save_as(f::FITS, filnam::String; protect=true)
 fits_copy(fileStart::String, fileStop::String=" "; protect=true)
 ```
