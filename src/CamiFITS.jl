@@ -77,7 +77,7 @@ export fits_mandatory_keyword
 
 export FITS_test
 
-export Ptr
+export Ptrs
 export HDU_ptr
 export FITS
 export FITS_pointer
