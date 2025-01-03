@@ -261,11 +261,13 @@ end
 @doc raw"""
     fits_create(filnam [, data [; protect=true]])
 
-Create `.fits` file of given filnam and return Array of HDUs.
+Create and [`fits_save`](@ref) a `.fits` file of given filnam and return Array of HDUs.
 Key:
 * `data`: data primary hdu (::DataType)
 * `protect`: overwrite protection (::Bool)
 
+NB. For the details of the save procedure (not shown in the flow diagram) see [`fits_save`](@ref).
+ 
 ![Image](../assets/fits_create.png)
 
 #### Examples:
@@ -347,7 +349,9 @@ end
     fits_extend!(filnam::String, data [; hdutype="IMAGE"])
 
 HDU array in which the FITS object `f` or FITS file `filnam` is extended 
-with the `data` in the format of the specified `hdutype`.
+with the `data` in the format of the specified `hdutype`. 
+
+NB. For the details of the save procedure (not shown in the flow diagram) see [`fits_save`](@ref).
 
 ![Image](../assets/fits_extend.png)
 
