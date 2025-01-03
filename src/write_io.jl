@@ -30,7 +30,7 @@
 @doc raw"""
     fits_save(f::FITS [; protect=true])
 
-![Image](../assets/fits_save.png)
+![Image](../docs/src/assets/fits_save.png)
 """
 function fits_save(f::FITS; protect=true)
 
