@@ -387,54 +387,6 @@ function test_fits_ptr()
     
 end
 
-function test_fits_pointer1() #####################################################################################
-
-    filnam = "kanweg.fits"
-    data = [0x0000043e, 0x0000040c, 0x0000041f]
-    f = fits_create(filnam, data; protect=false)
-    fits_extend!(f, data; hdutype="'IMAGE   '")
-    fits_extend!(f, data; hdutype="'IMAGE   '")
-
-    o = IORead(filnam)
-    #a = _row_nr(o)
-    #b = _block_row(o)
-    #c = _hdu_row(o)
-    #d = _header_row(o)
-    #e = _data_row(o)
-    #f = _end_row(o)
-
-    r = fits_record_dump(filnam; msg=false)
-    g = r[8][8:10]
-    h = r[37][8:83]
-    i = r[109][8:83]
-    j = r[181][8:83]
-
-    a = (a .+ 1 == Base.OneTo(216))
-    b = (b == [0, 36, 72, 108, 144, 180])
-    c = (c == [0, 72, 144])
-    d = (d == [0, 72, 144])
-    e = (e == [36, 108, 180])
-    f = (f == [72, 144, 216])
-    g = (g == "END")
-
-    x = "UInt8["
-    x *= "0x00, 0x00, 0x04, 0x3e, "
-    x *= "0x00, 0x00, 0x04, 0x0c, "
-    x *= "0x00, 0x00, 0x04, 0x1f"
-    h = (h == x)
-    i = (i == x)
-    j = (j == x)
-
-    rm(filnam)
-
-    o = a & b & c & d & e & f & g & h & i & j
-
-    o || println([a, b, c, d, e, f, g, h, i, j])
-
-    return o
-
-end
-
 function test_format_hdutype()
 
     a = "'TEST    '" == _format_hdutype("test")

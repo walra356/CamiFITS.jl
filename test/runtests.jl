@@ -25,7 +25,7 @@ using Test
 
 @testset "CamiFITS.jl" begin
 
-    @test test_fits_info(dbg=false)
+    @test test_fits_info(dbg=true)
     @test test_fits_copy()
     @test test_fits_create()
     @test test_fits_keyword()

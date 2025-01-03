@@ -71,36 +71,6 @@ function _read_header(o::IO, p::FITS_pointer, hduindex::Int; msg=false)
     return cast_FITS_header(record)
 
 end
-function _read_header1(o::IO, p::FITS_pointer, hduindex::Int; msg=false)
-
-    hduindex ≤ nhdu || error("hduindex ≤ $(p.nhdu) required")
-
-    Base.seek(o, p.hdu_start[hduindex])
-
-    record::Vector{String} = []
-
-    row_first = p.hdr_start[hduindex]÷80+1
-     row_last = p.hdr_stop[hduindex]÷80
-
-    nrow = (p.hdr_stop[hduindex]-p.hdr_start[hduindex])÷80
-
-    for i = row_first:row_last
-        rec = String(Base.read(o, 80))
-        Base.push!(record, rec)
-    end
-
-    header = cast_FITS_header(record)
-
-
-    
-msg && println("_read_header")
-msg && println("p.hdr_start[hduindex] = ", p.hdr_start[hduindex])
-msg && println("p.hdr_stop[hduindex] = ", p.hdr_stop[hduindex])
-msg && println("record[1] = ", record[1])
-    
-    return header
-
-end
 # ------------------------------------------------------------------------------
 #                   read_hdu(o, p, hduindex; msg-false)
 #
@@ -164,22 +134,6 @@ function _fits_type(bitpix::Int)
 
     return T
 
-end
-function _restore_datatype(data, bzero)
-
-    T = eltype(data)
-
-    if bzero > 0
-        T ∈ (UInt8, Int16, Int32, Int64) || error("Error: datatype inconsistent with BZERO > 0")   
-        data = data .+ bzero
-        data = T == UInt8 ? convert.(Int8, data) :
-            T == Int16 ? convert.(UInt16, data) :
-            T == Int32 ? convert.(UInt32, data) :
-            T == Int64 ? convert.(UInt64, data) : data
-    end   
-    
-    return data
-    
 end
 
 # ------------------------------------------------------------------------------
