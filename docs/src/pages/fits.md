@@ -17,6 +17,10 @@ FITS_HDU
 FITS_header
 FITS_card
 FITS_dataobject
+Ptr
+HDU_ptr
+FITS_pointer
+FITS_ptr
 ```
 
 ## FITS-object casting
@@ -36,6 +40,8 @@ cast_FITS_header(dataobject::FITS_dataobject)
 cast_FITS_card(cardindex::Int, record::String)
 cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
+cast_FITS_pointer(o::IO; msg=false)
+cast_FITS_ptr(o::IO; msg=false)
 ```
 
 ## FITS methods

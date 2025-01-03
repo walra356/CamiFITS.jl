@@ -31,26 +31,11 @@
 #   - test for integral number of blocks of 2880 bytes/block
 # ------------------------------------------------------------------------------  
 
-function IORead(filnam::String; msg=false)
+function IORead(filnam::String)
 
     o = IOBuffer()
 
-    nbytes = Base.write(o, Base.read(filnam))   # number of bytes
-    nblock = nbytes ÷ 2880                      # number of blocks 
-    remain = nbytes % 2880                      # remainder (incomplete block)
-
-    remain > 0 && Base.throw(FITSError(msgErr(6)))
-
-    if msg
-        println("===========================================")
-        println("IORead:") 
-        println("-------------------------------------------")
-        for i=1:2880:nbytes     
-            str = String(o.data[i:i+7])                                                                                                                                                                                    
-            str ∈ ["SIMPLE  ", "XTENSION"] && println("$i: " * str)                                                                                                                                            
-        end
-        println("-------------------------------------------")
-    end
+    Base.write(o, Base.read(filnam))
 
     return o
 
@@ -63,59 +48,103 @@ end
 #   - stop after "END" record is reached
 # ------------------------------------------------------------------------------
 
-function _read_header(o::IO, hduindex::Int)
+function _read_header(o::IO, p::FITS_pointer, hduindex::Int; msg=false)
 
-    ptrhdu = _hdu_pointer(o)
-    ptrdat = _data_pointer(o)
+    hduindex ≤ p.nhdu || error("hduindex ≤ $(p.nhdu) required")
 
-    nhdu = length(ptrhdu)
+    Base.seek(o, p.hdu_start[hduindex])
 
-    hduindex ≤ nhdu || error("hduindex ≤ $(nhdu) required")
-
-    Base.seek(o, ptrhdu[hduindex])
-
-    record::Vector{String} = []
-
-    for i = (ptrhdu[hduindex]÷80+1):(ptrdat[hduindex]÷80)
-        rec = String(Base.read(o, 80))
-        Base.push!(record, rec)
+    nrow = (p.hdr_stop[hduindex]-p.hdr_start[hduindex])÷80
+ 
+    record = [String(Base.read(o, 80)) for i = 1:nrow]
+    
+    if msg 
+        str = "_read_header:\n"
+        str *= "p.hdr_start[hduindex] = $(p.hdr_start[hduindex])\n"
+        str *= "p.hdr_stop[hduindex] = $(p.hdr_stop[hduindex])\n"
+        str *= "record[1] = $(record[1])\n"
+        str *= "remain = $((p.hdr_stop[hduindex]-p.hdr_start[hduindex]) % 80)\n"
+        str *= "cast header[$(hduindex)]\n"
+        println(str)
     end
     
     return cast_FITS_header(record)
 
 end
+function _read_header1(o::IO, p::FITS_pointer, hduindex::Int; msg=false)
 
+    hduindex ≤ nhdu || error("hduindex ≤ $(p.nhdu) required")
+
+    Base.seek(o, p.hdu_start[hduindex])
+
+    record::Vector{String} = []
+
+    row_first = p.hdr_start[hduindex]÷80+1
+     row_last = p.hdr_stop[hduindex]÷80
+
+    nrow = (p.hdr_stop[hduindex]-p.hdr_start[hduindex])÷80
+
+    for i = row_first:row_last
+        rec = String(Base.read(o, 80))
+        Base.push!(record, rec)
+    end
+
+    header = cast_FITS_header(record)
+
+
+    
+msg && println("_read_header")
+msg && println("p.hdr_start[hduindex] = ", p.hdr_start[hduindex])
+msg && println("p.hdr_stop[hduindex] = ", p.hdr_stop[hduindex])
+msg && println("record[1] = ", record[1])
+    
+    return header
+
+end
 # ------------------------------------------------------------------------------
-#                   _read_hdu(o::IO, hduindex::Int)
+#                   read_hdu(o, p, hduindex; msg-false)
 #
 #   - reads non-blank records from header 
 #   - stop after "END" record is reached
 # ------------------------------------------------------------------------------  
 
-function _read_hdu(o::IO, hduindex::Int)  # read data using header information
+function read_hdu(o::IO, p::FITS_pointer, hduindex::Int; msg=false)  # read data using header information
 
-    h = _read_header(o, hduindex) #  FITS_header
+msg && println("read hdu[$(hduindex)]")
 
-    hdutype = h.card[1].keyword == "XTENSION" ? h.card[1].value : "'PRIMARY '"
+        header = _read_header(o, p, hduindex; msg) #  FITS_header
+    dataobject = _read_data(o, p, hduindex, header; msg)
+
+    return FITS_HDU(hduindex, header, dataobject)
+
+end
+
+# ------------------------------------------------------------------------------
+#                   _read_data(o, p, hduindex; msg=false)
+# ------------------------------------------------------------------------------  
+
+function _read_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS_header; msg=false)  # read data using header information
+
+    hdutype = header.card[1].keyword == "XTENSION" ? header.card[1].value : "'PRIMARY '"
     hdutype = Base.strip(hdutype)
     hdutype = Base.Unicode.uppercase(hdutype)
-
+    
     if     hdutype == "'PRIMARY '"
-        data = _read_image_data(o, hduindex)
+        data = _read_image_data(o, p, hduindex, header; msg)
     elseif hdutype == "'IMAGE   '"
-        data = _read_image_data(o, hduindex)
+        data = _read_image_data(o, p, hduindex, header; msg)
     elseif hdutype == "'TABLE   '"
-        data = _read_table_data(o, hduindex)
+        data = _read_table_data(o, p, hduindex, header; msg)
     elseif hdutype == "'BINTABLE'"
-        data = _read_bintable_data(o, hduindex)
+        data = _read_bintable_data(o, p, hduindex, header; msg)
     else
         Base.throw(FITSError(msgErr(25)))
     end
+    
+ msg && println("cast dataobject[$(hduindex)]:")
 
-    dataobject = FITS_dataobject(hdutype, data)
-
-    return FITS_HDU(hduindex, h, dataobject)
-
+    return FITS_dataobject(hdutype, data)
+    
 end
 
 # ------------------------------------------------------------------------------
@@ -136,12 +165,71 @@ function _fits_type(bitpix::Int)
     return T
 
 end
+function _restore_datatype(data, bzero)
+
+    T = eltype(data)
+
+    if bzero > 0
+        T ∈ (UInt8, Int16, Int32, Int64) || error("Error: datatype inconsistent with BZERO > 0")   
+        data = data .+ bzero
+        data = T == UInt8 ? convert.(Int8, data) :
+            T == Int16 ? convert.(UInt16, data) :
+            T == Int32 ? convert.(UInt32, data) :
+            T == Int64 ? convert.(UInt64, data) : data
+    end   
+    
+    return data
+    
+end
+function _shift_data_positive(data, bzero) # to have double range for natural numbers
+
+    T = eltype(data)
+    
+println("bzero = ", bzero, ", ", T)
+    if bzero > 0
+        T ∈ (UInt8, Int16, Int32, Int64) || error("Error: datatype inconsistent with BZERO > 0")
+        T == UInt8 && return Int8.(Int.(data) .- 128)
+        T == Int16 && return UInt16.(Int.(data) .+ 32768)
+        T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
+        T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808) # workaround for InexactError:trunc(Int64, 9223372036854775808)
+    end  
+
+
+    return data
+    
+end
+function _remove_offset(data)
+
+    t = eltype(data)
+
+    t ∈ (UInt8, Int16, Int32, Int64) || return data
+
+    t == UInt8 && return Int8.(Int.(data) .- 128)
+    t == Int16 && return UInt16.(Int.(data) .+ 32768)
+    t == Int32 && return UInt32.(Int.(data) .+ 2147483648)
+    t == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
+
+    # workaround for InexactError:trunc(Int64, 9223372036854775808)
+
+end
+
+function fits_remove_zero_offset(data) # to have double range for natural numbers
+
+    T = eltype(data)
+
+    T ∈ (UInt8, Int16, Int32, Int64) || error("Error: datatype inconsistent with BZERO > 0")
+    T == UInt8 && return Int8.(Int.(data) .- 128)
+    T == Int16 && return UInt16.(Int.(data) .+ 32768)
+    T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
+    T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808) # workaround for InexactError:trunc(Int64, 9223372036854775808)
+ 
+    return data
+    
+end
 # ------------------------------------------------------------------------------
-function _read_image_data(o::IO, hduindex::Int)
+function _read_image_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS_header; msg=false)
 
-    header = _read_header(o, hduindex)            # FITS_header object
-
-    ptrdata = _data_pointer(o)
+    ptrdata = p.data_start #_data_pointer(o)
     Base.seek(o, ptrdata[hduindex])
     
     i = get(header.map, "NAXIS", 0)
@@ -153,12 +241,13 @@ function _read_image_data(o::IO, hduindex::Int)
         i = get(header.map, "BITPIX", 0)
         bitpix = header.card[i].value
         T = _fits_type(bitpix)
-        data = [Base.read(o, T) for n = 1:ndata]
-        data = Base.ntoh.(data)  # change from network to host ordering
-        # data = data .+ T(bzero)
-        # remove mapping between UInt-range and Int-range (if applicable):
-        data = fits_remove_offset(data, header)
-        data = Base.reshape(data, dims)
+        data = [Base.ntoh(Base.read(o, T)) for n = 1:ndata] # change from network ordering (big-endian) to host ordering (depends on machine)
+msg && println("after ntoh: hdu[$(hduindex)].dataobject.data = ", data) 
+        i = get(header.map, "BZERO", 0)
+        bzero = i > 0 ? header.card[i].value : 0.0
+        data = iszero(bzero) ? data : fits_remove_zero_offset(data) # restore Types (UInt16/UInt32/UInt64/Int8) - if applicable (i.e., for Bzero > 0)
+msg && println("read: restore datatype: data = ", data) 
+        data = Base.reshape(data, dims)  
     else
         data = Any[]
     end
@@ -173,19 +262,21 @@ end
 #   - reads table data in accordance with header information
 # ------------------------------------------------------------------------------  
 
-function _read_table_data(o::IO, hduindex::Int)
+function _read_table_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS_header; msg=false)
 
-    ptr = _data_pointer(o)
+    ptr = p.data_start #_data_pointer(o)
 
-    h = _read_header(o, hduindex) # FITS_header object
+#    header = _read_header(o, hduindex) # FITS_header object
+
+#    Base.seek(o, ptr[hduindex])
+    lrow = header.card[header.map["NAXIS1"]].value # row length in bytes
+    nrow = header.card[header.map["NAXIS2"]].value # number of rows
 
     Base.seek(o, ptr[hduindex])
-    lrow = h.card[h.map["NAXIS1"]].value # row length in bytes
-    nrow = h.card[h.map["NAXIS2"]].value # number of rows
-
-    Base.seek(o, ptr[hduindex])
-
+  
     data = [String(Base.read(o, lrow)) for i = 1:nrow]
+
+msg && println("read table data: ", data) 
 
     return data
 
@@ -268,43 +359,28 @@ function _read_indexed_keyword(h::FITS_header, key::String, n::Int, default)
     return o
 
 end
-
-function _remove_offset(data)
-
-    t = eltype(data)
-
-    t ∈ (UInt8, Int16, Int32, Int64) || return data
-
-    t == UInt8 && return Int8.(Int.(data) .- 128)
-    t == Int16 && return UInt16.(Int.(data) .+ 32768)
-    t == Int32 && return UInt32.(Int.(data) .+ 2147483648)
-    t == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
-
-    # workaround for InexactError:trunc(Int64, 9223372036854775808)
-
-end
 # ------------------------------------------------------------------------------
-function _read_bintable_data(o::IO, hduindex::Int)
+function _read_bintable_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS_header; msg=false)
 
-    ptr = _data_pointer(o)
+    ptr = p.data_start
 
-    h = _read_header(o, hduindex) # FITS_header object
+    #header = _read_header(o, hduindex) # FITS_header object
 
     Base.seek(o, ptr[hduindex])
-    lrow = h.card[h.map["NAXIS1"]].value # row length in bytes
-    nrow = h.card[h.map["NAXIS2"]].value # number of rows
-    tfields = h.card[h.map["TFIELDS"]].value
+    lrow = header.card[header.map["NAXIS1"]].value # row length in bytes
+    nrow = header.card[header.map["NAXIS2"]].value # number of rows
+    tfields = header.card[header.map["TFIELDS"]].value
 
-    tform = _read_indexed_keyword(h, "TFORM", tfields, "'U'")
+    tform = _read_indexed_keyword(header, "TFORM", tfields, "'U'")
     tchar = [_t_char(tform[i])[1] for i = 1:tfields]
     tuple = [_t_char(tform[i])[2:6] == "tuple" for i = 1:tfields]
 
     r = [_repeat(tform[i]) for i = 1:tfields]
 
-    tscal = _read_indexed_keyword(h, "TSCAL", tfields, 1.0)
-    tzero = _read_indexed_keyword(h, "TZERO", tfields, 0.0)
-    tdims = _read_indexed_keyword(h, "TDIM", tfields, nothing)
-    tdisp = _read_indexed_keyword(h, "TDISP", tfields, nothing)
+    tscal = _read_indexed_keyword(header, "TSCAL", tfields, 1.0)
+    tzero = _read_indexed_keyword(header, "TZERO", tfields, 0.0)
+    tdims = _read_indexed_keyword(header, "TDIM", tfields, nothing)
+    tdisp = _read_indexed_keyword(header, "TDISP", tfields, nothing)
 
     Base.seek(o, ptr[hduindex])
 
@@ -317,7 +393,8 @@ function _read_bintable_data(o::IO, hduindex::Int)
             val = []
             for k = 1:r[j]
                 a = Base.ntoh(Base.read(o, t)) # change from network to host ordering
-                a = iszero(tzero[j]) ? a : _remove_offset(a)
+                #a = iszero(tzero[j]) ? a : _remove_offset(a)
+                a = iszero(tzero[j]) ? a : fits_remove_zero_offset(a)
                 push!(val, a)
             end
             append!(row, val)

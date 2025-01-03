@@ -27,38 +27,35 @@
 # ------------------------------------------------------------------------------
 #                        fits_save(f::FITS)
 # ------------------------------------------------------------------------------
-function fits_save(f::FITS)
-     
+
+function fits_save(f::FITS; protect=true)
+
+    if Base.Filesystem.isfile(f.filnam.value) & protect
+        Base.throw(FITSError(msgErr(4)))
+    end
+
     n = 0
 
     for i ∈ eachindex(f.hdu)
-        o1 = IOWrite_header(f.hdu[i])
-        o2 = IOWrite_data(f.hdu[i])
-        n += o1.size
-        n += o2.size > 0 ? o2.size : 0
+        n += f.hdu[i].header.size
+        k = f.hdu[i].header.map["BITPIX"]
+        ndata = length(f.hdu[i].dataobject.data)
+        nbyte = ndata * f.hdu[i].header.card[k].value
+        n += (nbyte ÷ 2880) + (iszero(nbyte % 2880) ? 0 : 2880)
     end
-
-    maxsize = n
     
-    # buffersize must be actively restricted to the correct number of blocks of 2880 bytes,
-    # because the memory allocated by julia when using Base.write() is larger
+    # restrict buffersize explicitly to the correct number of blocks of 2880 bytes,
+    # NB. memory allocated by julia when using Base.write() is larger)
     o = IOBuffer(maxsize=n) 
 
-    ptr2 = 1
     for i ∈ eachindex(f.hdu)
-        o1 = IOWrite_header(f.hdu[i])
-        Base.write(o, Array{UInt8,1}(o1.data[1:o1.size]))
-            ptr1 = o.ptr
-            ptr0 = ptr2 + o1.size
-            ptr1 == ptr0 || println("fits_save: ptr = $(ptr1) ($(ptr0) expected)")
-        o2 = IOWrite_data(f.hdu[i]) 
-        o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data[1:o2.size]))
-            ptr2 = o.ptr
-            ptr0 = ptr1 + o2.size
-            ptr2 == ptr0 || println("fits_save: ptr = $(ptr2) ($(ptr0) expected)")
+        o1 = IOWrite_header(f, i)
+        Base.write(o, o1.data[1:o1.size])
+        o2 = IOWrite_data(f, i)
+        o2.size > 0 && Base.write(o, o2.data[1:o2.size])
     end
 
-    length(o.data) == maxsize || println("Warning - fits_save: FITS filesize error")
+    length(o.data) == n || error("fits_save: FITS filesize error")
 
     return IOWrite(o, f.filnam.value)
 
@@ -103,29 +100,33 @@ Any[]
 """
 function fits_save_as(f::FITS, filnam::String; protect=true)
 
+    if Base.Filesystem.isfile(filnam) & protect
+        Base.throw(FITSError(msgErr(4)))
+    end
+
     n = 0
 
     for i ∈ eachindex(f.hdu)
-        o1 = IOWrite_header(f.hdu[i])
-        o2 = IOWrite_data(f.hdu[i])
-        n += o1.size
-        n += o2.size > 0 ? o2.size : 0
+        n += f.hdu[i].header.size
+        k = f.hdu[i].header.map["BITPIX"]
+        ndata = length(f.hdu[i].dataobject.data)
+        nbyte = ndata * f.hdu[i].header.card[k].value
+        #nbyte *= ndata * sizeof(eltype(f.hdu[i].dataobject.data))
+        n += (nbyte ÷ 2880) + (iszero(nbyte % 2880) ? 0 : 2880)
     end
     
-    # buffersize restricted to the correct number of blocks 0f 2880 bytes
-    # NB. the memory allocated by julia when using Base.write() is larger
+    # restrict buffersize explicitly to the correct number of blocks of 2880 bytes,
+    # NB. memory allocated by julia when using Base.write() is larger)
     o = IOBuffer(maxsize=n) 
 
     for i ∈ eachindex(f.hdu)
-        o1 = IOWrite_header(f.hdu[i])
-        Base.write(o, Array{UInt8,1}(o1.data))
-        o2 = IOWrite_data(f.hdu[i])
-        o2.size > 0 && Base.write(o, Array{UInt8,1}(o2.data))
+        o1 = IOWrite_header(f, i)
+        Base.write(o, o1.data[1:o1.size])
+        o2 = IOWrite_data(f, i)
+        o2.size > 0 && Base.write(o, o2.data[1:o2.size])
     end
 
-    isfile = Base.Filesystem.isfile(filnam)
-
-    (isfile & protect) && Base.throw(FITSError(msgErr(4)))
+    length(o.data) == n || error("fits_save: FITS filesize error")
 
     return IOWrite(o, filnam)
 
@@ -135,22 +136,11 @@ end
 #                        IOWrite(o, filnam)
 # ------------------------------------------------------------------------------
 
-function IOWrite(o::IO, filnam::String; msg=false)
+function IOWrite(o::IO, filnam::String)
 
     s = Base.open(filnam, "w")
     Base.write(s, o.data)
     Base.close(s)
-
-    if msg
-        println("===========================================")
-        println("IOWrite:") 
-        println("-------------------------------------------")
-        for i=1:2880:o.size    
-            str = String(o.data[i:i+7])                                                                                                                                                                                    
-            str ∈ ["SIMPLE  ", "XTENSION"] && println("$i: " * str)                                                                                      
-        end
-        println("-------------------------------------------")
-    end
 
 end
 
@@ -158,10 +148,11 @@ end
 #                          IOWrite_header(hdu)
 # ------------------------------------------------------------------------------
 
-function IOWrite_header(hdu::FITS_HDU)
+function IOWrite_header(f::FITS, hduindex::Int)
+
+    hdu = f.hdu[hduindex]
 
     o = IOBuffer()
-
     Base.seekstart(o)
 
     records = [hdu.header.card[i].record for i ∈ eachindex(hdu.header.card)]
@@ -180,15 +171,15 @@ end
 #                          IOWrite_data(hdu)
 # ------------------------------------------------------------------------------
 
-function IOWrite_data(hdu::FITS_HDU)
+function IOWrite_data(f::FITS, hduindex::Int; msg=false)
 
-    hdutype = hdu.dataobject.hdutype
+    hdutype = f.hdu[hduindex].dataobject.hdutype
 
-    hdutype == "'PRIMARY '" && return IOWrite_ARRAY_data(hdu)
-    hdutype == "'IMAGE   '" && return IOWrite_ARRAY_data(hdu)
-    hdutype == "'ARRAY   '" && return IOWrite_ARRAY_data(hdu)
-    hdutype == "'TABLE   '" && return IOWrite_TABLE_data(hdu)
-    hdutype == "'BINTABLE'" && return IOWrite_BINTABLE_data(hdu)
+    hdutype == "'PRIMARY '" && return IOWrite_ARRAY_data(f, hduindex; msg)
+    hdutype == "'IMAGE   '" && return IOWrite_ARRAY_data(f, hduindex; msg)
+    hdutype == "'ARRAY   '" && return IOWrite_ARRAY_data(f, hduindex; msg)
+    hdutype == "'TABLE   '" && return IOWrite_TABLE_data(f, hduindex; msg)
+    hdutype == "'BINTABLE'" && return IOWrite_BINTABLE_data(f, hduindex; msg)
 
     return error("strError: '$hdutype': not a 'FITS standard extension'")
 
@@ -198,10 +189,13 @@ end
 #                          IOWrite_ARRAY_data(hdu)
 # ------------------------------------------------------------------------------
 
-function IOWrite_ARRAY_data(hdu::FITS_HDU)
+function IOWrite_ARRAY_data(f::FITS, hduindex::Int; msg=false)
+
+    hdu = f.hdu[hduindex]
+    maxindex = length(f.hdu)
+    header = f.hdu[hduindex].header
 
     o = IOBuffer() #maxsize=2880) # uitgaand van 1 block (kan fout zijn)
-
     Base.seekstart(o)
 
     data = hdu.dataobject.data
@@ -215,17 +209,17 @@ function IOWrite_ARRAY_data(hdu::FITS_HDU)
     nbyte = T ≠ Any ? Base.sizeof(T) : 8
 
     data = Base.vec(data)
-
-    #data = data .+ T(bzero)
-    # apply mapping between UInt-range and Int-range (if applicable):
-    data = fits_apply_offset(data)
-
     T = Base.eltype(data)
 
-    # change from 'host' to 'network' ordering: 
-    data = hton.(data) 
 
-    # write data:
+msg && println("from object: hdu[$(hduindex)].dataobject.data = ", data) 
+    data = fits_apply_zero_offset(data) # to store double range for natural numbers
+msg && println("after offset: hdu[$(hduindex)].dataobject.data = ", data) 
+    data = hton.(data) # change from host ordering (depends on machine) network ordering (big-endian) 
+msg && println("after hton: hdu[$(hduindex)].dataobject.data = ", data) 
+
+
+# write data:
     [Base.write(o, data[i]) for i ∈ eachindex(data)] 
     # complete block with blanks:
     [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat % (2880÷nbyte))]  
@@ -238,10 +232,11 @@ end
 #                          IOWrite_TABLE_data(hdu)
 # ------------------------------------------------------------------------------
 
-function IOWrite_TABLE_data(hdu::FITS_HDU)
+function IOWrite_TABLE_data(f::FITS, hduindex::Int; msg=false)
+
+    hdu = f.hdu[hduindex]
 
     o = IOBuffer()
-
     Base.seekstart(o)
 
     record = join(hdu.dataobject.data)
@@ -263,6 +258,21 @@ end
 #                          IOWrite_BINTABLE_data(hdu)
 # ------------------------------------------------------------------------------
 
+function fits_apply_zero_offset(data) # to store double range for natural numbers
+
+    T = eltype(data)
+
+    T ∈ (Int8, UInt16, UInt32, UInt64) || return data
+
+    T == Int8 && return UInt8.(Int.(data) .+ 128)
+    T == UInt16 && return Int16.(Int.(data) .- 32768)
+    T == UInt32 && return Int32.(Int.(data) .- 2147483648)
+    T == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808)
+
+    # note workaround for InexactError:trunc(Int64, 9223372036854775808)
+
+end
+
 function _apply_offset(data)
 
     t = eltype(data)
@@ -277,11 +287,28 @@ function _apply_offset(data)
     # note workaround for InexactError:trunc(Int64, 9223372036854775808)
 
 end
+
+function _shift_data_negative(data, bzero) # to store double range for natural numbers
+
+    T = eltype(data)
+
+    if bzero > 0
+        T ∈ (Int8, UInt16, UInt32, UInt64) || error("Error: datatype inconsistent with BZERO > 0")
+        T == Int8 && return UInt8.(Int.(data) .+ 128)
+        T == UInt16 && return Int16.(Int.(data) .- 32768)
+        T == UInt32 && return Int32.(Int.(data) .- 2147483648)
+        T == UInt64 && return Int64.(Int128.(data) .- 9223372036854775808) # note workaround for InexactError:trunc(Int64, 9223372036854775808)
+    end   
+    
+    return data
+    
+end
 # ------------------------------------------------------------------------------
-function IOWrite_BINTABLE_data(hdu::FITS_HDU)
+function IOWrite_BINTABLE_data(f::FITS, hduindex::Int; msg=false)
+
+    hdu = f.hdu[hduindex]
 
     o = IOBuffer()
-
     Base.seekstart(o)
 
     data = hdu.dataobject.data
@@ -301,9 +328,9 @@ function IOWrite_BINTABLE_data(hdu::FITS_HDU)
             else
                 t = T == BitVector ? T : eltype(field)
             end
-            # apply mapping between UInt-range and Int-range (if applicable):
-            field = _apply_offset(field)
-            # change from 'host' to 'network' ordering: 
+msg && println("from object: hdu[$(hduindex)].dataobject.data = ", data) 
+            field = fits_apply_zero_offset(field) # to store double range for natural numbers
+msg && println("after offset: hdu[$(hduindex)].dataobject.data = ", data) 
             if t <: Number
                 if t ≠ Bool
                     field = hton.(field)

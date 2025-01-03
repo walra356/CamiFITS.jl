@@ -24,35 +24,48 @@
 #                            fits_test.jl
 # ------------------------------------------------------------------------------
 
-function test_fits_info()
+function test_fits_info(;dbg=false)
 
-#println("test_fits_info - A")
+dbg && println("test_fits_info - Integers")
 
     filnam = "kanweg.fits"
 
     T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
         Float32, Float64]
     c = []
+
     for i ∈ eachindex(T)
+dbg && println("----------------------------------")
         data = [typemin(T[i]), typemax(T[i])]
+dbg && println(data)
         f = fits_create(filnam, data; protect=false)
         a = fits_info(f; hdr=false) == data
-#println("A: i = $i, a = $a")
+dbg && println("fits_info(f) = ", fits_info(f; hdr=false))
+dbg && println("i = $i, passed test 1 = $a")
         push!(c, a)
         a = fits_info(filnam; hdr=false) == data  # [1] == '\n'
-#println("B: i = $i, a = $a")
+dbg && println("fits_info(filnam) = ", fits_info(filnam; hdr=false))
+dbg && println("i = $i, passed test 2 = $a")
         push!(c, a)
     end
     
 
-#println("test_fits_info - B")
+dbg && println("----------------------------------")
+dbg && println("test_fits_info - Real numbers")
 
+dbg && println("----------------------------------")
     data = [1.23, 4.56]
+dbg && println(data)
     f = fits_create(filnam, data; protect=false)
     a = fits_info(f; hdr=false) == data
+dbg && println("fits_info(f) = ", fits_info(f; hdr=false))
+dbg && println("Real: passed test 1 = $a")
     push!(c, a)
     a = fits_info(filnam; hdr=false) == data  # [1] == '\n'
+dbg && println("fits_info(filnam) = ", fits_info(filnam; hdr=false))
+dbg && println("Real: passed test 2 = $a")
     push!(c, a)
+dbg && println("----------------------------------")
 
     rm(filnam)
 
@@ -314,13 +327,66 @@ function test_fits_pointer()
     fits_extend!(f, data; hdutype="'IMAGE   '")
     fits_extend!(f, data; hdutype="'IMAGE   '")
 
+    o = IORead(filnam);
+    p = cast_FITS_pointer(o)
+    a = p.nblock == 6
+    b = p.nhdu == 3
+    c = p.block_start  == (0, 2880, 5760, 8640, 11520, 14400)
+    d = p.block_stop == (2880, 5760, 8640, 11520, 14400, 17280)
+    e = p.hdu_start == (0, 5760, 11520)
+    f = p.hdr_stop == (2880, 8640, 14400)
+    g = p.hdr_start == (0, 5760, 11520)
+    h = p.hdr_stop == (2880, 8640, 14400)
+    i = p.data_start == (2880, 8640, 14400)
+    j = p.data_stop == (8640, 14400, 17280)
+    
+    rm(filnam)
+
+    o = a & b & c & d & e & f & g & h & i & j
+
+    o || println([a, b, c, d, e, f, g, h, i, j])
+
+end
+
+function test_fits_ptr()
+
+    filnam = "kanweg.fits"
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    f = fits_create(filnam, data; protect=false)
+    fits_extend!(f, data; hdutype="'IMAGE   '")
+    fits_extend!(f, data; hdutype="'IMAGE   '")
+
+    o = IORead(filnam);
+    p = cast_FITS_ptr(o);
+
+    a = p.hdu[2].header.start == 5760 
+    b = p.hdu[2].header.stop == 8640 
+    c = p.hdu[2].data.start == 8640
+    d = p.hdu[2].data.stop == 14400 
+    
+    rm(filnam)
+
+    o = a & b & c & d
+
+    o || println([a, b, c, d])
+    
+end
+
+function test_fits_pointer1() #####################################################################################
+
+    filnam = "kanweg.fits"
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+    f = fits_create(filnam, data; protect=false)
+    fits_extend!(f, data; hdutype="'IMAGE   '")
+    fits_extend!(f, data; hdutype="'IMAGE   '")
+
     o = IORead(filnam)
-    a = _row_nr(o)
-    b = _block_row(o)
-    c = _hdu_row(o)
-    d = _header_row(o)
-    e = _data_row(o)
-    f = _end_row(o)
+    #a = _row_nr(o)
+    #b = _block_row(o)
+    #c = _hdu_row(o)
+    #d = _header_row(o)
+    #e = _data_row(o)
+    #f = _end_row(o)
 
     r = fits_record_dump(filnam; msg=false)
     g = r[8][8:10]
@@ -337,9 +403,9 @@ function test_fits_pointer()
     g = (g == "END")
 
     x = "UInt8["
-    x *= "0x80, 0x00, 0x04, 0x3e, "
-    x *= "0x80, 0x00, 0x04, 0x0c, "
-    x *= "0x80, 0x00, 0x04, 0x1f"
+    x *= "0x00, 0x00, 0x04, 0x3e, "
+    x *= "0x00, 0x00, 0x04, 0x0c, "
+    x *= "0x00, 0x00, 0x04, 0x1f"
     h = (h == x)
     i = (i == x)
     j = (j == x)

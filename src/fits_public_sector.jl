@@ -107,7 +107,9 @@ function fits_info(hdu::FITS_HDU; nr=false, hdr=true)
     typeof(hdu) <: FITS_HDU || error("FitsWarning: FITS_HDU not found")
 
     hdutype = hdu.dataobject.hdutype
+    header = hdu.header
     card = hdu.header.card
+    data = hdu.dataobject.data
 
     str = "hdu: " * Base.string(hdu.hduindex)
     str *= "\nhdutype: " * hdu.dataobject.hdutype
@@ -134,7 +136,9 @@ function fits_info(hdu::FITS_HDU; nr=false, hdr=true)
 
     hdr && println(Base.join(str .* "\r\n"))
 
-    return hdu.dataobject.data
+    #data = fits_remove_offset(data, header)
+
+    return data
 
 end
 # ------------------------------------------------------------------------------
@@ -153,7 +157,9 @@ function fits_info(filnam::String, hduindex=1; nr=true, hdr=true)
 
     Base.seekstart(o)
 
-    hdu = _read_hdu(o, hduindex)
+    p = cast_FITS_pointer(o)
+
+    hdu = read_hdu(o, p, hduindex)
 
     str = "\nFile: " * filnam
     
@@ -207,10 +213,12 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
 
     o = IORead(filnam)
 
+    p = cast_FITS_pointer(o; msg)
+
     hduval = hduindex
-    ptrhdu = _hdu_pointer(o)
-    ptrdat = _data_pointer(o)
-    ptrend = _end_pointer(o)
+    ptrhdu = p.hdu_start #_hdu_pointer(o)
+    ptrdat = p.data_start #_data_pointer(o)
+    ptrend = p.data_end #_end_pointer(o)
 
     rec = []
     for hduindex ∈ eachindex(ptrhdu)
@@ -290,27 +298,30 @@ END
 julia> rm("minimal.fits"); f = nothing
 ```
 """
-function fits_create(filnam::String, data=Int[]; protect=true)
+function fits_create(filnam::String, data=Int[]; protect=true, msg=false)
 
-    if Base.Filesystem.isfile(filnam) & protect
-        Base.throw(FITSError(msgErr(4)))
-    end
+msg && println("fits_create:")
 
     hduindex = 1
     dataobject = cast_FITS_dataobject("'PRIMARY '", data)
     header = cast_FITS_header(dataobject)
+msg && println("data = ", data)
+#   data = fits_apply_offset(data, header) #adapt according to header information
+#println("data = ", data)
+#   dataobject = cast_FITS_dataobject("'PRIMARY '", data)
+msg && println("cast hdu[$(hduindex)]")
     hdu = cast_FITS_HDU(hduindex, header, dataobject)
 
     f = cast_FITS(filnam, [hdu])
 
-    fits_save(f)
+    fits_save(f; protect)
 
     return f
 
 end
 
 # ------------------------------------------------------------------------------
-#           fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
+#           fits_extend!(f::FITS, data [; hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
 
 function _fits_table_data(data)
@@ -331,11 +342,11 @@ function _fits_table_data(data)
 end
 # ------------------------------------------------------------------------------
 @doc raw"""
-    fits_extend!(f::FITS, data_extend [; hdutype="IMAGE"])
-    fits_extend!(filnam::String, data_extend [; hdutype="IMAGE"])
+    fits_extend!(f::FITS, data [; hdutype="IMAGE"])
+    fits_extend!(filnam::String, data [; hdutype="IMAGE"])
 
 HDU array in which the FITS object `f` or FITS file `filnam` is extended 
-with the data of `data_extend` in the format of the specified `hdutype`.
+with the `data` in the format of the specified `hdutype`.
 #### Examples:
 ```
 julia> filnam = "example.fits";
@@ -357,37 +368,49 @@ julia> fits_info(filnam, 2; hdr=false)
 julia> rm(filnam)
 ```
 """
-function fits_extend!(f::FITS, data_extend; hdutype="IMAGE")
+function fits_extend!(f::FITS, data; hdutype="IMAGE", msg=false)
 
     hdutype = _format_hdutype(hdutype)
     hduindex = length(f.hdu) + 1
 
+msg && println("fits extend!: hduindex = ", hduindex)
+
     if hdutype == "'TABLE   '"
-        data_extend = _fits_table_data(data_extend)
+        data = _fits_table_data(data)
     end
 
-    dataobject = cast_FITS_dataobject(hdutype, data_extend)
-
+    dataobject = cast_FITS_dataobject(hdutype, data)
     header = cast_FITS_header(dataobject)
 
-    push!(f.hdu, cast_FITS_HDU(hduindex, header, dataobject))
 
-    fits_save(f)
+msg && println("data = ", data)
+ #   data = fits_apply_offset(data, header) #adapt according to header information
+#println("data = ", data)
+#    dataobject = cast_FITS_dataobject(hdutype, data)
+
+    hdu = cast_FITS_HDU(hduindex, header, dataobject)
+
+msg && println("extend hdu with hdu[$(hduindex)]" )
+    push!(f.hdu, hdu)
+
+    fits_save(f; protect=false)
 
     return f
 
 end
-function fits_extend!(filnam::String, data_extend; hdutype="IMAGE")
+function fits_extend!(filnam::String, data; hdutype="IMAGE", msg=false)
 
     Base.Filesystem.isfile(filnam) || return println("file not found")
 
-    f = fits_read(filnam)
+    f = fits_read(filnam; msg)
     
-    o = fits_extend!(f, data_extend; hdutype)
+    o = fits_extend!(f, data; hdutype, msg)
 
     return o
 
 end
+
+
 
 # ------------------------------------------------------------------------------
 #                     fits_read(filnam::String)
@@ -426,20 +449,22 @@ Any[]
 julia> rm(filnam); f = nothing
 ```
 """
-function fits_read(filnam::String)
+function fits_read(filnam::String; msg=false)
 
+msg && println("fits_read:")
+    
     o = IORead(filnam)
 
-    nhdu = _hdu_count(o)
+    p = cast_FITS_pointer(o; msg)
     
     Base.seekstart(o)
-    
-    hdu = [_read_hdu(o, i) for i = 1:nhdu]
-
+        
+    hdu = [read_hdu(o, p, i; msg) for i = 1:p.nhdu]
+        
     f = cast_FITS(filnam, hdu)
-
+    
     return f
-
+    
 end
 
 # ------------------------------------------------------------------------------
@@ -663,13 +688,12 @@ function fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::Strin
     f.hdu[hduindex].header.card[k+nrec] = cast_FITS_card(k + nrec, endrec)
 
     card = f.hdu[hduindex].header.card
-    map = Dict([card[i].keyword => i for i ∈ eachindex(card)])
-
+    
     dataobject = f.hdu[hduindex].dataobject
-    header = FITS_header(card, map)
+    header = cast_FITS_header(card)
     f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)
 
-    fits_save(f)
+    fits_save(f; protect=false)
 
     return f
 
@@ -744,13 +768,12 @@ function fits_delete_key!(f::FITS, hduindex::Int, key::String)
     end
 
     card = f.hdu[hduindex].header.card
-    map = Dict(card[i].keyword => i for i=1:nrec) # ∈ eachindex(card)])
 
     dataobject = f.hdu[hduindex].dataobject
-    header = FITS_header(card, map)
+    header = cast_FITS_header(card)
     f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)
 
-    fits_save(f)
+    fits_save(f, protect=false)
 
     return f
 end
@@ -800,7 +823,7 @@ function fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Any, com::Stri
     fits_delete_key!(f, hduindex, key)
     fits_add_key!(f, hduindex, key, val, com)
 
-    fits_save(f)
+    fits_save(f, protect=false)
 
     return f
 
@@ -863,13 +886,12 @@ function fits_rename_key!(f::FITS, hduindex::Int, keyold::String, keynew::String
     f.hdu[hduindex].header.card[k] = cast_FITS_card(k, record)
 
     card = f.hdu[hduindex].header.card
-    map = Dict([card[i].keyword => i for i ∈ eachindex(card)])
 
     dataobject = f.hdu[hduindex].dataobject
-    header = FITS_header(card, map)
+    header = cast_FITS_header(card)
     f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)
 
-    fits_save(f)
+    fits_save(f, protect=false)
 
     return f
 
@@ -1035,26 +1057,69 @@ julia> fits_remove_offset(UInt8[128])
  0
 ```
 """
-function fits_remove_offset(data, header::FITS_header)
+function fits_remove_offset1(data, header::FITS_header)
 
     if header.card[1].keyword == "SIMPLE"
         i = get(header.map, "BZERO", 0)
         bzero = i > 0 ? header.card[i].value : 0.0
-        iszero(bzero) && return data
+        if iszero(bzero) 
+            return data
+        else
+            T = eltype(data)
+            T == UInt8 && return convert.(Int8, data) 
+            T == Int16 && return convert.(UInt16, data) 
+            T == Int32 && return convert.(UInt32, data) 
+            T == Int64 && return convert.(UInt64, data)
+        end
     elseif header.card[1].value == "'IMAGE   '"
         i = get(header.map, "BZERO", 0)
-        bzero = i > 0 ? header.card[i].value : 0.0
-        iszero(bzero) && return data
+        bzero = i > 0 ? header.card[i].value : 0.0 
+        if iszero(bzero) 
+            return data   
+        else
+            T = eltype(data)
+            T == UInt8 && return convert.(Int8, data) 
+            T == Int16 && return convert.(UInt16, data) 
+            T == Int32 && return convert.(UInt32, data) 
+            T == Int64 && return convert.(UInt64, data)
+        end
     else
         return data
-    end
+    end  
 
-    T = eltype(data)
+    # workaround for InexactError:trunc(Int64, 9223372036854775808)
 
-    T == UInt8 && return Int8.(Int.(data) .- 128)
-    T == Int16 && return UInt16.(Int.(data) .+ 32768)
-    T == Int32 && return UInt32.(Int.(data) .+ 2147483648)
-    T == Int64 && return UInt64.(Int128.(data) .+ 9223372036854775808)
+end
+
+function fits_apply_offset(data, header::FITS_header)
+
+    if header.card[1].keyword == "SIMPLE"
+        i = get(header.map, "BZERO", 0)
+        bzero = i > 0 ? header.card[i].value : 0.0
+        if iszero(bzero) 
+            return data
+        else
+            T = eltype(data)
+            T == Int8 && return convert.(UInt8, data)
+            T == UInt16 && return convert.(Int16, data)
+            T == UInt32 && return convert.(Int32, data)
+            T == UInt64 && return convert.(Int64, data)
+        end
+    elseif header.card[1].value == "'IMAGE   '"
+        i = get(header.map, "BZERO", 0)
+        bzero = i > 0 ? header.card[i].value : 0.0 
+        if iszero(bzero) 
+            return data   
+        else
+            T = eltype(data)
+            T == Int8 && return convert.(UInt8, data)
+            T == UInt16 && return convert.(Int16, data)
+            T == UInt32 && return convert.(Int32, data)
+            T == UInt64 && return convert.(Int64, data)
+        end
+    else
+        return data
+    end  
 
     # workaround for InexactError:trunc(Int64, 9223372036854775808)
 

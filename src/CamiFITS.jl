@@ -34,7 +34,7 @@ using LinearAlgebra
 export IORead
 export IOWrite
 export _read_header
-export _read_hdu
+export read_hdu
 
 export indices
 
@@ -77,7 +77,11 @@ export fits_mandatory_keyword
 
 export FITS_test
 
+export Ptr
+export HDU_ptr
 export FITS
+export FITS_pointer
+export FITS_ptr
 export FITS_filnam
 export FITS_HDU
 export FITS_header
@@ -88,6 +92,8 @@ export FITS_array
 export cast_FITS_array
 
 export cast_FITS
+export cast_FITS_pointer
+export cast_FITS_ptr
 export cast_FITS_filnam
 export cast_FITS_HDU
 export cast_FITS_header
@@ -114,6 +120,8 @@ export fits_copy
 export fits_collect
 export fits_tform
 export fits_tzero
+export fits_apply_zero_offset
+export fits_remove_zero_offset
 export fits_zero_offset
 export fits_apply_offset
 export fits_remove_offset
@@ -137,6 +145,7 @@ export test_fits_table_extend!
 export test_fits_save_as
 export test_fits_collect
 export test_fits_pointer
+export test_fits_ptr
 export test_fits_zero_offset
 export test_format_hdutype
 export test_table_datatype
@@ -156,7 +165,6 @@ export test_fits_rename_key!
 include("julia_toolbox.jl")
 include("fits_objects.jl")
 include("dicts.jl")
-include("fits_pointers.jl")
 include("read_io.jl")
 include("write_io.jl")
 include("fits_private_sector.jl")

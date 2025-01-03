@@ -105,6 +105,262 @@ function cast_FITS_filnam(filnam::String)
 end
 
 
+
+# ------------------------------------------------------------------------------
+#                                  FITS_pointer
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    FITS_pointer
+
+Object holding an array of [`HDU_ptr`](@ref) objects.
+
+The fields are:
+* `.nblock`     : block count (`::Int`)                 
+* `.nhdu`       : hdu count (`::Int`)     
+* `.block_start`: start-of-block pointers: (`::Tuple(Vector{Int})`)  
+* ` .block_stop`: end-of-block pointers: (`::Tuple(Vector{Int})`)  
+* `  .hdu_start`: start-of-hdu pointers: (`::Tuple(Vector{Int})`)  
+* `   .hdu_stop`: end-of-hdu pointers: (`::Tuple(Vector{Int})`)  
+* `  .hdr_start`: start-of-header pointers: (`::Tuple(Vector{Int})`)  
+* `   .hdr_stop`: end-of-header pointers: (`::Tuple(Vector{Int}))`)  
+* ` .data_start`: start-of-data pointers: (`::Tuple(Vector{Int})`)  
+* `  .data_stop`: end-of-data pointers: (`::Tuple(Vector{Int})`)  
+"""
+struct FITS_pointer
+    
+    nblock::Int
+    nhdu::Int
+    block_start
+    block_stop
+    hdu_start
+    hdu_stop
+    hdr_start
+    hdr_stop
+    data_start
+    data_stop
+    
+end
+
+# ------------------------------------------------------------------------------
+#                            cast_FITS_pointer(o; msg=false)
+# ------------------------------------------------------------------------------
+@doc raw"""
+    cast_FITS_pointer(o::IO []; msg=false])
+
+Prefered method to construct a [`FITS_pointer`](@ref) object.
+#### Example:
+```
+julia> filnam = "kanweg.fits";
+
+julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
+
+julia> f = fits_create(filnam, data; protect=false);
+
+julia> fits_extend!(f, data; hdutype="'IMAGE   '");
+
+julia> fits_extend!(f, data; hdutype="'IMAGE   '");
+
+julia> o = IORead(filnam);
+
+julia> p = cast_FITS_pointer(o; msg=false);
+
+ julia> p.nblock, p.nhdu, p.block_start, p.block_stop, p.hdu_start, p.hdr_stop
+ (6, 3, (0, 2880, 5760, 8640, 11520, 14400), (2880, 5760, 8640, 11520, 14400, 17280), (0, 5760, 11520), (2880, 8640, 14400))
+    
+ julia> p.hdr_start, p.hdr_stop, p.data_start, p.data_stop
+ ((0, 5760, 11520), (2880, 8640, 14400), (2880, 8640, 14400), (8640, 14400, 17280))
+```
+"""
+function cast_FITS_pointer(o::IO; msg=false)
+
+    seekstart(o)
+
+    nbytes = o.size           # number of bytes
+    nblock = nbytes ÷ 2880    # number of blocks 
+    remain = nbytes % 2880    # remainder (incomplete block)
+
+    remain > 0 && Base.throw(FITSError(msgErr(6)))
+
+    block_start = [(i - 1) * 2880 for i = 1:nblock]
+    block_stop = block_start .+ 2880
+
+    b = block_start
+    hdu_start = Int[]
+    hdr_stop = Int[]       # h: init start-of-data pointers
+    data_stop = Int[]
+ # ------------------------------------------------------------------------      
+    for i ∈ Base.eachindex(b)
+        Base.seek(o, b[i])
+        key = String(Base.read(o, 8))
+        if key ∈ ["SIMPLE  ", "XTENSION"] 
+            Base.push!(hdu_start, b[i])
+        end
+    end
+
+    nhdu = length(hdu_start)
+    hdu_stop = [hdu_start[i] for i = 2:nhdu]
+    hdu_stop = append!(hdu_stop, nbytes)
+    hdr_start = hdu_start
+ # ------------------------------------------------------------------------    
+    for i ∈ eachindex(b)         # i: start-of-block pointer (36 records/block)
+        Base.seek(o, b[i]) 
+        [(key = String(Base.read(o, 8));
+          key == "END     " ? Base.push!(hdr_stop, b[i] + 2880) : Base.skip(o, 72)) for j = 0:35]
+    end
+   
+    data_start = hdr_stop
+    data_stop = [(hdr_stop[i-1] == hdr_start[i] ? data_start[i-1] : hdr_stop[i]) for i=2:nhdu]
+    data_stop = append!(data_stop, nbytes)    
+ # ------------------------------------------------------------------------    
+
+    if msg 
+        str =  "             block count: $(nblock)\n"                
+        str *= "               hdu count: $(nhdu)\n"
+        str *= " start-of-block pointers: $(block_start)\n"
+        str *= "   end-of-block pointers: $(block_stop)\n"
+        str *= "   start-of-hdu pointers: $(hdu_start)\n"
+        str *= "     end-of-hdu pointers: $(hdu_stop)\n" 
+        str *= "start-of-header pointers: $(hdr_start)\n"     
+        str *= "  end-of-header pointers: $(hdr_stop)\n"    
+        str *= "  start-of-data pointers: $(data_start)\n"   
+        str *= "    end-of-data pointers: $(data_stop)\n"  
+        println(str)
+    end
+    
+    a = nblock
+    b = nhdu
+    c = block_start
+    d = block_stop
+    e = hdu_start
+    f = hdr_stop
+    g = hdr_start
+    h = hdr_stop
+    i = data_start
+    j = data_stop
+
+    return FITS_pointer(a, b, Tuple(c), Tuple(d), Tuple(e), Tuple(f), Tuple(g), Tuple(h), Tuple(i), Tuple(j))
+
+end
+
+# ------------------------------------------------------------------------------
+#                                  Ptr
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    Ptr
+
+IO pointer object holding `start`` and `stop`` values for reading/writing `IOStream`.
+
+The fields are:
+* `.start`:  start_of_IOStream (`::Int`)
+* ` .stop`:   end_of_IOStream (`::Int`)
+"""
+struct Ptr
+
+    start::Int
+    stop::Int
+    
+end
+
+# ------------------------------------------------------------------------------
+#                                  HDU_ptr
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    HDU_ptr
+
+Object holding `header` and `data` [`Ptr`](@ref) objects.
+
+The fields are:
+* `.header`:  IO pointing object (`::Ptr`)
+* `  .data`:  IO data object (`::Ptr`)
+"""
+struct HDU_ptr
+
+    header::Ptr
+    data::Ptr
+    
+end
+
+# ------------------------------------------------------------------------------
+#                                  FITS_ptr
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    FITS_ptr
+
+Object holding an array of [`HDU_ptr`](@ref) objects.
+
+It has a single field:
+* `.hdu`:  IO pointing object (`::Vector{HDU_ptr}`)
+"""
+struct FITS_ptr
+        
+    hdu::Vector{HDU_ptr}
+
+end
+
+# ------------------------------------------------------------------------------
+#                            cast_FITS_ptr(o; msg=false)
+#                            cast_FITS_ptr(p::FITS_pointer)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    cast_FITS_ptr(o::IO [; msg=false])
+    cast_FITS_ptr(p::FITS_pointer)
+
+Prefered method to construct a [`FITS_ptr`](@ref) object.
+#### Example:
+```
+julia> filnam = "kanweg.fits";
+julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
+julia> f = fits_create(filnam, data; protect=false);
+julia> fits_extend!(f, data; hdutype="'IMAGE   '");
+julia> fits_extend!(f, data; hdutype="'IMAGE   '");
+julia> o = IORead(filnam);
+
+julia> ptr = cast_FITS_ptr(o; msg=true)
+             block count: 6
+               hdu count: 3
+ start-of-block pointers: [0, 2880, 5760, 8640, 11520, 14400]
+   end-of-block pointers: [2880, 5760, 8640, 11520, 14400, 17280]
+   start-of-hdu pointers: [0, 5760, 11520]
+     end-of-hdu pointers: [5760, 11520, 17280]
+start-of-header pointers: [0, 5760, 11520]
+  end-of-header pointers: [2880, 8640, 14400]
+  start-of-data pointers: [2880, 8640, 14400]
+    end-of-data pointers: [8640, 14400, 17280]
+
+FITS_ptr(HDU_ptr[HDU_ptr(Ptr(0, 2880), Ptr(2880, 8640)), HDU_ptr(Ptr(5760, 8640), Ptr(8640, 14400)), HDU_ptr(Ptr(11520, 14400), Ptr(14400, 17280))])
+
+julia> p.hdu[2].header.start, p.hdu[2].data.start
+(5760, 8640)
+```
+"""
+function cast_FITS_ptr(o::IO; msg=false)
+
+    p = cast_FITS_pointer(o; msg)
+
+    h1 = p.hdr_start
+    h2 = p.hdr_stop
+    d1 = p.data_start
+    d2 = p.data_stop
+
+    return FITS_ptr( [HDU_ptr( Ptr(h1[i], h2[i]), Ptr(d1[i], d2[i]) ) for i=1:p.nhdu] )
+
+end
+function cast_FITS_ptr(p::FITS_pointer)
+
+    h1 = p.hdr_start
+    h2 = p.hdr_stop
+    d1 = p.data_start
+    d2 = p.data_stop
+
+    return FITS_ptr( [HDU_ptr( Ptr(h1[i], h2[i]), Ptr(d1[i], d2[i]) ) for i=1:p.nhdu] )
+
+end
+
 # ------------------------------------------------------------------------------
 #                               FITS_dataobject
 # ------------------------------------------------------------------------------
@@ -122,6 +378,7 @@ struct FITS_dataobject
 
     hdutype::String
     data::Any
+
 end
 
 # ------------------------------------------------------------------------------
@@ -227,11 +484,13 @@ Object to hold the header information of a [`FITS_HDU`](@ref).
 The fields are:
 * `.card`: the array of `cards` (`::Vector{FITS_card}`)
 * `.map`:  Dictionary `keyword => recordindex` (`::Dict{String, Int}`)
+* `.size`: length in bytes (`::Int`)
 """
 struct FITS_header
 
     card::Vector{FITS_card}
     map::Dict{String,Int}
+    size::Int
 
 end
 
@@ -298,20 +557,30 @@ function cast_FITS_header(dataobject::FITS_dataobject)
              hdutype == "'BINTABLE'" ? _header_record_bintable(dataobject) :
              Base.throw(FITSError(msgErr(25))) # hdutype not recognized
 
+
     return cast_FITS_header(record::Vector{String})
 
 end
 function cast_FITS_header(record::Vector{String})
 
-    remainder = length(record) % 36
-
-    iszero(remainder) || Base.throw(FITSError(msgErr(8)))
-    #                    FITSError 8: fails mandatory integer number of blocks
+    nbytes = 80length(record)
+    remain = nbytes % 2880
+ 
+    # FITSError 8: fails mandatory integer number of blocks
+    iszero(remain) || Base.throw(FITSError(msgErr(8)))
 
     card = [cast_FITS_card(i, record[i]) for i ∈ eachindex(record)]
     map = Dict([Base.strip(record[i][1:8]) => i for i ∈ eachindex(record)])
 
-    return FITS_header(card, map)
+    return FITS_header(card, map, nbytes)
+
+end
+function cast_FITS_header(card::Vector{FITS_card})
+    
+    map = Dict([card[i].keyword => i for i ∈ eachindex(card)])
+    size = 80length(card)
+
+    return FITS_header(card, map, size)
 
 end
 

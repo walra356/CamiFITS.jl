@@ -25,7 +25,7 @@ using Test
 
 @testset "CamiFITS.jl" begin
 
-    @test test_fits_info()
+    @test test_fits_info(dbg=false)
     @test test_fits_copy()
     @test test_fits_create()
     @test test_fits_keyword()
@@ -33,6 +33,7 @@ using Test
     @test test_fits_save_as()
     @test test_fits_collect()
     @test test_fits_pointer()
+    @test test_fits_ptr()
     @test test_fits_zero_offset()
     @test test_format_hdutype()
     @test test_table_datatype()
