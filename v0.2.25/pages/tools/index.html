@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basic tools · CamiFITS.jl</title><meta name="title" content="Basic tools · CamiFITS.jl"/><meta property="og:title" content="Basic tools · CamiFITS.jl"/><meta property="twitter:title" content="Basic tools · CamiFITS.jl"/><meta name="description" content="Documentation for CamiFITS.jl."/><meta property="og:description" content="Documentation for CamiFITS.jl."/><meta property="twitter:description" content="Documentation for CamiFITS.jl."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">CamiFITS.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../manual/">Manual</a></li><li class="is-active"><a class="tocitem" href>Basic tools</a><ul class="internal"><li><a class="tocitem" href="#FITS-metainformation"><span>FITS metainformation</span></a></li><li><a class="tocitem" href="#FITS-creation,-extension-and-collection"><span>FITS creation, extension and collection</span></a></li><li><a class="tocitem" href="#FITS-reading,-copying-and-saving"><span>FITS reading, copying and saving</span></a></li><li><a class="tocitem" href="#FITS-keyword-tools"><span>FITS keyword tools</span></a></li><li><a class="tocitem" href="#FITS-keyword-description-tool"><span>FITS keyword description tool</span></a></li><li><a class="tocitem" href="#FITS-terminology"><span>FITS terminology</span></a></li></ul></li><li><a class="tocitem" href="../fits/">FITS structure</a></li><li><a class="tocitem" href="../">Index</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Basic tools</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Basic tools</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/walra356/CamiFITS.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/walra356/CamiFITS.jl/blob/main/docs/src/pages/tools.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="FITS-Tools"><a class="docs-heading-anchor" href="#FITS-Tools">FITS Tools</a><a id="FITS-Tools-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-Tools" title="Permalink"></a></h1><h2 id="FITS-metainformation"><a class="docs-heading-anchor" href="#FITS-metainformation">FITS metainformation</a><a id="FITS-metainformation-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-metainformation" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_info-Tuple{FITS_HDU}" href="#CamiFITS.fits_info-Tuple{FITS_HDU}"><code>CamiFITS.fits_info</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_info(f::FITS [, hduindex=1 [; nr=false [, hdr=true]]])
+fits_info(hdu::FITS_HDU; nr=false, hdr=true)</code></pre><p>Metafinformation and data of a given <a href="../fits/#CamiFITS.FITS_HDU"><code>FITS_HDU</code></a> object with <em>optional</em> record numbering. </p><ul><li><code>hduindex</code>: HDU index (::Int - default: <code>1</code> = <code>primary hdu</code>)</li><li><code>nr</code>: include cardindex (::Bool - default: <code>false</code>)</li><li><code>hdr</code>: show header (::Bool)</li></ul><p><strong>Example:</strong></p><p>To demonstrate <code>fits_info</code> we first create the fits object <code>f</code> for subsequent  inspection.</p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;minimal.fits&quot;;
+
+julia&gt; f = fits_create(filnam; protect=false);
+
+julia&gt; fits_info(f)
+
+File: minimal.fits
+hdu: 1
+hdutype: &#39;PRIMARY &#39;
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+EXTEND  =                    T / FITS dataset may contain extensions
+END
+
+Any[]
+
+julia&gt; rm(filnam); f = nothing</code></pre><pre><code class="nohighlight hljs">fits_info(filnam::String [, hduindex=1 [; nr=true [, hdr=true]]])</code></pre><p>Same as above but creating the fits object by reading <code>filnam</code> from disc and with <em>default</em> record numbering.</p><ul><li><code>hduindex</code>: HDU index (::Int - default: <code>1</code> = <code>primary hdu</code>)</li><li><code>nr</code>: include cardindex (::Bool - default: <code>true</code>)</li><li><code>hdr</code>: show header (::Bool)</li></ul><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;minimal.fits&quot;;
+
+julia&gt; fits_create(filnam; protect=false);
+
+julia&gt; fits_info(filnam)
+
+File: minimal.fits
+hdu: 1
+hdutype: &#39;PRIMARY &#39;
+DataType: Any
+Datasize: (0,)
+
+  nr | Metainformation:
+---------------------------------------------------------------------------------------
+   1 | SIMPLE  =                    T / file does conform to FITS standard
+   2 | BITPIX  =                   64 / number of bits per data pixel
+   3 | NAXIS   =                    1 / number of data axes
+   4 | NAXIS1  =                    0 / length of data axis 1
+   5 | EXTEND  =                    T / FITS dataset may contain extensions
+   6 | END
+
+Any[]
+
+julia&gt; rm(filnam)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L31-L104">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_record_dump" href="#CamiFITS.fits_record_dump"><code>CamiFITS.fits_record_dump</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true [, msg=true]]]])</code></pre><p>Listing of all single-line records (card records) as read from <code>filnam</code> on disc. The dump proceeds <em>without casting of FITS objects</em>; i.e., <em>without</em>  FITS-conformance testing.</p><ul><li><code>hduindex</code>: HDU index (::Int - default: <code>1</code> = <code>primary hdu</code>)</li><li><code>hdr</code>: show header (::Bool - default: true)</li><li><code>dat</code>: show data (::Bool - default: true)</li><li><code>nr</code>: include record numbers (::Bool - default: true)</li><li><code>msg</code>: print message (::Bool)</li></ul><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;test.fits&quot;;
+
+julia&gt; data = [typemin(UInt32),typemax(UInt32)];
+
+julia&gt; fits_create(filnam, data; protect=false);
+
+julia&gt; dump = fits_record_dump(filnam; msg=false);
+
+julia&gt; for i=3:8 println(dump[i]) end
+   3 | NAXIS   =                    1 / number of data axes
+   4 | NAXIS1  =                    2 / length of data axis 1
+   5 | BSCALE  =                  1.0 / default scaling factor
+   6 | BZERO   =           2147483648 / offset data range to that of unsigned integer
+   7 | EXTEND  =                    T / FITS dataset may contain extensions
+   8 | END
+
+julia&gt; dump[37]
+&quot;  37 | UInt8[0x80, 0x00, 0x00, 0x00, 0x7f, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, ⋯, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]&quot;]&quot;
+
+julia&gt; rm(filnam); f = data = dump = nothing</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L174-L209">source</a></section></article><h2 id="FITS-creation,-extension-and-collection"><a class="docs-heading-anchor" href="#FITS-creation,-extension-and-collection">FITS creation, extension and collection</a><a id="FITS-creation,-extension-and-collection-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-creation,-extension-and-collection" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_create" href="#CamiFITS.fits_create"><code>CamiFITS.fits_create</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_create(filnam [, data [; protect=true]])</code></pre><p>Create and <a href="#CamiFITS.fits_save-Tuple{FITS}"><code>fits_save</code></a> a <code>.fits</code> file of given filnam and return Array of HDUs. Key:</p><ul><li><code>data</code>: data primary hdu (::DataType)</li><li><code>protect</code>: overwrite protection (::Bool)</li></ul><p>NB. For the details of the save procedure (not shown in the flow diagram) see <a href="#CamiFITS.fits_save-Tuple{FITS}"><code>fits_save</code></a>.</p><p><img src="../../assets/fits_create.png" alt="Image"/></p><p><strong>Examples:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;test.fits&quot;;
+
+julia&gt; f = fits_create(filnam, data; protect=false);
+
+julia&gt; fits_info(f)
+
+File: test.fits
+hdu: 1
+hdutype: &#39;PRIMARY &#39;
+DataType: Int64
+Datasize: (3, 3)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    2 / number of data axes
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
+EXTEND  =                    T / FITS dataset may contain extensions
+END
+
+3×3 Matrix{Int64}:
+ 11  21  31
+ 12  22  23
+ 13  23  33
+
+julia&gt; rm(&quot;minimal.fits&quot;); f = nothing</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L261-L303">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_extend!-Tuple{FITS, Any}" href="#CamiFITS.fits_extend!-Tuple{FITS, Any}"><code>CamiFITS.fits_extend!</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_extend!(f::FITS, data [; hdutype=&quot;IMAGE&quot;])
+fits_extend!(filnam::String, data [; hdutype=&quot;IMAGE&quot;])</code></pre><p>HDU array in which the FITS object <code>f</code> or FITS file <code>filnam</code> is extended  with the <code>data</code> in the format of the specified <code>hdutype</code>. </p><p>NB. For the details of the save procedure (not shown in the flow diagram) see <a href="#CamiFITS.fits_save-Tuple{FITS}"><code>fits_save</code></a>.</p><p><img src="../../assets/fits_extend.png" alt="Image"/></p><p><strong>Examples:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;example.fits&quot;;
+
+julia&gt; fits_create(filnam; protect=false);
+
+julia&gt; table = let
+        [true, 0x6c, 1081, 0x0439, 1.23, 1.01f-6, 1.01e-6, &#39;a&#39;, &quot;a&quot;, &quot;abc&quot;],
+        [false, 0x6d, 1011, 0x03f3, 23.2, 3.01f-6, 3.01e-6, &#39;b&#39;, &quot;b&quot;, &quot;abcdef&quot;]
+        end;
+
+julia&gt; fits_extend!(filnam, table; hdutype=&quot;table&quot;);
+
+julia&gt; fits_info(filnam, 2; hdr=false)
+2-element Vector{String}:
+ &quot; 1 108 1081 1081  1.23 1.01E-6 1.01D-6 a a    abc&quot;
+ &quot; 0 109 1011 1011 23.20 3.01E-6 3.01D-6 b b abcdef&quot;
+
+julia&gt; rm(filnam)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L347-L378">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_collect-Tuple{String, String}" href="#CamiFITS.fits_collect-Tuple{String, String}"><code>CamiFITS.fits_collect</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_collect(fileStart::String, fileStop::String [; protect=true [, msg=true]])</code></pre><p>Combine &quot;fileStart&quot; with &quot;fileStop&quot; (with mandatory &quot;.fits&quot; extension)</p><p>Key:</p><ul><li><code>protect::Bool</code>: overwrite protection</li><li><code>msg::Bool</code>: allow status message</li></ul><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; for i=1:5
+           data = [0 0 0; 0 i 0; 0 0 0]
+           fits_create(&quot;T$i.fits&quot;, data; protect=false)
+       end
+
+julia&gt; f = fits_collect(&quot;T1.fits&quot;, &quot;T5.fits&quot;; protect=false);
+&#39;T1-T5.fits&#39;: file created
+
+julia&gt; fits_info(f)[:,:,2]
+
+File: T1-T5.fits
+hdu: 1
+hdutype: &#39;PRIMARY &#39;
+DataType: Int64
+Datasize: (3, 3, 5)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    3 / number of data axes
+NAXIS1  =                    3 / length of data axis 1
+NAXIS2  =                    3 / length of data axis 2
+NAXIS3  =                    5 / length of data axis 3
+EXTEND  =                    T / FITS dataset may contain extensions
+END
+
+3×3 Matrix{Int64}:
+ 0  0  0
+ 0  2  0
+ 0  0  0
+
+julia&gt; for i = 1:5 rm(&quot;T$i.fits&quot;) end
+
+julia&gt; rm(&quot;T1-T5.fits&quot;); f = nothing</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L522-L567">source</a></section></article><h2 id="FITS-reading,-copying-and-saving"><a class="docs-heading-anchor" href="#FITS-reading,-copying-and-saving">FITS reading, copying and saving</a><a id="FITS-reading,-copying-and-saving-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-reading,-copying-and-saving" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_read-Tuple{String}" href="#CamiFITS.fits_read-Tuple{String}"><code>CamiFITS.fits_read</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_read(filnam::String)</code></pre><p>Read <code>.fits</code> file and return Array of <code>FITS_HDU</code>s</p><p><img src="../../assets/fits_read.png" alt="Image"/></p><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;minimal.fits&quot;;
+
+julia&gt; fits_create(filnam; protect=false);
+
+julia&gt; f = fits_read(filnam);
+
+julia&gt; fits_info(f)
+hdu: 1
+hdutype: PRIMARY
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+END
+
+Any[]
+
+julia&gt; rm(filnam); f = nothing</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L427-L462">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_save-Tuple{FITS}" href="#CamiFITS.fits_save-Tuple{FITS}"><code>CamiFITS.fits_save</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_save(f::FITS [; protect=true])</code></pre><p>Write the FITS object to disc. This routine is called by <a href="#CamiFITS.fits_create"><code>fits_create</code></a>  and <a href="#CamiFITS.fits_extend!-Tuple{FITS, Any}"><code>fits_extend!</code></a></p><p><img src="../../assets/fits_save.png" alt="Image"/></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/write_io.jl#L30-L37">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_save_as-Tuple{FITS, String}" href="#CamiFITS.fits_save_as-Tuple{FITS, String}"><code>CamiFITS.fits_save_as</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_save_as(f::FITS, filnam::String [; protect=true])</code></pre><p>Save the <a href="../fits/#CamiFITS.FITS"><code>FITS</code></a> object under the name <code>filnam</code>. Key:</p><ul><li><code>protect::Bool</code>: overwrite protection</li></ul><pre><code class="nohighlight hljs">julia&gt; f = fits_create(&quot;minimal.fits&quot;; protect=false);
+
+julia&gt; fits_save_as(f, &quot;kanweg.fits&quot;; protect=false);
+
+julia&gt; f = fits_read(&quot;kanweg.fits&quot;);
+
+julia&gt; fits_info(f)
+File: kanweg.fits
+hdu: 1
+hdutype: PRIMARY
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+END
+
+Any[]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/write_io.jl#L74-L107">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_copy" href="#CamiFITS.fits_copy"><code>CamiFITS.fits_copy</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_copy(filnam1 [, filnam2=&quot;&quot; [; protect=true]])</code></pre><p>Copy <code>filnam1</code> to <code>filnam2</code> (with mandatory <code>.fits</code> extension) Key:</p><ul><li><code>protect::Bool</code>: overwrite protection</li><li><code>msg::Bool</code>: allow status message</li></ul><p><strong>Examples:</strong></p><pre><code class="nohighlight hljs">julia&gt; fits_create(&quot;test1.fits&quot;; protect=false);
+
+julia&gt; fits_copy(&quot;test1.fits&quot;, &quot;test2.fits&quot;; protect=false);
+&#39;test1.fits&#39; was copied under the name &#39;test2.fits&#39;
+
+julia&gt; rm.([&quot;test1.fits&quot;, &quot;test2.fits&quot;]);</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L485-L501">source</a></section></article><h2 id="FITS-keyword-tools"><a class="docs-heading-anchor" href="#FITS-keyword-tools">FITS keyword tools</a><a id="FITS-keyword-tools-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-keyword-tools" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_add_key!-Tuple{FITS, Int64, String, Any, String}" href="#CamiFITS.fits_add_key!-Tuple{FITS, Int64, String, Any, String}"><code>CamiFITS.fits_add_key!</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)</code></pre><p>Add a header record of given &#39;key, value and comment&#39; to &#39;HDU[hduindex]&#39; of file with name &#39;filnam&#39;</p><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;minimal.fits&quot;;
+
+julia&gt; f = fits_create(filnam; protect=false);
+
+julia&gt; fits_add_key!(f, 1, &quot;KEYNEW1&quot;, true, &quot;This is the new key&quot;);
+
+julia&gt; fits_info(f)
+
+File: minimal.fits
+hdu: 1
+hdutype: &#39;PRIMARY &#39;
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+EXTEND  =                    T / FITS dataset may contain extensions
+KEYNEW1 =                    T / This is the new key
+END
+
+Any[]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L642-L673">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_delete_key!-Tuple{FITS, Int64, String}" href="#CamiFITS.fits_delete_key!-Tuple{FITS, Int64, String}"><code>CamiFITS.fits_delete_key!</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_delete_key!(f::FITS, hduindex::Int, key::String)</code></pre><p>Delete a header record of given <code>key</code>, <code>value</code> and <code>comment</code> from the  FITS_HDU <code>f</code> of given <code>hduindex</code>.</p><p><strong>Examples:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam = &quot;minimal.fits&quot;;
+
+julia&gt; f = fits_create(filnam; protect=false);
+
+julia&gt; fits_add_key!(f, 1, &quot;KEYNEW1&quot;, true, &quot;This is the new key&quot;);
+
+julia&gt; cardindex = get(f.hdu[1].header.map,&quot;KEYNEW1&quot;, nothing)
+8
+
+julia&gt; keyword = f.hdu[1].header.card[cardindex].keyword
+&quot;KEYNEW1&quot;
+
+julia&gt; cardindex = get(f.hdu[1].header.map,&quot;KEYNEW1&quot;, nothing)
+8
+
+julia&gt; fits_delete_key!(f, 1, &quot;KEYNEW1&quot;);
+
+julia&gt; cardindex = get(f.hdu[1].header.map,&quot;KEYNEW1&quot;, nothing)
+
+julia&gt; fits_delete_key!(f, 1, &quot;NAXIS&quot;);
+ERROR: FITSError: 17 - illegal keyword deletion (mandatory keyword)
+Stacktrace:
+ [1] fits_delete_key!(f::FITS, hduindex::Int64, key::String)
+   @ CamiFITS c:\Users\walra\.julia\dev\CamiFITS.jl\src\fits_public_sector.jl:495
+ [2] top-level scope
+   @ REPL[24]:1</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L717-L751">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_edit_key!-Tuple{FITS, Int64, String, Real, String}" href="#CamiFITS.fits_edit_key!-Tuple{FITS, Int64, String, Real, String}"><code>CamiFITS.fits_edit_key!</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)</code></pre><p>Edit a header record of given &#39;key, value and comment&#39; to &#39;HDU[hduindex]&#39; of file with name &#39;filnam&#39;</p><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; using Dates
+
+julia&gt; data = DateTime(&quot;2020-01-01T00:00:00.000&quot;);
+
+julia&gt; strExample=&quot;minimal.fits&quot;;
+
+julia&gt; f = fits_create(strExample; protect=false);
+
+julia&gt; fits_add_key!(f, 1, &quot;KEYNEW1&quot;, true, &quot;this is record 5&quot;);
+
+julia&gt; fits_edit_key!(f, 1, &quot;KEYNEW1&quot;, data, &quot;record 5 changed to a DateTime type&quot;);
+
+julia&gt; fits_info(f.hdu[1])
+hdu: 1
+hdutype: &#39;PRIMARY &#39;
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+EXTEND  =                    T / FITS dataset may contain extensions
+KEYNEW1 = &#39;2020-01-01T00:00:0&#39; / record 5 changed to a DateTime type
+END
+
+Any[]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L796-L831">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_rename_key!-Tuple{FITS, Int64, String, String}" href="#CamiFITS.fits_rename_key!-Tuple{FITS, Int64, String, String}"><code>CamiFITS.fits_rename_key!</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_rename_key!(filnam::String, hduindex::Int, keyold::String, keynew::String)</code></pre><p>Rename the key of a header record of file with name &#39;filnam&#39;</p><p><strong>Example:</strong></p><pre><code class="nohighlight hljs">julia&gt; filnam=&quot;minimal.fits&quot;;
+
+julia&gt; f = fits_create(filnam; protect=false);
+
+julia&gt; fits_add_key!(f, 1, &quot;KEYNEW1&quot;, true, &quot;this is a new record&quot;);
+
+julia&gt; fits_rename_key!(f, 1, &quot;KEYNEW1&quot;,  &quot;KEYNEW2&quot;);
+
+julia&gt; fits_info(f.hdu[1])
+hdu: 1
+hdutype: &#39;PRIMARY &#39;
+DataType: Any
+Datasize: (0,)
+
+Metainformation:
+SIMPLE  =                    T / file does conform to FITS standard
+BITPIX  =                   64 / number of bits per data pixel
+NAXIS   =                    1 / number of data axes
+NAXIS1  =                    0 / length of data axis 1
+BZERO   =                  0.0 / offset data range to that of unsigned integer
+BSCALE  =                  1.0 / default scaling factor
+EXTEND  =                    T / FITS dataset may contain extensions
+COMMENT    Extended FITS HDU   / http://fits.gsfc.nasa.gov/
+KEYNEW2 =                    T / this is a new record
+END
+
+Any[]</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/fits_public_sector.jl#L847-L881">source</a></section></article><h2 id="FITS-keyword-description-tool"><a class="docs-heading-anchor" href="#FITS-keyword-description-tool">FITS keyword description tool</a><a id="FITS-keyword-description-tool-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-keyword-description-tool" title="Permalink"></a></h2><p>In the <em>CamiFITS</em> package the <em>mandatory FITS keywords</em> are <em>autogenerated</em>.  To support easy user access to the definition of all <em>reserved FITS keywords</em>  (mandatory or non-mandatory) <em>CamiFITS</em> includes the <a href="#CamiFITS.fits_keyword-Tuple{String}"><code>fits_keyword</code></a>  tool. </p><p>The description of the <em>FITS keywords</em> is provided by <a href="#CamiFITS.fits_keyword-Tuple{String}"><code>fits_keyword</code></a>:</p><pre><code class="nohighlight hljs">julia&gt; fits_keyword(&quot;bitpix&quot;)
+KEYWORD:    BITPIX
+REFERENCE:  FITS Standard - version 4.0 - Appendix C
+CLASS:      general
+STATUS:     mandatory
+HDU:        primary, groups, extension, array, image, ASCII-table, bintable,
+VALUE:      integer
+RANGE:      -64,-32,8,16,32,64
+COMMENT:    bits per data value
+DEFINITION: The value field shall contain an integer.  The absolute value is
+used in computing the sizes of data structures. It shall specify the number of
+bits that represent a data value (using a minus sign for floating point data).</code></pre><p>Without argument <a href="#CamiFITS.fits_keyword-Tuple{String}"><code>fits_keyword</code></a> provides the list of all  FITS defined keywords (for the HDU types inplemented).</p><pre><code class="nohighlight hljs">julia&gt; fits_keyword()
+FITS defined keywords:
+(blanks) AUTHOR   BITPIX   BLANK    BLOCKED  BSCALE   BUNIT    BZERO            
+CDELTn   COMMENT  CROTAn   CRPIXn   CRVALn   CTYPEn   DATAMAX  DATAMIN          
+DATE     DATE-OBS END      EPOCH    EQUINOX  EXTEND   EXTLEVEL EXTNAME          
+EXTVER   GCOUNT   GROUPS   HISTORY  INSTRUME NAXIS    NAXISn   OBJECT           
+OBSERVER ORIGIN   PCOUNT   PSCALn   PTYPEn   PZEROn   REFERENC SIMPLE           
+TBCOLn   TDIMn    TDISPn   TELESCOP TFIELDS  TFORMn   THEAP    TNULLn           
+TSCALn   TTYPEn   TUNITn   TZEROn   XTENSION 
+
+HDU options: &#39;primary&#39;, &#39;extension&#39;, &#39;array&#39;, &#39;image&#39;, &#39;ASCII-table&#39;, &#39;bintable&#39;
+
+reference: FITS Standard - version 4.0 - Appendix C</code></pre><p>Specifying the <em>FITS HDU type</em> in <a href="#CamiFITS.fits_keyword-Tuple{String}"><code>fits_keyword</code></a> the user obtains the  restricted set of HDU-specific keywords.</p><pre><code class="nohighlight hljs">julia&gt; fits_keyword(hdutype=&quot;&#39;PRIMARY &#39;&quot;)
+FITS defined keywords:
+HDU type: &#39;primary&#39;
+- general
+  - mandatory: BITPIX   END      NAXIS    NAXISn   SIMPLE
+  - reserved : BLANK    BSCALE   BUNIT    BZERO    CDELTn   CROTAn   CRPIXn   
+               CRVALn   CTYPEn   DATAMAX  DATAMIN  EXTEND
+- bibliographic
+  - mandatory:
+  - reserved : AUTHOR   REFERENC
+- commentary
+  - mandatory:
+  - reserved : (blanks) COMMENT  HISTORY
+- observation
+  - mandatory:
+  - reserved : DATE-OBS EPOCH    EQUINOX  INSTRUME OBJECT   OBSERVER TELESCOP
+
+HDU options: &#39;primary&#39;, &#39;extension&#39;, &#39;array&#39;, &#39;image&#39;, &#39;ASCII-table&#39;, &#39;bintable&#39;
+
+reference: FITS Standard - version 4.0 - Appendix C</code></pre><p>By using the keyword &quot;ALL&quot; the user can dump the full list of keyword  descriptions:</p><pre><code class="nohighlight hljs">julia&gt; fits_keyword(&quot;all&quot;)
+FITS defined keywords:
+
+KEYWORD:    (blank)
+REFERENCE:  FITS Standard - version 4.0 - Appendix C
+CLASS:      commentary
+STATUS:     reserved
+HDU:        primary, groups, extension, array, image, ASCII-table, bintable,
+VALUE:      none
+COMMENT:    descriptive comment
+DEFINITION: Columns 1-8 contain ASCII blanks. This keyword has no associated 
+value. Columns 9-80 may contain any ASCII text.  Any number of card images 
+with blank keyword fields may appear in a header.
+⋮
+KEYWORD:    XTENSION
+REFERENCE:  FITS Standard - version 4.0 - Appendix C
+CLASS:      general
+STATUS:     mandatory
+HDU:        extension, array, image, ASCII-table, bintable,
+VALUE:      string
+COMMENT:    marks beginning of new HDU
+DEFINITION: The value field shall contain a character string giving the name of 
+the extension type. This keyword is mandatory for an extension header and must 
+not appear in the primary header. For an extension that is not a standard 
+extension, the type name must not be the same as that of a standard extension.
+</code></pre><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_keyword-Tuple{String}" href="#CamiFITS.fits_keyword-Tuple{String}"><code>CamiFITS.fits_keyword</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_keyword(keyword::String [; msg=true])
+fits_keyword([; hdutype=&quot;all&quot; [, msg=true]])</code></pre><p>Description of the <em>reserved keywords</em> of the <a href="https://fits.gsfc.nasa.gov/fits_standard.html">FITS standard</a>:</p><p>(blanks), ALL, AUTHOR, BITPIX, BLANK, BLOCKED, BSCALE, BUNIT, BZERO, CDELTn,  COMMENT, CROTAn, CRPIXn, CRVALn, CTYPEn, DATAMAX, DATAMIN, DATE, DATE-OBS, END, EPOCH, EQUINOX, EXTEND, EXTLEVEL, EXTNAME, EXTVER, GCOUNT, GROUPS, HISTORY, INSTRUME, NAXIS, NAXISn, OBJECT, OBSERVER, ORIGIN, PCOUNT, PSCALn, PTYPEn, PZEROn, REFERENC, SIMPLE, TBCOLn, TDIMn, TDISPn, TELESCOP, TFIELDS, TFORMn, THEAP, TNULLn, TSCALn, TTYPEn, TUNITn, TZEROn, XTENSION,</p><p>where <code>n = 1,...,nmax</code> as specified for the keyword. Use the <code>keyword</code> &quot;ALL&quot;  to dump the full list of keyword descriptions.</p><p>The descriptions are based on appendix C to <a href="https://fits.gsfc.nasa.gov/fits_standard.html">FITS standard - version 4.0</a>, which is <em>not part of the standard but included for convenient reference</em>.</p><pre><code class="nohighlight hljs">julia&gt; fits_keyword(&quot;naxisn&quot;);
+KEYWORD:    NAXISn
+REFERENCE:  FITS Standard - version 4.0 - Appendix C
+CLASS:      general
+STATUS:     mandatory
+HDU:        primary, groups, extension, array, image, ASCII-table, bintable,
+VALUE:      integer
+RANGE:      [0:]
+COMMENT:    size of the axis
+DEFINITION: The value field of this indexed keyword shall contain a non-negative integer,  
+representing the number of elements along axis n of a data array.
+The NAXISn must be present for all values n = 1,...,NAXIS, and for no other values of n.   
+A value of zero for any of the NAXISn signifies that no data follow the header in the HDU. 
+If NAXIS is equal to 0, there should not be any NAXISn keywords.
+
+julia&gt; fits_keyword()
+FITS defined keywords:
+(blanks) AUTHOR   BITPIX   BLANK    BLOCKED  BSCALE   BUNIT    BZERO    
+CDELTn   COMMENT  CROTAn   CRPIXn   CRVALn   CTYPEn   DATAMAX  DATAMIN  
+DATE     DATE-OBS END      EPOCH    EQUINOX  EXTEND   EXTLEVEL EXTNAME  
+EXTVER   GCOUNT   GROUPS   HISTORY  INSTRUME NAXIS    NAXISn   OBJECT   
+OBSERVER ORIGIN   PCOUNT   PSCALn   PTYPEn   PZEROn   REFERENC SIMPLE   
+TBCOLn   TDIMn    TDISPn   TELESCOP TFIELDS  TFORMn   THEAP    TNULLn   
+TSCALn   TTYPEn   TUNITn   TZEROn   XTENSION
+
+HDU options: &#39;primary&#39;, &#39;extension&#39;, &#39;array&#39;, &#39;image&#39;, &#39;ASCII-table&#39;, &#39;bintable&#39;
+
+reference: FITS Standard - version 4.0 - Appendix C</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/test_fits_format.jl#L183-L231">source</a></section></article><h2 id="FITS-terminology"><a class="docs-heading-anchor" href="#FITS-terminology">FITS terminology</a><a id="FITS-terminology-1"></a><a class="docs-heading-anchor-permalink" href="#FITS-terminology" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="CamiFITS.fits_terminology-Tuple{String}" href="#CamiFITS.fits_terminology-Tuple{String}"><code>CamiFITS.fits_terminology</code></a> — <span class="docstring-category">Method</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">fits_terminology([term::String [; test=false]])</code></pre><p>Description of the <em>defined terms</em> from <a href="https://fits.gsfc.nasa.gov/fits_standard.html">FITS standard</a>: </p><p>ANSI, ASCII, ASCII NULL, ASCII character, ASCII digit, ASCII space, ASCII text,  Array, Array value, Basic FITS, Big endian, Bit, Byte, Card image,  Character string, Conforming extension, Data block, Deprecate, Entry,  Extension, Extension type name, FITS, FITS Support Office, FITS block,  FITS file, FITS structure, Field, File, Floating point, Fraction,  Group parameter value, HDU Header and Data Unit., Header, Header block, Heap,  IAU, IAUFWG, IEEE, IEEE NaN, IEEE special values, Indexed keyword,  Keyword name, Keyword record, MEF, Mandatory keyword, Mantissa, NOST,  Physical value, Pixel, Primary HDU, Primary data array, Primary header,  Random Group, Record, Repeat count, Reserved keyword, SIF, Special records,  Standard extension.</p><pre><code class="nohighlight hljs">julia&gt; fits_terminology()
+FITS defined terms:
+ANSI, ASCII, ASCII NULL, ASCII character, ..., SIF, Special records, Standard extension.
+
+julia&gt; fits_terminology(&quot;FITS&quot;)
+FITS:
+Flexible Image Transport System.
+
+julia&gt; get(dictDefinedTerms, &quot;FITS&quot;, nothing)
+&quot;Flexible Image Transport System.&quot;
+
+julia&gt; fits_terminology(&quot;p&quot;)
+p:
+Not one of the FITS defined terms.
+suggestions: Physical value, Pixel, Primary HDU, Primary data array, Primary header.
+
+see FITS Standard - https://fits.gsfc.nasa.gov/fits_standard.html</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/walra356/CamiFITS.jl/blob/320e8267880a1c8c5e6c169d83fc54883b1cf116/src/test_fits_format.jl#L52-L87">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../manual/">« Manual</a><a class="docs-footer-nextpage" href="../fits/">FITS structure »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Saturday 4 January 2025 00:06">Saturday 4 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
