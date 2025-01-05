@@ -62,6 +62,7 @@ using Test
     @test fits_terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."
     @test fits_terminology("s"; test=true)
     @test fits_terminology(; test=true)
-    @test _format_value_string("dit is het") == ["'dit is het'        "]
+    @test _format_value_string("this is it") == ["'this is it'        "]
+    @test _format_value_string("this is a longer version of this text") == ["'this is a longer version of this text'"]
 
 end
