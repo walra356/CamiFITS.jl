@@ -342,12 +342,7 @@ function cast_FITS_ptr(o::IO; msg=false)
 
     p = cast_FITS_pointer(o; msg)
 
-    h1 = p.hdr_start
-    h2 = p.hdr_stop
-    d1 = p.data_start
-    d2 = p.data_stop
-
-    return FITS_ptr( [HDU_ptr( Ptrs(h1[i], h2[i]), Ptrs(d1[i], d2[i]) ) for i=1:p.nhdu] )
+    return cast_FITS_ptr(p)
 
 end
 function cast_FITS_ptr(p::FITS_pointer)

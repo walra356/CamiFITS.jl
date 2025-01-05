@@ -78,7 +78,7 @@ dbg && println("----------------------------------")
 
 end
 
-function test_fits_read()
+function test_fits_read(;msg=true)
 
     filnam = "kanweg.fits"
 
@@ -87,7 +87,7 @@ function test_fits_read()
 
     fits_create(filnam, data; protect=false)
 
-    f = fits_read(filnam)
+    f = fits_read(filnam; msg)
 
     a = fits_info(f; hdr=false) == data
     b = fits_info(filnam; hdr=false) == data  # [1] == '\n'
@@ -671,7 +671,7 @@ function test_format_value_string() # available but not yet used
     d = _format_value_string(str, false) == ["'this is a longer version of this text which does not fot on an 80 c&'", "'haracter line&'"]
     e = _format_value_string("this is it", false) == ["'this is it'        "]
     f = _format_value_string("this is a longer version of this text", false) == ["'this is a longer version of this text&'"]
-    
+
     o = a & b & c & d & e & f
 
     o || println([a, b, c, d, e, f])

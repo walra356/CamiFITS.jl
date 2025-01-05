@@ -64,7 +64,6 @@ function _read_header(o::IO, p::FITS_pointer, hduindex::Int; msg=false)
         str *= "p.hdr_stop[hduindex] = $(p.hdr_stop[hduindex])\n"
         str *= "record[1] = $(record[1])\n"
         str *= "remain = $((p.hdr_stop[hduindex]-p.hdr_start[hduindex]) % 80)\n"
-        str *= "cast header[$(hduindex)]\n"
         println(str)
     end
     
@@ -110,8 +109,6 @@ function _read_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS_header; 
     else
         Base.throw(FITSError(msgErr(25)))
     end
-    
- msg && println("cast dataobject[$(hduindex)]:")
 
     return FITS_dataobject(hdutype, data)
     
