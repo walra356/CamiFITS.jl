@@ -557,7 +557,6 @@ function cast_FITS_header(dataobject::FITS_dataobject)
              hdutype == "'BINTABLE'" ? _header_record_bintable(dataobject) :
              Base.throw(FITSError(msgErr(25))) # hdutype not recognized
 
-
     return cast_FITS_header(record::Vector{String})
 
 end
