@@ -756,16 +756,6 @@ function msgErr(err::Int)
     return str
 
 end
-
-#function msgError(err::Int)
-
-#    str = "FITSError: $(err) - "
-#    str *= Base.get!(dictError, err, "not found")
-
-#    return str
-
-# end
-
 # ------------------------------------------------------------------------------
 #                             FITS_test 
 # ------------------------------------------------------------------------------
