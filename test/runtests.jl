@@ -64,7 +64,7 @@ using Test
     @test fits_terminology(; test=true)
     @test _format_value_string("this is it") == ["'this is it'        "]
     @test _format_value_string("this is a longer version of this text") == ["'this is a longer version of this text'"]
-    @test _format_value_string("this is a longer version of this text which does not fot on an 80 character line") == ["'this is a longer version of this text'"]
+    @test _format_value_string("this is a longer version of this text which does not fot on an 80 character line") == ["'this is a longer version of this text which does not fot on an 80 c&'", "'haracter line"]
     @test _format_value_string("this is it", false) == ["'this is it'        "]
     @test _format_value_string("this is a longer version of this text", false) == ["'this is a longer version of this text&'"]
 
