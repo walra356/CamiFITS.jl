@@ -291,14 +291,6 @@ function _format_record(key::String, val::Any, com::String)
 
 end
 
-function _hdu_count(o::IO)
-
-    h = _header_pointer(o::IO)                 # h: start-of-header pointers
-
-    return length(h)                            # number of HDUs
-
-end
-
 # ------------------------------------------------------------------------------
 #                  _append_blanks!(records::Vector{String})
 # ------------------------------------------------------------------------------  
