@@ -118,8 +118,7 @@ dictErr = Dict(0 => nothing,
     43 => "undefined FORTRAN data type",
     44 => "illegal BINTABLE TFORM datatype",
     45 => "missing BINTABLE TFORM datatype",
-    46 => "cannot create table (rows not all of the same type)",
-    47 => "HDU type not recogized as a 'FITS standard extension'"
+    46 => "cannot create table (rows not all of the same type)"
 
 )
 

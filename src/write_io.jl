@@ -188,8 +188,6 @@ function IOWrite_data(f::FITS, hduindex::Int; msg=false)
     hdutype == "'TABLE   '" && return IOWrite_TABLE_data(f, hduindex; msg)
     hdutype == "'BINTABLE'" && return IOWrite_BINTABLE_data(f, hduindex; msg)
 
-    Base.throw(FITSError(msgErr(47)))
-
 end
 
 # ------------------------------------------------------------------------------
