@@ -661,3 +661,21 @@ function test_fits_zero_offset()
     return o
 
 end
+
+function test_format_value_string() # available but not yet used
+
+    a = _format_value_string("this is it") == ["'this is it'        "]
+    b = _format_value_string("this is a longer version of this text") == ["'this is a longer version of this text'"]
+    str = "this is a longer version of this text which does not fot on an 80 character line"
+    c = _format_value_string(str) == ["'this is a longer version of this text which does not fot on an 80 c&'", "'haracter line"]
+    d = _format_value_string(str, false) == ["'this is a longer version of this text which does not fot on an 80 c&'", "'haracter line&'"]
+    e = _format_value_string("this is it", false) == ["'this is it'        "]
+    f = _format_value_string("this is a longer version of this text", false) == ["'this is a longer version of this text&'"]
+    
+    o = a & b & c & d & e & f
+
+    o || println([a, b, c, d, e, f])
+
+    return o
+
+end

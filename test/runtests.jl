@@ -36,15 +36,16 @@ using Test
     @test test_fits_ptr()
     @test test_fits_zero_offset()
     @test test_format_hdutype()
+    @test test_format_value_string()  
     @test test_table_datatype()
     @test test_bintable_datatype()
-
+    
     @test test_fits_add_key!()
     @test test_fits_delete_key!()
     @test test_fits_edit_key!()
     @test test_fits_rename_key!()
     @test test_FORTRAN_format()
-    @test test_FORTRAN_eltype_char()
+    @test test_FORTRAN_eltype_char()  
 
     filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
@@ -62,10 +63,5 @@ using Test
     @test fits_terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."
     @test fits_terminology("s"; test=true)
     @test fits_terminology(; test=true)
-    @test _format_value_string("this is it") == ["'this is it'        "]
-    @test _format_value_string("this is a longer version of this text") == ["'this is a longer version of this text'"]
-    @test _format_value_string("this is a longer version of this text which does not fot on an 80 character line") == ["'this is a longer version of this text which does not fot on an 80 c&'", "'haracter line"]
-    @test _format_value_string("this is it", false) == ["'this is it'        "]
-    @test _format_value_string("this is a longer version of this text", false) == ["'this is a longer version of this text&'"]
 
 end
