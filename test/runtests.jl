@@ -46,12 +46,14 @@ using Test
     @test test_fits_rename_key!()
     @test test_FORTRAN_format()
     @test test_FORTRAN_eltype_char()  
-
+                                           
     filnam = "kanweg.fits"
+    fn = cast_FITS_filnam("kanweg.fits")
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
     fits_extend!(f, data; hdutype="Image")
     fits_extend!(f, data; hdutype="IMAGE")
+    @test fn.numerator == ""
     @test_throws FITSError fits_extend!(f, data; hdutype="imago")
     @test_throws FITSError fits_create(filnam)
     @test_throws FITSError fits_save_as(f, filnam)
