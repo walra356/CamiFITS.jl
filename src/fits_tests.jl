@@ -232,7 +232,10 @@ function test_fits_keyword()
     d = fits_keyword(hdutype="'PRIMARY '"; msg=false)[1] == 'F'
     e = fits_keyword("all"; msg=false)[1] == 'F'
 
-    return a & b & c & d & e
+    pass = a & b & c & d & e
+    pass || println([a, b, c, d, e])
+
+    return pass
 
 end
 
@@ -246,14 +249,23 @@ function test_fits_add_key!()
         fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment")
     end
 
-    i = get(f.hdu[1].header.map, "KEY1", 0)
-    k = f.hdu[1].header.card[i].keyword
+    fits_add_key!(f, 1, "DATE", "2020-09-18", "this is a" * long * " comment")
 
-    test = k == "KEY1"
+    i = get(f.hdu[1].header.map, "KEY1", 0)
+    a = f.hdu[1].header.card[i].keyword
+
+    i = get(f.hdu[1].header.map, "DATE", 0)
+    b = f.hdu[1].header.card[i].keyword
+
+    a = a == "KEY1"
+    b = b == "DATE"
 
     rm(filnam)
 
-    return test
+    pass = a & b 
+    pass || println([a, b])
+
+    return pass
 
 end
 
