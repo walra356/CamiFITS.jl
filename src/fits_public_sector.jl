@@ -959,7 +959,7 @@ function parse_FITS_TABLE(hdu::FITS_HDU)
     dict = hdu.header.map
     thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])
 
-    thdu == "TABLE" || return error("Error: $thdu is not an ASCII TABLE HDU")
+    thdu == "TABLE" || return error("Error: $(thdu) is not an ASCII TABLE HDU")
 
     ncols = Base.get(dict, "TFIELDS", 0)
     nrows = Base.get(dict, "NAXIS2", 0)

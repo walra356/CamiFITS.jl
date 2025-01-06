@@ -24,7 +24,7 @@ module CamiFITS
 
 using CamiMath
 #import Printf
-#import Dates           # used in fits_private_sector
+import Dates           # used in fits_private_sector
 
 using Printf
 using Dates           # used in fits_private_sector

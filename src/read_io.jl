@@ -79,8 +79,6 @@ end
 
 function read_hdu(o::IO, p::FITS_pointer, hduindex::Int; msg=false)  # read data using header information
 
-msg && println("read hdu[$(hduindex)]")
-
         header = _read_header(o, p, hduindex; msg) #  FITS_header
     dataobject = _read_data(o, p, hduindex, header; msg)
 
@@ -198,11 +196,11 @@ function _read_image_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS_he
         bitpix = header.card[i].value
         T = _fits_type(bitpix)
         data = [Base.ntoh(Base.read(o, T)) for n = 1:ndata] # change from network ordering (big-endian) to host ordering (depends on machine)
-msg && println("after ntoh: hdu[$(hduindex)].dataobject.data = ", data) 
+# msg && println("after ntoh: hdu[$(hduindex)].dataobject.data = ", data) 
         i = get(header.map, "BZERO", 0)
         bzero = i > 0 ? header.card[i].value : 0.0
         data = iszero(bzero) ? data : fits_remove_zero_offset(data) # restore Types (UInt16/UInt32/UInt64/Int8) - if applicable (i.e., for Bzero > 0)
-msg && println("read: restore datatype: data = ", data) 
+# msg && println("read: restore datatype: data = ", data) 
         data = Base.reshape(data, dims)  
     else
         data = Any[]
