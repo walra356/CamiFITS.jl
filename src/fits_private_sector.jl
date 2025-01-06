@@ -34,7 +34,7 @@ function _fits_dims(str::SubString)
 
 end
 
-function _fits_parse(str::String)
+function _fits_parse(cardindex::Int, str::String)
 
     T = Float32
     s = Base.strip(str)
@@ -46,7 +46,8 @@ function _fits_parse(str::String)
     d = [Base.Unicode.isdigit(c[i]) for i ∈ Base.eachindex(c)]  # d: digits
     p = [Base.Unicode.ispunct(c[i]) for i ∈ Base.eachindex(c)]  # p: punctuation
 
-    s[1] == '\'' && s[2] ≠ '(' && return str
+    s[1] == '\'' && ℓ == 1 && return str
+    s[1] == '\'' && (s[2] ≠ '(') && return str
     s[1] == '-' && (d[1] = true) && (p[1] = false)      # change leading sign into digit (for type parsing only)
     s[1] == '+' && (d[1] = true) && (p[1] = false)      # change leading sign into digit (for type parsing only)
 
@@ -59,7 +60,7 @@ function _fits_parse(str::String)
     sp = Base.sum(p)                                    # sp: number of punctuation characters
     sa = Base.sum(a)                                    # sa: number of other non-digit or punctuation characters
 
-    # println("sd = $(sd), sp = $(sp), sa = $(sa)")
+    #println("sd = $(sd), sp = $(sp), sa = $(sa)")
 
     E = ['E', 'D', 'e', 'p']
 
@@ -75,7 +76,7 @@ function _fits_parse(str::String)
     sp == 1 && s[ip[1]] == '.' && s[ia[1]] ∈ E && ip[1] < ia[1] && return Base.parse(T, s)
     sp == 2 && s[ip[1]] == '.' && s[ip[2]] == '-' && s[ip[2]-1] ∈ E && ip[1] < ia[1] && return Base.parse(T, s)
 
-    return error("strError: $(str): parsing error")
+    return error("strError: cardindex $(cardindex), string $(str): parsing case not resolved")
 
 end
 

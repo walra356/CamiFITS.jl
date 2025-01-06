@@ -455,7 +455,7 @@ julia> card.cardindex, card.keyword, card.value, card.comment
 function cast_FITS_card(cardindex::Int, record::String)
 
     key = Base.strip(record[1:8])
-    val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(record[11:31])
+    val = record[9:10] ≠ "= " ? record[11:31] : _fits_parse(cardindex, record[11:31])
     com = record[34:80]
 
     return FITS_card(cardindex, record, key, val, com)
@@ -633,9 +633,7 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         tfields = length(data[1])
 
         # make array of table format descriptors Xw.d
-
         cardindex = [max(get(map, "TDISP$i", 0), map["TFORM$i"]) for i = 1:tfields]
-
         tdisp = [strip(card[cardindex[i]].value, ['\'', ' ']) for i = 1:tfields]
         tdisp = string.(tdisp)
 
@@ -649,6 +647,7 @@ function cast_FITS_HDU(hduindex::Int, header::FITS_header, dataobject::FITS_data
         data = [join([lpad(strcol[i][j], w[j]) for j = 1:tfields]) for i = 1:nrows]
         # data output as Vector{String}
         # this is the Vector{String} of table ROWS (equal-size fields)
+
         dataobject = FITS_dataobject(hdutype, data)
 
     end
