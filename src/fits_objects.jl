@@ -88,17 +88,12 @@ function cast_FITS_filnam(filnam::String)
 
     n = ne - 1                       # n: last digit of numerator (if existent)
 
-    if !isnothing(n)
-        strNum = ""
-        while Base.Unicode.isdigit(filnam[n])
-            strNum = filnam[n] * strNum
-            n -= 1
-        end
-        strPre = filnam[1:n]
-    else
-        strPre = strNam
-        strNum = " "
+    strNum = ""
+    while Base.Unicode.isdigit(filnam[n])
+        strNum = filnam[n] * strNum
+        n -= 1
     end
+    strPre = filnam[1:n]
 
     return FITS_filnam(filnam, strNam, strPre, strNum, strExt)
 
@@ -748,40 +743,6 @@ function msgErr(err::Int)
     str *= Base.get!(dictErr, err, "not found")
 
     return str
-
-end
-# ------------------------------------------------------------------------------
-#                             FITS_test 
-# ------------------------------------------------------------------------------
-
-mutable struct FITS_test
-    index::Int
-    err::Int
-    name::String
-    passed::Bool
-    msgpass::String
-    msgfail::String
-    msgwarn::String
-    msghint::String
-end
-
-# ------------------------------------------------------------------------------
-#                    cast_FITS_test(index::Int)
-# ------------------------------------------------------------------------------
-
-function cast_FITS_test(index::Int, err)
-
-    passed = err == 0 ? true : false
-
-    name = get(dictTest, index, "testname not found")
-    p = Base.get(dictPass, index, "")
-    f = "FITSError: $(err) - " * Base.get(dictFail, index, "")
-    w = "FITSWarning: $(index) - " * Base.get(dictWarn, index, "")
-    h = "FITSError: $(err) - " * Base.get(dictHint, index, "")
-
-    F = FITS_test(index, err, name, passed, p, f, w, h)
-
-    return F
 
 end
 

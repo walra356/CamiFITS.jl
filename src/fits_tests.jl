@@ -435,6 +435,31 @@ function test_FORTRAN_format()
 
 end
 
+function test_image_datatype()
+
+    filnam = "kanweg.fits"
+    f = fits_create(filnam; protect=false)
+
+    data = [0x0000043e, 0x0000040c, 0x0000041f]
+
+    fits_extend!(f, data; hdutype="image")
+
+    g = fits_read(filnam)
+
+    rm(filnam)
+
+    data1 = g.hdu[2].dataobject.data
+
+    o = data .== data1
+
+    pass = 1 == sum(o) ÷ length(data)
+
+    pass || println(o)
+
+    return pass
+
+end
+
 function dataset_table()
 
     a1, b1 = Bool(1), Bool(0)

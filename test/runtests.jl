@@ -37,6 +37,7 @@ using Test
     @test test_fits_zero_offset()
     @test test_format_hdutype()
     @test test_format_value_string()  
+    @test test_image_datatype()
     @test test_table_datatype()
     @test test_bintable_datatype()
 
@@ -48,12 +49,10 @@ using Test
     @test test_FORTRAN_eltype_char()  
                                            
     filnam = "kanweg.fits"
-    fn = cast_FITS_filnam("kanweg.fits")
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
     fits_extend!(f, data; hdutype="Image")
     fits_extend!(f, data; hdutype="IMAGE")
-    @test fn.numerator == ""
     @test_throws FITSError fits_extend!(f, data; hdutype="imago")
     @test_throws FITSError fits_create(filnam)
     @test_throws FITSError fits_save_as(f, filnam)

@@ -147,6 +147,7 @@ export test_fits_ptr
 export test_fits_zero_offset
 export test_format_hdutype
 export test_format_value_string
+export test_image_datatype
 export test_table_datatype
 export test_bintable_datatype
 export test_FORTRAN_format
