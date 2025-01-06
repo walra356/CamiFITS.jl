@@ -58,14 +58,14 @@ function _read_header(o::IO, p::FITS_pointer, hduindex::Int; msg=false)
  
     record = [String(Base.read(o, 80)) for i = 1:nrow]
     
-    if msg 
-        str = "_read_header:\n"
-        str *= "p.hdr_start[hduindex] = $(p.hdr_start[hduindex])\n"
-        str *= "p.hdr_stop[hduindex] = $(p.hdr_stop[hduindex])\n"
-        str *= "record[1] = $(record[1])\n"
-        str *= "remain = $((p.hdr_stop[hduindex]-p.hdr_start[hduindex]) % 80)\n"
-        println(str)
-    end
+ #   if msg 
+ #       str = "_read_header:\n"
+ #       str *= "p.hdr_start[hduindex] = $(p.hdr_start[hduindex])\n"
+ #       str *= "p.hdr_stop[hduindex] = $(p.hdr_stop[hduindex])\n"
+ #       str *= "record[1] = $(record[1])\n"
+ #       str *= "remain = $((p.hdr_stop[hduindex]-p.hdr_start[hduindex]) % 80)\n"
+ #       println(str)
+ #   end
     
     return cast_FITS_header(record)
 
