@@ -1,7 +1,7 @@
 name = "CamiFITS"
 uuid = "e3d38e7e-66c0-4598-81c1-d1e9bcf43bf0"
 authors = ["Jook Walraven <69215586+walra356@users.noreply.github.com> and contributors"]
-version = "0.2.26"
+version = "0.2.27"
 
 [deps]
 CamiMath = "d302b3f7-c8ae-418d-9fc2-2c0a42bddda0"
