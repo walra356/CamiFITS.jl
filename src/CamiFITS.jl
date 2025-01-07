@@ -23,7 +23,6 @@
 module CamiFITS
 
 import CamiMath
-import CamiDiff
 #import Printf
 import Dates           # used in fits_private_sector
 

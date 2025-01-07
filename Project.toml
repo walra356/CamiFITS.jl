@@ -1,11 +1,10 @@
 name = "CamiFITS"
 uuid = "e3d38e7e-66c0-4598-81c1-d1e9bcf43bf0"
 authors = ["Jook Walraven <69215586+walra356@users.noreply.github.com> and contributors"]
-version = "0.2.27"
+version = "0.2.26"
 
 [deps]
 CamiMath = "d302b3f7-c8ae-418d-9fc2-2c0a42bddda0"
-CamiDiff = "2453a446-82e3-4664-a8e3-5851c117fba8"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 #LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 # DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
@@ -15,7 +14,6 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [compat]
 julia = "1"
 CamiMath = "0.1.13"
-CamiDiff = "0.0.11"
 #LaTeXStrings = "1.4.0"
 #DocumenterTools = "0.1.18"
 LinearAlgebra = "1.11.0" 
