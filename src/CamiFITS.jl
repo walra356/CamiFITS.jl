@@ -180,6 +180,6 @@ include("fits_public_sector.jl")
 include("FORTRAN.jl")
 include("fits_tests.jl")
 include("test_fits_format.jl")
-include("plot_methods")
+include("plot_methods.jl")
 
 end
