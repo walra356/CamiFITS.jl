@@ -162,6 +162,13 @@ export test_fits_edit_key!
 export test_fits_delete_key!
 export test_fits_rename_key!
 
+export step125
+export select125
+export steps
+export stepcenters
+export stepedges
+export edges
+
 include("julia_toolbox.jl")
 include("fits_objects.jl")
 include("dicts.jl")
@@ -173,5 +180,6 @@ include("fits_public_sector.jl")
 include("FORTRAN.jl")
 include("fits_tests.jl")
 include("test_fits_format.jl")
+include("plot_methods")
 
 end
