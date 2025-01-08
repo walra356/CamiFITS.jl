@@ -207,7 +207,7 @@ julia> dump[37]
 julia> rm(filnam); f = data = dump = nothing
 ```
 """
-function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=true)
+function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=false)
 
     o = IORead(filnam)
 
@@ -241,8 +241,6 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
     record = [rec[i][2] for i ∈ eachindex(rec)]
 
     record = nr ? [lpad("$(rec[i][1]) | ", 7) * record[i] for i ∈ eachindex(record)] : record
-
-    # record = [lpad("$(rec[i][1]) | ", 7) * rec[i][2] for i ∈ eachindex(rec)]
 
     str = "\nFile: " * filnam * " - bare record dump:\n"
 

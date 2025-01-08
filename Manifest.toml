@@ -2,7 +2,7 @@
 
 julia_version = "1.11.2"
 manifest_format = "2.0"
-project_hash = "6f6a274e0f8f7aacc3c34fa1e88cab3862ab46c0"
+project_hash = "de0ac76fb47dac8ddf85de116e55c0eedb20524e"
 
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
@@ -13,12 +13,6 @@ deps = ["JSON", "Logging", "Printf", "Profile", "Statistics", "UUIDs"]
 git-tree-sha1 = "f1dff6729bc61f4d49e140da1af55dcd1ac97b2f"
 uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 version = "1.5.0"
-
-[[deps.CamiDiff]]
-deps = ["CamiMath", "Dates", "LinearAlgebra", "Printf"]
-git-tree-sha1 = "edc745f448084b3809ad8febba7316775e5f71db"
-uuid = "2453a446-82e3-4664-a8e3-5851c117fba8"
-version = "0.0.11"
 
 [[deps.CamiMath]]
 deps = ["BenchmarkTools"]
