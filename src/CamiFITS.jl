@@ -115,6 +115,8 @@ export fits_extend!
 export fits_info
 export fits_copy
 export fits_collect
+export fits_pointer
+export fits_pointers
 export fits_tform
 export fits_tzero
 export fits_apply_zero_offset

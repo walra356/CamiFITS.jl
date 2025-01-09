@@ -138,10 +138,10 @@ struct FITS_pointer
 end
 
 # ------------------------------------------------------------------------------
-#                            cast_FITS_pointer(o; msg=false)
+#                            cast_FITS_pointer(o)
 # ------------------------------------------------------------------------------
 @doc raw"""
-    cast_FITS_pointer(o::IO []; msg=false])
+    cast_FITS_pointer(o::IO)
 
 Prefered method to construct a [`FITS_pointer`](@ref) object.
 #### Example:
@@ -158,7 +158,7 @@ julia> fits_extend!(f, data; hdutype="'IMAGE   '");
 
 julia> o = IORead(filnam);
 
-julia> p = cast_FITS_pointer(o; msg=false);
+julia> p = cast_FITS_pointer(o);
 
  julia> p.nblock, p.nhdu, p.block_start, p.block_stop, p.hdu_start, p.hdr_stop
  (6, 3, (0, 2880, 5760, 8640, 11520, 14400), (2880, 5760, 8640, 11520, 14400, 17280), (0, 5760, 11520), (2880, 8640, 14400))
@@ -167,7 +167,7 @@ julia> p = cast_FITS_pointer(o; msg=false);
  ((0, 5760, 11520), (2880, 8640, 14400), (2880, 8640, 14400), (8640, 14400, 17280))
 ```
 """
-function cast_FITS_pointer(o::IO; msg=false)
+function cast_FITS_pointer(o::IO) #; msg=false)
 
     seekstart(o)
 
@@ -207,21 +207,7 @@ function cast_FITS_pointer(o::IO; msg=false)
     data_start = hdr_stop
     data_stop = [(hdr_stop[i-1] == hdr_start[i] ? data_start[i-1] : hdr_start[i]) for i=2:nhdu]
     data_stop = append!(data_stop, nbytes)    
- # ------------------------------------------------------------------------    
-
-    if msg 
-        str =  "             block count: $(nblock)\n"                
-        str *= "               hdu count: $(nhdu)\n"
-        str *= " start-of-block pointers: $(block_start)\n"
-        str *= "   end-of-block pointers: $(block_stop)\n"
-        str *= "   start-of-hdu pointers: $(hdu_start)\n"
-        str *= "     end-of-hdu pointers: $(hdu_stop)\n" 
-        str *= "start-of-header pointers: $(hdr_start)\n"     
-        str *= "  end-of-header pointers: $(hdr_stop)\n"    
-        str *= "  start-of-data pointers: $(data_start)\n"   
-        str *= "    end-of-data pointers: $(data_stop)\n"  
-        println(str)
-    end
+ # ------------------------------------------------------------------------  
     
     a = nblock
     b = nhdu
@@ -333,9 +319,9 @@ julia> p.hdu[2].header.start, p.hdu[2].data.start
 (5760, 8640)
 ```
 """
-function cast_FITS_ptr(o::IO; msg=false)
+function cast_FITS_ptr(o::IO)
 
-    p = cast_FITS_pointer(o; msg)
+    p = cast_FITS_pointer(o)
 
     return cast_FITS_ptr(p)
 

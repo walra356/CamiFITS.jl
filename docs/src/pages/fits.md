@@ -40,13 +40,15 @@ cast_FITS_header(dataobject::FITS_dataobject)
 cast_FITS_card(cardindex::Int, record::String)
 cast_FITS_HDU(hduindex::Int, header::FITS_header, data::FITS_dataobject)
 cast_FITS(filnam::String, hdu::Vector{FITS_HDU})
-cast_FITS_pointer(o::IO; msg=false)
+cast_FITS_pointer(o::IO)
 cast_FITS_ptr(o::IO; msg=false)
 ```
 
 ## FITS methods
 
 ```@docs
+fits_pointer(filnam::String)
+fits_pointers(filnam::String)
 fits_zero_offset(T::Type)
 fits_apply_zero_offset(data)
 fits_remove_zero_offset(data)

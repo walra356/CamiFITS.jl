@@ -340,18 +340,34 @@ function test_fits_pointer()
     fits_extend!(f, data; hdutype="'IMAGE   '")
     fits_extend!(f, data; hdutype="'IMAGE   '")
 
-    o = IORead(filnam);
-    p = cast_FITS_pointer(o)
+#    o = IORead(filnam);
+#    p = cast_FITS_pointer(o)
+    p = fits_pointer(f)
     a = p.nblock == 6
     b = p.nhdu == 3
     c = p.block_start  == (0, 2880, 5760, 8640, 11520, 14400)
     d = p.block_stop == (2880, 5760, 8640, 11520, 14400, 17280)
     e = p.hdu_start == (0, 5760, 11520)
-    f = p.hdu_stop == (2880, 8640, 14400)
+    s = p.hdu_stop == (2880, 8640, 14400)
     g = p.hdr_start == (0, 5760, 11520)
     h = p.hdr_stop == (2880, 8640, 14400)
     i = p.data_start == (2880, 8640, 14400)
     j = p.data_stop == (5760, 11520, 17280)
+
+    q = [    
+    "             block count: $(p.nblock)",                
+    "               hdu count: $(p.nhdu)",
+    " start-of-block pointers: $(p.block_start)",
+    "   end-of-block pointers: $(p.block_stop)",
+    "   start-of-hdu pointers: $(p.hdu_start)",
+    "     end-of-hdu pointers: $(p.hdu_stop)", 
+    "start-of-header pointers: $(p.hdr_start)" ,    
+    "  end-of-header pointers: $(p.hdr_stop)" ,   
+    "  start-of-data pointers: $(p.data_start)",   
+    "    end-of-data pointers: $(p.data_stop)" 
+    ]
+
+    q = (q == fits_pointers(f))
 
     r = fits_record_dump(filnam; msg=false)
     k = r[8][8:10]
@@ -370,9 +386,9 @@ function test_fits_pointer()
     
     rm(filnam)
 
-    o = a & b & c & d & e & f & g & h & i & j & k & l & m & n
+    o = a & b & c & d & e & s & g & h & i & j & k & l & m & n & q
 
-    o || println([a, b, c, d, e, f, g, h, i, j, k, l, m, n])
+    o || println([a, b, c, d, e, s, g, h, i, j, k, l, m, n, q])
 
 end
 

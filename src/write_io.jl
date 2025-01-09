@@ -42,7 +42,6 @@ function fits_save(f::FITS; protect=true)
     end
 
     n = 0
-
     for i ∈ eachindex(f.hdu)
         n += f.hdu[i].header.size
         k = f.hdu[i].header.map["BITPIX"]

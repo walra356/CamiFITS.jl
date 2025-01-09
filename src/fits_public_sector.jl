@@ -211,12 +211,12 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
 
     o = IORead(filnam)
 
-    p = cast_FITS_pointer(o; msg)
+    p = cast_FITS_pointer(o)
 
     hduval = hduindex
-    ptrhdu = p.hdu_start #_hdu_pointer(o)
-    ptrdat = p.data_start #_data_pointer(o)
-    ptrend = p.data_stop #_end_pointer(o)
+    ptrhdu = p.hdu_start
+    ptrdat = p.data_start
+    ptrend = p.data_stop
 
     rec = []
     for hduindex ∈ eachindex(ptrhdu)
@@ -299,7 +299,7 @@ END
 julia> rm("minimal.fits"); f = nothing
 ```
 """
-function fits_create(filnam::String, data=Int[]; protect=true, msg=false)
+function fits_create(filnam::String, data=[]; protect=true, msg=false)
 
 msg && println("fits_create:")
 
@@ -374,7 +374,7 @@ julia> fits_info(filnam, 2; hdr=false)
 julia> rm(filnam)
 ```
 """
-function fits_extend!(f::FITS, data; hdutype="IMAGE", msg=false)
+function fits_extend!(f::FITS, data=[]; hdutype="IMAGE", msg=false)
 
     hdutype = _format_hdutype(hdutype)
     hduindex = length(f.hdu) + 1
@@ -404,7 +404,7 @@ msg && println("extend hdu with hdu[$(hduindex)]" )
     return f
 
 end
-function fits_extend!(filnam::String, data; hdutype="IMAGE", msg=false)
+function fits_extend!(filnam::String, data=[]; hdutype="IMAGE", msg=false)
 
     Base.Filesystem.isfile(filnam) || return println("file not found")
 
@@ -415,8 +415,6 @@ function fits_extend!(filnam::String, data; hdutype="IMAGE", msg=false)
     return o
 
 end
-
-
 
 # ------------------------------------------------------------------------------
 #                     fits_read(filnam::String)
@@ -464,7 +462,7 @@ msg && println("fits_read:")
     
     o = IORead(filnam)
 
-    p = cast_FITS_pointer(o; msg)
+    p = cast_FITS_pointer(o)
     
     Base.seekstart(o)
         
@@ -475,6 +473,114 @@ msg && println("fits_read:")
     return f
     
 end
+
+# ------------------------------------------------------------------------------
+#                     fits_pointer(filnam::String)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_pointer(filnam::String)
+    fits_pointer(f::FITS) 
+
+[`FITS_pointer`](@ref) object used by `CamiFITS`
+
+#### Examples:
+```
+julia> filnam = "kanweg.fits";
+
+julia> f = fits_create(filnam, data; protect=false);
+
+julia> fits_extend!(f; hdutype="'IMAGE   '");
+
+julia> fits_extend!(filnam, data; hdutype="'IMAGE   '");
+
+julia> p = fits_pointer(f);
+
+julia> p.nblock
+5
+```
+"""
+function fits_pointer(filnam::String)
+
+    Base.Filesystem.isfile(filnam) || return println("file not found")
+        
+    o = IORead(filnam)
+    
+    p = cast_FITS_pointer(o)
+    
+    return p
+
+end
+function fits_pointer(f::FITS) 
+
+    filnam = f.filnam.value
+
+    return fits_pointer(filnam)
+        
+end
+
+# ------------------------------------------------------------------------------
+#                     fits_pointers(filnam::String)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_pointers(filnam::String)
+    fits_pointers(f::FITS) 
+
+summay of the pointers used by `CamiFITS`
+
+#### Examples:
+```
+julia> filnam = "kanweg.fits";
+
+julia> f = fits_create(filnam, data; protect=false);
+
+julia> fits_extend!(f; hdutype="'IMAGE   '");
+
+julia> fits_extend!(filnam, data; hdutype="'IMAGE   '");
+
+julia> fits_pointers(filnam)
+10-element Vector{String}:
+ "             block count: 5"
+ "               hdu count: 3"
+ " start-of-block pointers: (0, 2880, 5760, 8640, 11520)"
+ "   end-of-block pointers: (2880, 5760, 8640, 11520, 14400)"
+ "   start-of-hdu pointers: (0, 5760, 8640)"
+ "     end-of-hdu pointers: (2880, 8640, 11520)"
+ "start-of-header pointers: (0, 5760, 8640)"
+ "  end-of-header pointers: (2880, 8640, 11520)"
+ "  start-of-data pointers: (2880, 8640, 11520)"
+ "    end-of-data pointers: (5760, 8640, 14400)"
+```
+"""
+function fits_pointers(filnam::String) 
+
+    p = fits_pointer(filnam)
+
+    str = [  
+    "             block count: $(p.nblock)", 
+    "               hdu count: $(p.nhdu)",
+    " start-of-block pointers: $(p.block_start)",
+    "   end-of-block pointers: $(p.block_stop)",
+    "   start-of-hdu pointers: $(p.hdu_start)",
+    "     end-of-hdu pointers: $(p.hdu_stop)", 
+    "start-of-header pointers: $(p.hdr_start)",    
+    "  end-of-header pointers: $(p.hdr_stop)" ,   
+    "  start-of-data pointers: $(p.data_start)",   
+    "    end-of-data pointers: $(p.data_stop)"
+    ] 
+
+    return str
+
+end
+function fits_pointers(f::FITS) 
+
+    filnam = f.filnam.value
+
+    return fits_pointers(filnam)
+        
+end    
+
 
 # ------------------------------------------------------------------------------
 #           fits_copy(filnam1 [, filnam2=""] [; protect=true[, msg=true]])
