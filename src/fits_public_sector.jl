@@ -537,7 +537,7 @@ julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
 julia> f = fits_create(filnam, data; protect=false);
 
-julia> fits_extend!(f; hdutype="'IMAGE   '");
+julia> fits_extend!(f);
 
 julia> fits_extend!(filnam, data; hdutype="'IMAGE   '");
 
