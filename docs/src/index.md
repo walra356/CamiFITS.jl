@@ -25,11 +25,6 @@ create, edit and delete user-defined metainformation.
 Many issues have been resolved, both with regard to FITS conformance and 
 code test coverage. The package steadily converges to a stable form.
 
-## Table of contents
-
-```@contents
-```
-
 ## Install
 
 The package is installed using the Julia package manager
