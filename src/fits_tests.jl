@@ -337,8 +337,8 @@ function test_fits_pointer()
     filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
-    fits_extend!(f, data; hdutype="'IMAGE   '")
-    fits_extend!(f, data; hdutype="'IMAGE   '")
+    fits_extend(f, data; hdutype="'IMAGE   '")
+    fits_extend(f, data; hdutype="'IMAGE   '")
 
 #    o = IORead(filnam);
 #    p = cast_FITS_pointer(o)
@@ -397,8 +397,8 @@ function test_fits_ptr()
     filnam = "kanweg.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
-    fits_extend!(f, data; hdutype="'IMAGE   '")
-    fits_extend!(f, data; hdutype="'IMAGE   '")
+    fits_extend(f, data; hdutype="'IMAGE   '")
+    fits_extend(f, data; hdutype="'IMAGE   '")
 
     o = IORead(filnam);
     p = cast_FITS_ptr(o);
@@ -471,7 +471,7 @@ function test_image_datatype()
 
     data = [0x0000043e, 0x0000040c, 0x0000041f]
 
-    fits_extend!(f, data; hdutype="image")
+    fits_extend(f, data; hdutype="image")
 
     g = fits_read(filnam)
 
@@ -635,7 +635,7 @@ function test_table_datatype()
 
     data = dataset_table()
 
-    fits_extend!(f, data; hdutype="table")
+    fits_extend(f, data; hdutype="table")
 
     data = f.hdu[2].dataobject.data
 
@@ -662,7 +662,7 @@ function test_bintable_datatype()
 
     data = dataset_bintable()
 
-    fits_extend!(f, data; hdutype="bintable")
+    fits_extend(f, data; hdutype="bintable")
 
     g = fits_read(filnam)
 

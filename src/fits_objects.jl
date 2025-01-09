@@ -152,9 +152,9 @@ julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
 julia> f = fits_create(filnam, data; protect=false);
 
-julia> fits_extend!(f, data; hdutype="'IMAGE   '");
+julia> fits_extend(f, data; hdutype="'IMAGE   '");
 
-julia> fits_extend!(f, data; hdutype="'IMAGE   '");
+julia> fits_extend(f, data; hdutype="'IMAGE   '");
 
 julia> o = IORead(filnam);
 
@@ -297,8 +297,8 @@ Prefered method to construct a [`FITS_ptr`](@ref) object.
 julia> filnam = "kanweg.fits";
 julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 julia> f = fits_create(filnam, data; protect=false);
-julia> fits_extend!(f, data; hdutype="'IMAGE   '");
-julia> fits_extend!(f, data; hdutype="'IMAGE   '");
+julia> fits_extend(f, data; hdutype="'IMAGE   '");
+julia> fits_extend(f, data; hdutype="'IMAGE   '");
 julia> o = IORead(filnam);
 
 julia> ptr = cast_FITS_ptr(o; msg=true)

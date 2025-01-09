@@ -111,7 +111,7 @@ export fits_record_dump
 export fits_read
 export fits_save
 export fits_save_as
-export fits_extend!
+export fits_extend
 export fits_info
 export fits_copy
 export fits_collect
@@ -137,7 +137,7 @@ export test_FITS_filnam
 export test_fits_copy
 export test_fits_create
 export test_fits_read
-export test_fits_extend!
+export test_fits_extend
 export test_fits_table_extend!
 export test_fits_save_as
 export test_fits_collect

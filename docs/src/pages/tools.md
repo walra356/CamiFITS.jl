@@ -11,7 +11,7 @@ fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=tr
 
 ```@docs
 fits_create(filnam::String, data=Int[]; protect=true, msg=false)
-fits_extend!(f::FITS, data; hdutype="IMAGE", msg=false)
+fits_extend(f::FITS, data; hdutype="IMAGE", msg=false)
 fits_collect(filnamFirst::String, filnamLast::String; protect=true)
 ```
 

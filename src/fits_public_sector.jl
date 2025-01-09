@@ -322,7 +322,7 @@ msg && println("cast hdu[$(hduindex)]")
 end
 
 # ------------------------------------------------------------------------------
-#           fits_extend!(f::FITS, data [; hdutype="IMAGE"])
+#           fits_extend(f::FITS, data [; hdutype="IMAGE"])
 # ------------------------------------------------------------------------------
 
 function _fits_table_data(data)
@@ -343,8 +343,8 @@ function _fits_table_data(data)
 end
 # ------------------------------------------------------------------------------
 @doc raw"""
-    fits_extend!(f::FITS, data [; hdutype="IMAGE"])
-    fits_extend!(filnam::String, data [; hdutype="IMAGE"])
+    fits_extend(f::FITS, data [; hdutype="IMAGE"])
+    fits_extend(filnam::String, data [; hdutype="IMAGE"])
 
 HDU array in which the FITS object `f` or FITS file `filnam` is extended 
 with the `data` in the format of the specified `hdutype`. 
@@ -364,7 +364,7 @@ julia> table = let
         [false, 0x6d, 1011, 0x03f3, 23.2, 3.01f-6, 3.01e-6, 'b', "b", "abcdef"]
         end;
 
-julia> fits_extend!(filnam, table; hdutype="table");
+julia> fits_extend(filnam, table; hdutype="table");
 
 julia> fits_info(filnam, 2; hdr=false)
 2-element Vector{String}:
@@ -374,7 +374,7 @@ julia> fits_info(filnam, 2; hdr=false)
 julia> rm(filnam)
 ```
 """
-function fits_extend!(f::FITS, data=[]; hdutype="IMAGE", msg=false)
+function fits_extend(f::FITS, data=[]; hdutype="IMAGE", msg=false)
 
     hdutype = _format_hdutype(hdutype)
     hduindex = length(f.hdu) + 1
@@ -404,13 +404,13 @@ msg && println("extend hdu with hdu[$(hduindex)]" )
     return f
 
 end
-function fits_extend!(filnam::String, data=[]; hdutype="IMAGE", msg=false)
+function fits_extend(filnam::String, data=[]; hdutype="IMAGE", msg=false)
 
     Base.Filesystem.isfile(filnam) || return println("file not found")
 
     f = fits_read(filnam; msg)
     
-    o = fits_extend!(f, data; hdutype, msg)
+    o = fits_extend(f, data; hdutype, msg)
 
     return o
 
@@ -457,8 +457,6 @@ julia> rm(filnam); f = nothing
 ```
 """
 function fits_read(filnam::String; msg=false)
-
-msg && println("fits_read:")
     
     o = IORead(filnam)
 
@@ -490,9 +488,9 @@ julia> filnam = "kanweg.fits";
 
 julia> f = fits_create(filnam, data; protect=false);
 
-julia> fits_extend!(f; hdutype="'IMAGE   '");
+julia> fits_extend(f; hdutype="'IMAGE   '");
 
-julia> fits_extend!(filnam, data; hdutype="'IMAGE   '");
+julia> fits_extend(filnam, data; hdutype="'IMAGE   '");
 
 julia> p = fits_pointer(f);
 
@@ -537,9 +535,9 @@ julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
 julia> f = fits_create(filnam, data; protect=false);
 
-julia> fits_extend!(f);
+julia> fits_extend(f);
 
-julia> fits_extend!(filnam, data; hdutype="'IMAGE   '");
+julia> fits_extend(filnam, data; hdutype="'IMAGE   '");
 
 julia> foreach(println, fits_pointers(filnam))
              block count: 5
