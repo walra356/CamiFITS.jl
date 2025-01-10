@@ -215,6 +215,7 @@ function _format_comment(comment::String; offset=0, linesize=65)
         i = findfirst(x -> x > linesize * n, pos)
         !isnothing(i) || break
         spaces = n * linesize - pos[i-1]
+println("len[i] = ", len[i])        
         if len[i] > linesize
             insert!(com, n * linesize + 1, ' ')
             for j ∈ indices(pos, i - 1)
