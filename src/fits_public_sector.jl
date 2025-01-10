@@ -1018,7 +1018,7 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_parse_table(hdu::FITS_HDU)
+    fits_parse_table(hdu::FITS_HDU; byrow=true)
 
 Parse `FITS_TABLE` (ASCII table) into a Vector of its rows/columns for further
 processing by the user. Default formatting in ISO 2004 FORTRAN data format
