@@ -52,6 +52,7 @@ fits_pointers(filnam::String)
 fits_zero_offset(T::Type)
 fits_apply_zero_offset(data)
 fits_remove_zero_offset(data)
+fits_parse_table(hdu::FITS_HDU; byrow=true)
 ```
 
 ## Fortran objects 

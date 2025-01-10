@@ -1019,6 +1019,9 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
+    fits_parse_table(hdu::FITS_HDU; byrow=true)
+
+abcd
 """
 function fits_parse_table(hdu::FITS_HDU; byrow=true)
 
