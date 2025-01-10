@@ -1013,6 +1013,7 @@ function fits_rename_key!(f::FITS, hduindex::Int, keyold::String, keynew::String
     return f
 
 end
+
 # ------------------------------------------------------------------------------
 #                    fits_parse_table(hdu::FITS_HDU)
 # ------------------------------------------------------------------------------
@@ -1024,6 +1025,7 @@ Parse `FITS_TABLE` (ASCII table) into a Vector of its rows/columns for further
 processing by the user. Default formatting in ISO 2004 FORTRAN data format
 specified by keys "TFORMS1" - "TFORMSn"). Display formatting in ISO 2004
 FORTRAN data format ("TDISP1" - "TDISPn") prepared for user editing.
+
 #### Example:
 ```
 julia> filnam = "kanweg.fits";
