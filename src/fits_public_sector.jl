@@ -1019,7 +1019,45 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_parse_table(hdu::FITS_HDU; byrow=true)
+"""
+function fits_parse_table(hdu::FITS_HDU; byrow=true)
+
+    dict = hdu.header.map
+    card = hdu.header.card
+    i = get(dict, "XTENSION", 0)
+    thdu = i > 0 ? card[i].value : "UNKNOWN"
+    thdu = Base.strip(thdu)
+
+    thdu == "'TABLE   '" || return error("Error: $(thdu) is not an ASCII TABLE HDU")
+
+    ncols = card[Base.get(dict, "TFIELDS", 0)].value
+    nrows = card[Base.get(dict, "NAXIS2", 0)].value
+    tbcol = [card[Base.get(dict, "TBCOL$n", 0)].value for n = 1:ncols]
+    tform = [card[Base.get(dict, "TFORM$n", 0)].value for n = 1:ncols]
+    tform = [string(strip(tform[n], ['\'', ' '])) for n = 1:ncols]
+
+    ttype = [cast_FORTRAN_format(tform[n]).datatype for n = 1:ncols]
+    tchar = [cast_FORTRAN_format(tform[n]).char for n = 1:ncols]
+    width = [cast_FORTRAN_format(tform[n]).width for n = 1:ncols]
+    itr = [(tbcol[k]:tbcol[k]+width[k]-1) for k = 1:ncols]
+
+    data = hdu.dataobject.data
+    data = [string(strip(hdu.dataobject.data[n])) for n = 1:nrows]
+    data = [[data[i][itr[k]] for i = 1:nrows] for k = 1:ncols]
+    data = [tchar[k] == 'D' ? Base.join.(Base.replace!.(Base.collect.(data[k]), 'D' => 'E')) : data[k] for k = 1:ncols]
+    Type = [ttype[k] == "Aw" ? (width[k] == 1 ? Char : String) : ttype[k] == "Iw" ? Int : Float64 for k = 1:ncols]
+    data = Any[ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
+
+    data = byrow ? [Any[data[i][k] for i = 1:ncols] for k = 1:nrows] : data
+
+    return data
+
+end
+
+@doc raw"""
+
+
+fits_parse_table(hdu::FITS_HDU; byrow=true)
 
 Parse `FITS_TABLE` (ASCII table) into a Vector of its rows/columns for further
 processing by the user. Default formatting in ISO 2004 FORTRAN data format
@@ -1059,42 +1097,9 @@ julia> fits_parse_table(f.hdu[2]; byrow=false)
  ["a", "b"]
  ["   abc", "abcdef"]
 
- julia> rm(filnam)
+julia> rm(filnam)
 ```
 """
-function fits_parse_table(hdu::FITS_HDU; byrow=true)
-
-    dict = hdu.header.map
-    card = hdu.header.card
-    i = get(dict, "XTENSION", 0)
-    thdu = i > 0 ? card[i].value : "UNKNOWN"
-    thdu = Base.strip(thdu)
-
-    thdu == "'TABLE   '" || return error("Error: $(thdu) is not an ASCII TABLE HDU")
-
-    ncols = card[Base.get(dict, "TFIELDS", 0)].value
-    nrows = card[Base.get(dict, "NAXIS2", 0)].value
-    tbcol = [card[Base.get(dict, "TBCOL$n", 0)].value for n = 1:ncols]
-    tform = [card[Base.get(dict, "TFORM$n", 0)].value for n = 1:ncols]
-    tform = [string(strip(tform[n], ['\'', ' '])) for n = 1:ncols]
-
-    ttype = [cast_FORTRAN_format(tform[n]).datatype for n = 1:ncols]
-    tchar = [cast_FORTRAN_format(tform[n]).char for n = 1:ncols]
-    width = [cast_FORTRAN_format(tform[n]).width for n = 1:ncols]
-    itr = [(tbcol[k]:tbcol[k]+width[k]-1) for k = 1:ncols]
-
-    data = hdu.dataobject.data
-    data = [string(strip(hdu.dataobject.data[n])) for n = 1:nrows]
-    data = [[data[i][itr[k]] for i = 1:nrows] for k = 1:ncols]
-    data = [tchar[k] == 'D' ? Base.join.(Base.replace!.(Base.collect.(data[k]), 'D' => 'E')) : data[k] for k = 1:ncols]
-    Type = [ttype[k] == "Aw" ? (width[k] == 1 ? Char : String) : ttype[k] == "Iw" ? Int : Float64 for k = 1:ncols]
-    data = Any[ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
-
-    data = byrow ? [Any[data[i][k] for i = 1:ncols] for k = 1:nrows] : data
-
-    return data
-
-end
 
 # ------------------------------------------------------------------------------
 #                      fits_zero_offset(T)
