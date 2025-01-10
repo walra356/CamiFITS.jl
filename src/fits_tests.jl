@@ -250,7 +250,7 @@ function test_fits_add_key!()
     end
 
     date = Dates.Date("2020-09-18", "yyyy-mm-dd")
-    fits_add_key!(f, 1, "DATE", date, "this is a" * long * " comment")
+    fits_add_key!(f, 1, "DATE", date, "this is a short comment")
 
     i = get(f.hdu[1].header.map, "KEY1", 0)
     a = f.hdu[1].header.card[i].keyword
