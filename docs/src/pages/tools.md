@@ -21,6 +21,7 @@ fits_read(filnam::String; msg=false)
 fits_save(f::FITS; protect=true)
 fits_save_as(f::FITS, filnam::String; protect=true)
 fits_copy(fileStart::String, fileStop::String=" "; protect=true)
+fits_parse_table(hdu::FITS_HDU; byrow=true)
 ```
 
 ## FITS keyword tools
