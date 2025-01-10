@@ -5,6 +5,7 @@
 ```@docs
 fits_info(hdu::FITS_HDU; nr=true, hdr=true)
 fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=true, msg=true)
+fits_parse_table(hdu::FITS_HDU; byrow=true)
 ```
 
 ## FITS creation, extension and collection

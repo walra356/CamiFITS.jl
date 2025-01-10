@@ -220,7 +220,7 @@ these procedures impose comformance to the
 
 NB. The .fits format is introduced to document and store images for 
 further processing by dedicated software. Although `CamiFITS` makes the 
-casting procedures available to the user, the typically remain hidden 
+casting procedures available to the user, these typically remain hidden 
 as they are called internally by the functions [`fits_create`](@ref), 
 [`fits_extend`](@ref) and [`fits_read`](@ref). 
 

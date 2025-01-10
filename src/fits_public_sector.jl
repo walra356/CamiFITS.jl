@@ -174,15 +174,21 @@ end
 @doc raw"""
     fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true [, msg=true]]]])
 
-Listing of all single-line records (card records) as read from `filnam` on disc.
-The dump proceeds *without casting of FITS objects*; i.e., *without* 
+The file `filnam` as a Vector{String} of 80 character records without any further formatting. 
+
+For `msg=true`` it outputs a listing of `filnam` in blocks (2880 bytes) of 36 (optionally 
+indexed) records. The dump proceeds *without casting of FITS objects*; i.e., *without* 
 FITS-conformance testing.
 
-* `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
+default: `hduindex` = 0 - all blocks
+         `hduindex` > 0 - only blocks of given `hduindex`
+
+* `hduindex`: HDU index (::Int - default: `0` all records)
 * `hdr`: show header (::Bool - default: true)
 * `dat`: show data (::Bool - default: true)
-* `nr`: include record numbers (::Bool - default: true)
+* `nr`: include record index (row number) (::Bool - default: true)
 * `msg`: print message (::Bool)
+
 #### Example:
 ```
 julia> filnam = "test.fits";
@@ -193,7 +199,7 @@ julia> fits_create(filnam, data; protect=false);
 
 julia> dump = fits_record_dump(filnam; msg=false);
 
-julia> for i=3:8 println(dump[i]) end
+julia> foreach(println,dump[3:8])
    3 | NAXIS   =                    1 / number of data axes
    4 | NAXIS1  =                    2 / length of data axis 1
    5 | BSCALE  =                  1.0 / default scaling factor
@@ -214,24 +220,21 @@ function fits_record_dump(filnam::String, hduindex=0; hdr=true, dat=true, nr=tru
     p = cast_FITS_pointer(o)
 
     hduval = hduindex
-    ptrhdu = p.hdu_start
-    ptrdat = p.data_start
-    ptrend = p.data_stop
 
     rec = []
-    for hduindex ∈ eachindex(ptrhdu)
-        if (hduindex == hduval) ⊻ iszero(hduval)
+    for i = 1:p.nhdu
+        if (i == hduval) ⊻ iszero(hduval)
             if hdr
-                Base.seek(o, ptrhdu[hduindex])
-                for ptr = (ptrhdu[hduindex]÷80+1):(ptrdat[hduindex]÷80)
-                    add = (ptr, String(Base.read(o, 80)))
+                Base.seek(o, p.hdr_start[i])
+                for itr = (p.hdr_start[i]÷80+1):(p.hdr_stop[i]÷80)
+                    add = (itr, String(Base.read(o, 80)))
                     push!(rec, add)
                 end
             end
             if dat
-                Base.seek(o, ptrdat[hduindex])
-                for ptr = (ptrdat[hduindex]÷80+1):(ptrend[hduindex]÷80)
-                    add = (ptr, "$(Base.read(o, 80))")
+                Base.seek(o, p.data_start[i])
+                for itr = (p.data_start[i]÷80+1):(p.data_stop[i]÷80)
+                    add = (itr, "$(Base.read(o, 80))")
                     push!(rec, add)
                 end
             end
@@ -1011,73 +1014,81 @@ function fits_rename_key!(f::FITS, hduindex::Int, keyold::String, keynew::String
 
 end
 # ------------------------------------------------------------------------------
-#                    parse_FITS_TABLE(hdu::FITS_HDU)
+#                    fits_parse_table(hdu::FITS_HDU)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    parse_FITS_TABLE(hdu::FITS_HDU)
+    fits_parse_table(hdu::FITS_HDU)
 
-Parse `FITS_TABLE` (ASCII table) into a Vector of its columns for further
+Parse `FITS_TABLE` (ASCII table) into a Vector of its rows/columns for further
 processing by the user. Default formatting in ISO 2004 FORTRAN data format
 specified by keys "TFORMS1" - "TFORMSn"). Display formatting in ISO 2004
 FORTRAN data format ("TDISP1" - "TDISPn") prepared for user editing.
 #### Example:
 ```
-strExample = "example.fits"
-data = [10, 20, 30]
-fits_create(strExample, data; protect=false)
+julia> filnam = "kanweg.fits";
 
-t1 = Float16[1.01E-6,2.0E-6,3.0E-6,4.0E-6,5.0E-6]
-t2 = [0x0000043e, 0x0000040c, 0x0000041f, 0x0000042e, 0x0000042f]
-t3 = [1.23,2.12,3.,4.,5.]
-t4 = ['a','b','c','d','e']
-t5 = ["a","bb","ccc","dddd","ABCeeaeeEEEEEEEEEEEE"]
-data = [t1,t2,t3,t4,t5]
-fits_extend(strExample, data, "TABLE")
+julia> fits_create(filnam; protect=false);
 
-f = fits_read(strExample)
-d = f[2].header.dict
-d = [get(d,"TFORM\$i",0) for i=1:5]; println(strip.(d))
-  SubString{String}["'E6.1    '", "'I4      '", "'F4.2    '", "'A1      '", "'A20     '"]
+julia> data = [[true, 0x6c, 1081, 0x0439, 1081, 0x00000439, 1081, 0x0000000000000439, 1.23, 1.01f-6, 1.01e-6, 'a', "a", "abc"],
+               [false, 0x6d, 1011, 0x03f3, 1011, 0x000003f3, 1011, 0x00000000000003f3, 123.4, 3.01f-6, 3.001e-5, 'b', "b", "abcdef"]];
 
-f[2].dataobject.data                            # this is the table hdu
-  5-element Vector{String}:
-   "1.0e-6 1086 1.23 a a                    "
-   "2.0e-6 1036 2.12 b bb                   "
-   "3.0e-6 1055 3.0  c ccc                  "
-   "4.0e-6 1070 4.0  d dddd                 "
-   "5.0e-6 1071 5.0  e ABCeeaeeEEEEEEEEEEEE "
+julia> f = fits_extend(filnam, data; hdutype="table");
 
-parse_FITS_TABLE(f[2])
-  5-element Vector{Vector{T} where T}:
-   [1.0e-6, 2.0e-6, 3.0e-6, 4.0e-6, 5.0e-6]
-   [1086, 1036, 1055, 1070, 1071]
-   [1.23, 2.12, 3.0, 4.0, 5.0]
-   ["a", "b", "c", "d", "e"]
-   ["a                   ", "bb                  ", "ccc                 ", "dddd                ", "ABCeeaeeEEEEEEEEEEEE"]
+julia> fits_parse_table(f.hdu[2]; byrow=true)                                                                                                                                                                  
+2-element Vector{Vector{Any}}:
+ [1, 108, 1081, 1081, 1081, 1081, 1081, 1081, 1.23, 1.01e-6, 1.01e-6, "a", "a", "   abc"]
+ [0, 109, 1011, 1011, 1011, 1011, 1011, 1011, 123.4, 3.01e-6, 3.001e-5, "b", "b", "abcdef"]
+
+julia> fits_parse_table(f.hdu[2]; byrow=false)
+14-element Vector{Any}:
+ [1, 0]
+ [108, 109]
+ [1081, 1011]
+ [1081, 1011]
+ [1081, 1011]
+ [1081, 1011]
+ [1081, 1011]
+ [1081, 1011]
+ [1.23, 123.4]
+ [1.01e-6, 3.01e-6]
+ [1.01e-6, 3.001e-5]
+ ["a", "b"]
+ ["a", "b"]
+ ["   abc", "abcdef"]
+
+ julia> rm(filnam)
 ```
 """
-function parse_FITS_TABLE(hdu::FITS_HDU)
+function fits_parse_table(hdu::FITS_HDU; byrow=true)
 
     dict = hdu.header.map
-    thdu = Base.strip(Base.get(dict, "XTENSION", "UNKNOWN"), ['\'', ' '])
+    card = hdu.header.card
+    i = get(dict, "XTENSION", 0)
+    thdu = i > 0 ? card[i].value : "UNKNOWN"
+    thdu = Base.strip(thdu)
 
-    thdu == "TABLE" || return error("Error: $(thdu) is not an ASCII TABLE HDU")
+    thdu == "'TABLE   '" || return error("Error: $(thdu) is not an ASCII TABLE HDU")
 
-    ncols = Base.get(dict, "TFIELDS", 0)
-    nrows = Base.get(dict, "NAXIS2", 0)
-    tbcol = [Base.get(dict, "TBCOL$n", 0) for n = 1:ncols]
-    tform = [Base.get(dict, "TFORM$n", 0) for n = 1:ncols]
-    ttype = [cast_FORTRAN_format(tform[n]).Type for n = 1:ncols]
-    tchar = [cast_FORTRAN_format(tform[n]).TypeChar for n = 1:ncols]
+    ncols = card[Base.get(dict, "TFIELDS", 0)].value
+    nrows = card[Base.get(dict, "NAXIS2", 0)].value
+    tbcol = [card[Base.get(dict, "TBCOL$n", 0)].value for n = 1:ncols]
+    tform = [card[Base.get(dict, "TFORM$n", 0)].value for n = 1:ncols]
+    tform = [string(strip(tform[n], ['\'', ' '])) for n = 1:ncols]
+
+    ttype = [cast_FORTRAN_format(tform[n]).datatype for n = 1:ncols]
+    tchar = [cast_FORTRAN_format(tform[n]).char for n = 1:ncols]
     width = [cast_FORTRAN_format(tform[n]).width for n = 1:ncols]
     itr = [(tbcol[k]:tbcol[k]+width[k]-1) for k = 1:ncols]
 
     data = hdu.dataobject.data
+    data = [string(strip(hdu.dataobject.data[n])) for n = 1:nrows]
     data = [[data[i][itr[k]] for i = 1:nrows] for k = 1:ncols]
     data = [tchar[k] == 'D' ? Base.join.(Base.replace!.(Base.collect.(data[k]), 'D' => 'E')) : data[k] for k = 1:ncols]
     Type = [ttype[k] == "Aw" ? (width[k] == 1 ? Char : String) : ttype[k] == "Iw" ? Int : Float64 for k = 1:ncols]
-    data = [ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
+    data = Any[ttype[k] == "Aw" ? data[k] : parse.(Type[k], (data[k])) for k = 1:ncols]
+
+    data = byrow ? [Any[data[i][k] for i = 1:ncols] for k = 1:nrows] : data
 
     return data
 

@@ -633,6 +633,54 @@ function test_table_datatype()
     filnam = "kanweg.fits"
     f = fits_create(filnam; protect=false)
 
+    data0 = dataset_table()
+
+    fits_extend(f, data0; hdutype="table")
+
+    g = fits_read(filnam)
+
+    rm(filnam)
+
+    data1 = g.hdu[2].dataobject.data
+    data2 = [" 1 108 1081 1081 1081 1081 1081 1081   1.23 1.01E-6 1.010D-6 a a    abc", 
+            " 0 109 1011 1011 1011 1011 1011 1011 123.40 3.01E-6 3.001D-5 b b abcdef"]
+
+    data3 = fits_parse_table(g.hdu[2]; byrow=true)
+
+    a = data1 == data2
+
+    nrows = length(data0)
+    for n = 1:nrows
+        for k = 1:14
+            data0[n][k] = typeof(data0[n][k]) <: Integer ? Int(data0[n][k]) : data0[n][k]
+            data0[n][k] = typeof(data0[n][k]) == Char ? string(data0[n][k]) : data0[n][k]
+            data3[n][k] = typeof(data3[n][k]) == String ? strip(data3[n][k]) : data3[n][k]
+        end
+    end
+
+    b = data0[1][1:11] .≈ data3[1][1:11]
+    c = data0[1][12:14] .== data3[1][12:14]
+    d = data0[2][1:11] .≈ data3[2][1:11]
+    e = data0[2][12:14] .== data3[2][12:14]
+
+    b = sum(b) == length(b)
+    c = sum(c) == length(c)
+    d = sum(d) == length(d)
+    e = sum(e) == length(e)
+
+    o = a & b & c & d & e
+
+    o || println([a, b, c, d, e])
+
+    return o
+
+end
+
+function test_table_datatype1()
+
+    filnam = "kanweg.fits"
+    f = fits_create(filnam; protect=false)
+
     data = dataset_table()
 
     fits_extend(f, data; hdutype="table")

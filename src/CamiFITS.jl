@@ -104,8 +104,6 @@ export FORTRAN_eltype_char
 
 export cast_FORTRAN_format
 
-export parse_FITS_TABLE
-
 export fits_create
 export fits_record_dump
 export fits_read
@@ -128,6 +126,7 @@ export fits_add_key!
 export fits_edit_key!
 export fits_delete_key!
 export fits_records
+export fits_parse_table
 export fits_rename_key!
 export fits_verifier
 export name_verifier

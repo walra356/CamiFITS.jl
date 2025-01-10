@@ -70,7 +70,8 @@ cast_FORTRAN_format(str::String)
 
 ```@docs
 FORTRAN_eltype_char(T::Type)
-parse_FITS_TABLE(hdu::FITS_HDU)
+fits_parse_table(hdu::FITS_HDU; byrow=true)
+
 ```
 
 ## Plotting
