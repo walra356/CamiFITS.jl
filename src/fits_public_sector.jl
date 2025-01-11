@@ -787,9 +787,15 @@ function fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::Strin
 
     n = f.hdu[hduindex].header.card[end].cardindex
 
+#println("cardindex last card: n = $n")
+
     rec = _format_record(key, val, com)
     nrec = length(rec)
     nadd = (nrec - n + k + 35) ÷ (36)
+
+#println("rec k = $k : ", rec)
+#println("nrec = ", nrec)
+#println("nadd = ", nadd)
 
     if nadd > 0
         blanks = repeat(' ', 80)
@@ -859,8 +865,8 @@ function fits_delete_key!(f::FITS, hduindex::Int, key::String)
 
     keyword = _format_keyword(key)
 
-    k = get(f.hdu[hduindex].header.map, keyword, 0)
-    k > 0 || Base.throw(FITSError(msgErr(18)))        # keyword not found
+    nr = get(f.hdu[hduindex].header.map, keyword, 0)   # card nr with given key
+    nr > 0 || Base.throw(FITSError(msgErr(18)))        # keyword not found
 
     abrkey = _format_keyword(key; abr=true)
     ismandatory = abrkey ∈ fits_mandatory_keyword(f.hdu[hduindex])
@@ -869,23 +875,30 @@ function fits_delete_key!(f::FITS, hduindex::Int, key::String)
     card = f.hdu[hduindex].header.card
     nrec = length(card)
 
-    n = k
+    n = nr
     while (card[n].keyword == keyword) ⊻ (card[n].keyword == "CONTINUE")
         n += 1
     end
-    n -= k
+    n -= nr # n records to be deleted
 
-    for i=k:nrec-n
-        f.hdu[hduindex].header.card[i] = card[i+n]
+    ne = nr - 1
+    while key ≠ "END" # shift remaining records up
+        ne += 1
+        rec = card[ne+n].record 
+        key = card[ne+n].keyword
+        f.hdu[hduindex].header.card[ne] = cast_FITS_card(ne, rec)
     end
 
-    for i=nrec-n+1:nrec
+    nblanks = (36 - (ne % 36)) % 36
+    nrec = ne + nblanks
+
+    for i=ne+1:ne+nblanks # fill remainder of block with blanks
         blank = Base.repeat(' ', 80)
         f.hdu[hduindex].header.card[i] = cast_FITS_card(i, blank)
     end
 
-    card = f.hdu[hduindex].header.card
-
+    card = f.hdu[hduindex].header.card[1:nrec]
+    
     dataobject = f.hdu[hduindex].dataobject
     header = cast_FITS_header(card)
     f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)

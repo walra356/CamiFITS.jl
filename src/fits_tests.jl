@@ -249,9 +249,8 @@ function test_fits_add_key!()
         fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment")
     end
 
-    test= repeat("test", 20)
     date = Dates.Date("2020-09-18", "yyyy-mm-dd")
-    fits_add_key!(f, 1, "DATE", date, "this is a" * test)
+    fits_add_key!(f, 1, "DATE", date, "this is a comment")
 
     i = get(f.hdu[1].header.map, "KEY1", 0)
     a = f.hdu[1].header.card[i].keyword
@@ -295,23 +294,96 @@ end
 
 function test_fits_delete_key!()
 
-    filnam = "minimal.fits"
+    filnam = "kanweg.fits"
     f = fits_create(filnam; protect=false)
-    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
+    for i = 1:29
+        fits_add_key!(f, 1, "EXTRA$i", true, "extra record")
+    end
 
-    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
+    comment = ["comment has changed", repeat("long line ",28), repeat("-",70)]
+    test = []
+    o = true
 
-    test1 = i == 6
+    for i = 1:3
+        fits_add_key!(f, 1, "KEYNEW1", true, comment[i])
 
-    fits_delete_key!(f, 1, "KEYNEW1")
+        io = IORead(filnam)
+        p = cast_FITS_pointer(io)
 
-    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
+        nr = get(f.hdu[1].header.map, "KEYNEW1", 0)
+        ne = get(f.hdu[1].header.map, "END", 0)
 
-    test2 = i == 0
+        card = f.hdu[1].header.card
+
+        println("==================")
+        println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1])
+        println(nr, " | ", card[nr].record)
+        println(nr, " | ", card[nr+1].record)
+    
+
+        fits_delete_key!(f, 1, "KEYNEW1")
+
+        f = fits_read(filnam)
+        io = IORead(filnam);
+        p = cast_FITS_pointer(io);
+
+        nd = get(f.hdu[1].header.map, "KEYNEW1", 0)
+        a = nd == 0
+        o &= a
+        push!(test, a)
+
+        ne = get(f.hdu[1].header.map, "END", 0)
+        a = ne == nr
+        o &= a
+        push!(test, a)
+
+        println("------------------")
+        println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1], " data_stop = ", p.data_stop[1])
+        println(nr, " | ", card[nr].record)
+        println(nr, " | ", card[nr+1].record)
+
+    end
+
+    io = IORead(filnam)
+    p = cast_FITS_pointer(io)
+
+    nr = get(f.hdu[1].header.map, "EXTRA10", 0)
+    ne = get(f.hdu[1].header.map, "END", 0)
+
+    card = f.hdu[1].header.card
+
+    println("==================")
+    println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1])
+    println(nr, " | ", card[nr].record)
+    println(nr, " | ", card[nr+1].record)
+
+
+    fits_delete_key!(f, 1, "EXTRA10")
+
+    f = fits_read(filnam)
+    io = IORead(filnam);
+    p = cast_FITS_pointer(io);
+
+    nd = get(f.hdu[1].header.map, "EXTRA10", 0)
+    a = nd == 0
+    o &= a
+    push!(test, a)
+
+    ne2 = get(f.hdu[1].header.map, "END", 0)
+    a = ne2 == (ne - 1)
+    o &= a
+    push!(test, a)
+
+    println("------------------")
+    println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1], " data_stop = ", p.data_stop[1])
+    println(nr, " | ", card[nr].record)
+    println(nr, " | ", card[nr+1].record)
+
+    o || println(test)
 
     rm(filnam)
 
-    return test1 & test2
+    return o 
 
 end
 
@@ -320,16 +392,38 @@ function test_fits_edit_key!()
     filnam = "minimal.fits"
     f = fits_create(filnam; protect=false)
 
+    comment1 = "comment has changed" 
+    comment2 = repeat("long line ",7)
+    comment3 = repeat("longword",8)
+
     fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-    fits_edit_key!(f, 1, "KEYNEW1", false, "comment has changed")
+    fits_edit_key!(f, 1, "KEYNEW1", false, comment1)
 
-    k = get(f.hdu[1].header.map, "KEYNEW1", 0)
+    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
+    a = strip(f.hdu[1].header.card[i].comment) == comment1
+println("comment1 = ", f.hdu[1].header.card[i].comment)
 
-    test = strip(f.hdu[1].header.card[k].comment) == "comment has changed"
+    fits_edit_key!(f, 1, "KEYNEW1", false, comment2)
+    b = f.hdu[1].header.card[i].record == "KEYNEW1 =                    F / long line long line long line long line long   "
+    c = f.hdu[1].header.card[i+1].record == "CONTINUE  '&' / line long line long line                                        "
+println("comment2 = ", f.hdu[1].header.card[i].record)
+println("comment2 = ", f.hdu[1].header.card[i+1].record)
+
+fits_edit_key!(f, 1, "KEYNEW1", false, comment3)
+println("length = ", length(f.hdu[1].header.card[i+1].record)) 
+    d = f.hdu[1].header.card[i].record == "KEYNEW1 =                    F / longwordlongwordlongwordlongwordlongwordlong"
+    e = f.hdu[1].header.card[i+1].record == "CONTINUE  '&' / wordlongwordlongwordlongwordlongword                         "     
+println("comment3 = ", f.hdu[1].header.card[i].record)
+println("comment3 = ", f.hdu[1].header.card[i+1].record)
+#println("comment3 = ", f.hdu[1].header.card[i+2].record)
 
     rm(filnam)
 
-    return test
+    o = a & b & c & d & e
+
+    o || println([a,b,c,d,e])
+
+    return o
 
 end
 

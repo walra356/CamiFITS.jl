@@ -200,8 +200,10 @@ function cast_FITS_pointer(o::IO) #; msg=false)
  # ------------------------------------------------------------------------    
     for i ∈ eachindex(b)         # i: start-of-block pointer (36 records/block)
         Base.seek(o, b[i]) 
-        [(key = String(Base.read(o, 8));
-          key == "END     " ? Base.push!(hdr_stop, b[i] + 2880) : Base.skip(o, 72)) for j = 0:35]
+        for n = 1:36
+            key = strip(String(Base.read(o, 8)))
+            key ≠ "END" ? Base.skip(o, 72) : Base.push!(hdr_stop, b[i] + 2880)
+        end
     end
    
     data_start = hdr_stop
