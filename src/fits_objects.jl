@@ -969,7 +969,6 @@ function _header_record_table(dataobject::FITS_dataobject)
 
 end
 
-
 # ==============================================================================
 #                  _header_record_bintable(dataobject)
 # ------------------------------------------------------------------------------
