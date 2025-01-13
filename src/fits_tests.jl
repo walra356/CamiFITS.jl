@@ -24,55 +24,55 @@
 #                            fits_test.jl
 # ------------------------------------------------------------------------------
 
-function test_fits_info(;dbg=false)
+function test_fits_info()
 
-dbg && println("test_fits_info - Integers")
+    dbg = false
 
-    filnam = "kanweg.fits"
+    str1 = "==================================\n"
+    str2 = "----------------------------------\n"
+    dbg && println(str1 * "test_fits_info - Integers")
+
+    filnam = "foo.fits"
 
     T = [Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
         Float32, Float64]
-    c = []
+    test = Bool[]
 
     for i ∈ eachindex(T)
-dbg && println("----------------------------------")
         data = [typemin(T[i]), typemax(T[i])]
-dbg && println(data)
         f = fits_create(filnam, data; protect=false)
         a = fits_info(f; hdr=false) == data
-dbg && println("fits_info(f) = ", fits_info(f; hdr=false))
-dbg && println("i = $i, passed test 1 = $a")
-        push!(c, a)
-        a = fits_info(filnam; hdr=false) == data  # [1] == '\n'
-dbg && println("fits_info(filnam) = ", fits_info(filnam; hdr=false))
-dbg && println("i = $i, passed test 2 = $a")
-        push!(c, a)
+        push!(test, a)
+        b = fits_info(filnam; hdr=false) == data  # [1] == '\n'
+        push!(test, b)
+
+        dbg && println(str1, data)
+        dbg && println("fits_info(f) = ", fits_info(f; hdr=false))
+        dbg && println("i = $i, passed test 1 = $a")
+        dbg && println("fits_info(filnam) = ", fits_info(filnam; hdr=false))
+        dbg && println("i = $i, passed test 2 = $b")
     end
-    
 
-dbg && println("----------------------------------")
-dbg && println("test_fits_info - Real numbers")
+    dbg && println(str1 * "test_fits_info - Real numbers")
 
-dbg && println("----------------------------------")
     data = [1.23, 4.56]
-dbg && println(data)
     f = fits_create(filnam, data; protect=false)
     a = fits_info(f; hdr=false) == data
-dbg && println("fits_info(f) = ", fits_info(f; hdr=false))
-dbg && println("Real: passed test 1 = $a")
-    push!(c, a)
-    a = fits_info(filnam; hdr=false) == data  # [1] == '\n'
-dbg && println("fits_info(filnam) = ", fits_info(filnam; hdr=false))
-dbg && println("Real: passed test 2 = $a")
-    push!(c, a)
-dbg && println("----------------------------------")
+    push!(test, a)
+    b = fits_info(filnam; hdr=false) == data  # [1] == '\n'
+    push!(test, b)
+
+    dbg && println(str2, data)
+    dbg && println("fits_info(f) = ", fits_info(f; hdr=false))
+    dbg && println("passed test 1 = $a")
+    dbg && println("fits_info(filnam) = ", fits_info(filnam; hdr=false))
+    dbg && println("passed test 2 = $b")
 
     rm(filnam)
 
-    o = c[1] & c[2] & c[3] & c[4] & c[5] & c[6] & c[7] & c[8] & c[9] & c[10]
-    o = o & c[11]
+    o = sum(test) == length(test)
 
-    o || println(c)
+    o || println(test)
 
     return o
 
@@ -80,7 +80,7 @@ end
 
 function test_fits_read(;msg=true)
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
 
     data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
     data = reshape(data, (3, 3, 1))
@@ -114,7 +114,7 @@ function test_fits_create()
 
     rm(filnam)
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     data = [11, 21, 31, 12, 22, 23, 13, 23, 33]
     data = reshape(data, (3, 3, 1))
 
@@ -137,7 +137,7 @@ end
 function test_fits_save_as()
 
     filnam1 = "minimal.fits"
-    filnam2 = "kanweg.fits"
+    filnam2 = "foo.fits"
     f = fits_create(filnam1; protect=false)
 
     fits_save_as(f, filnam2; protect=false)
@@ -241,7 +241,7 @@ end
 
 function test_fits_add_key!()
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     f = fits_create(filnam; protect=false)
 
     long = repeat(" long", 71)
@@ -294,53 +294,51 @@ end
 
 function test_fits_delete_key!()
 
-    filnam = "kanweg.fits"
+    global dbg = false
+
+    filnam = "foo.fits"
     f = fits_create(filnam; protect=false)
     for i = 1:29
         fits_add_key!(f, 1, "EXTRA$i", true, "extra record")
     end
 
     comment = ["comment has changed", repeat("long line ",28), repeat("-",70)]
-    test = []
-    o = true
+    test = Bool[]
+
+    str1 = "=======================\n"
+    str2 = "-----------------------\n"
+    dbg && println(str1 * "test_fits_delete_key!()")
 
     for i = 1:3
         fits_add_key!(f, 1, "KEYNEW1", true, comment[i])
 
-        io = IORead(filnam)
-        p = cast_FITS_pointer(io)
+        p = fits_pointer(f)
 
         nr = get(f.hdu[1].header.map, "KEYNEW1", 0)
         ne = get(f.hdu[1].header.map, "END", 0)
 
         card = f.hdu[1].header.card
 
-        println("==================")
-        println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1])
-        println(nr, " | ", card[nr].record)
-        println(nr, " | ", card[nr+1].record)
+                str = "nblock = $(p.nblock), nhdu = $(p.nhdu)\n"
+                str *= "$(nr) | " * card[nr].record * "\n"
+                str *= "$(nr+1) | " * card[nr+1].record
+                dbg && println(str1 * str)
     
-
         fits_delete_key!(f, 1, "KEYNEW1")
 
         f = fits_read(filnam)
-        io = IORead(filnam);
-        p = cast_FITS_pointer(io);
+        p = fits_pointer(f);
 
         nd = get(f.hdu[1].header.map, "KEYNEW1", 0)
-        a = nd == 0
-        o &= a
-        push!(test, a)
+        push!(test, nd == 0)
 
         ne = get(f.hdu[1].header.map, "END", 0)
-        a = ne == nr
-        o &= a
-        push!(test, a)
+        push!(test, ne == nr)
 
-        println("------------------")
-        println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1], " data_stop = ", p.data_stop[1])
-        println(nr, " | ", card[nr].record)
-        println(nr, " | ", card[nr+1].record)
+                str = "nblock = $(p.nblock), nhdu = $(p.nhdu)\n"
+                str *= "$(nr) | " * card[nr].record * "\n"
+                str *= "$(nr+1) | " * card[nr+1].record
+                dbg && println(str2 * str)
 
     end
 
@@ -351,12 +349,11 @@ function test_fits_delete_key!()
     ne = get(f.hdu[1].header.map, "END", 0)
 
     card = f.hdu[1].header.card
-
-    println("==================")
-    println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1])
-    println(nr, " | ", card[nr].record)
-    println(nr, " | ", card[nr+1].record)
-
+  
+                str = "nblock = $(p.nblock), nhdu = $(p.nhdu)\n"
+                str *= "$(nr) | " * card[nr].record * "\n"
+                str *= "$(nr+1) | " * card[nr+1].record
+                dbg && println(str1 * str)
 
     fits_delete_key!(f, 1, "EXTRA10")
 
@@ -365,19 +362,18 @@ function test_fits_delete_key!()
     p = cast_FITS_pointer(io);
 
     nd = get(f.hdu[1].header.map, "EXTRA10", 0)
-    a = nd == 0
-    o &= a
-    push!(test, a)
+    push!(test, nd == 0)
 
-    ne2 = get(f.hdu[1].header.map, "END", 0)
-    a = ne2 == (ne - 1)
-    o &= a
-    push!(test, a)
+    new = get(f.hdu[1].header.map, "END", 0)
+    push!(test, new == (ne-1))
 
-    println("------------------")
-    println("nblock = ", p.nblock, " nhdu = ", p.nhdu, " data_start = ", p.data_start[1], " data_stop = ", p.data_stop[1])
-    println(nr, " | ", card[nr].record)
-    println(nr, " | ", card[nr+1].record)
+                str = "nblock = $(p.nblock), nhdu = $(p.nhdu)\n"
+                str *= "$(nr-1) | " * card[nr-1].record * "\n"
+                str *= "$(nr) | " * card[nr].record * "\n"
+                str *= "$(nr+1) | " * card[nr+1].record
+                dbg && println(str2 * str * str2)
+
+    o = length(test) == sum(test)
 
     o || println(test)
 
@@ -389,54 +385,75 @@ end
 
 function test_fits_edit_key!()
 
-    filnam = "minimal.fits"
+    global dbg = false
+
+    filnam = "foo.fits"
     f = fits_create(filnam; protect=false)
+    
+    comment = ["comment 1", "comment2: " * repeat("long line ",28), "comment3: " * repeat("-",70)]
 
-    comment1 = "comment has changed" 
-    comment2 = repeat("long line ",7)
-    comment3 = repeat("longword",8)
+    keyword = "KEYNEW1"
 
-    fits_add_key!(f, 1, "KEYNEW1", true, "FITS dataset may contain extension")
-    fits_edit_key!(f, 1, "KEYNEW1", false, comment1)
+    fits_add_key!(f, 1, keyword, true, comment[3])
 
-    i = get(f.hdu[1].header.map, "KEYNEW1", 0)
-    a = strip(f.hdu[1].header.card[i].comment) == comment1
-println("comment1 = ", f.hdu[1].header.card[i].comment)
+    str1 = "=======================\n"
+    str2 = "-----------------------\n"
+    dbg && println(str1 * "test_fits_edit_key!()") 
 
-    fits_edit_key!(f, 1, "KEYNEW1", false, comment2)
-    b = f.hdu[1].header.card[i].record == "KEYNEW1 =                    F / long line long line long line long line long   "
-    c = f.hdu[1].header.card[i+1].record == "CONTINUE  '&' / line long line long line                                        "
-println("comment2 = ", f.hdu[1].header.card[i].record)
-println("comment2 = ", f.hdu[1].header.card[i+1].record)
+    imod(i) = (3((i-1)÷3) + (i-1)%3) % 3 + 1
 
-fits_edit_key!(f, 1, "KEYNEW1", false, comment3)
-println("length = ", length(f.hdu[1].header.card[i+1].record)) 
-    d = f.hdu[1].header.card[i].record == "KEYNEW1 =                    F / longwordlongwordlongwordlongwordlongwordlong"
-    e = f.hdu[1].header.card[i+1].record == "CONTINUE  '&' / wordlongwordlongwordlongwordlongword                         "     
-println("comment3 = ", f.hdu[1].header.card[i].record)
-println("comment3 = ", f.hdu[1].header.card[i+1].record)
-#println("comment3 = ", f.hdu[1].header.card[i+2].record)
+    test = Bool[]
+    for i = 1:3
+
+        fits_edit_key!(f, 1, keyword, true, comment[imod(i)])
+
+        p = fits_pointer(f)
+
+        card = f.hdu[1].header.card
+
+        nr = get(f.hdu[1].header.map, keyword, 0)
+
+        n = nr
+        while (card[n].keyword == keyword) ⊻ (card[n].keyword == "CONTINUE")
+            n += 1
+        end
+        n -= nr # key of n records
+
+        com = strip(card[nr].comment)
+        for k=1:n-1
+            com *= i == 3 ? "" : " "
+            com *= strip(card[nr+k].record[16:80])
+        end
+
+        push!(test, com == strip(comment[imod(i)]))
+
+                str = "nblock = $(p.nblock), nhdu = $(p.nhdu)\n"
+                str *= "$(nr) | " * card[nr].record * "\n"
+                str *= "$(nr+1) | " * card[nr+1].record * "\n"
+                str *= com * "\n"
+                str *= comment[imod(i)]
+                dbg && println(str2 * str)
+
+    end
+
+    o = length(test) == sum(test)
+
+    o || println(test)
 
     rm(filnam)
 
-    o = a & b & c & d & e
-
-    o || println([a,b,c,d,e])
-
-    return o
+    return o 
 
 end
 
 function test_fits_pointer()
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
     fits_extend(f, data; hdutype="'IMAGE   '")
     fits_extend(f, data; hdutype="'IMAGE   '")
 
-#    o = IORead(filnam);
-#    p = cast_FITS_pointer(o)
     p = fits_pointer(f)
     a = p.nblock == 6
     b = p.nhdu == 3
@@ -489,7 +506,7 @@ end
 
 function test_fits_ptr()
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
     fits_extend(f, data; hdutype="'IMAGE   '")
@@ -561,7 +578,7 @@ end
 
 function test_image_datatype()
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     f = fits_create(filnam; protect=false)
 
     data = [0x0000043e, 0x0000040c, 0x0000041f]
@@ -725,7 +742,7 @@ end
 
 function test_table_datatype()
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     f = fits_create(filnam; protect=false)
 
     data0 = dataset_table()
@@ -773,7 +790,7 @@ end
 
 function test_table_datatype1()
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     f = fits_create(filnam; protect=false)
 
     data = dataset_table()
@@ -800,7 +817,7 @@ end
 
 function test_bintable_datatype()
 
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     f = fits_create(filnam; protect=false)
 
     data = dataset_bintable()

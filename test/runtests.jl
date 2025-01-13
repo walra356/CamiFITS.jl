@@ -26,7 +26,7 @@ using Dates
 
 @testset "CamiFITS.jl" begin
 
-    @test test_fits_info(dbg=true)
+    @test test_fits_info()
     @test test_fits_copy()
     @test test_fits_create()
     @test test_fits_keyword()
@@ -49,7 +49,7 @@ using Dates
     @test test_FORTRAN_format()
     @test test_FORTRAN_eltype_char()  
                                            
-    filnam = "kanweg.fits"
+    filnam = "foo.fits"
     data = [0x0000043e, 0x0000040c, 0x0000041f]
     f = fits_create(filnam, data; protect=false)
     fits_extend(f, data; hdutype="Image")
@@ -58,8 +58,8 @@ using Dates
     @test_throws FITSError fits_create(filnam)
     @test_throws FITSError fits_save_as(f, filnam)
     rm(filnam)
-    @test_throws FITSError fits_create("kanweg")
-    @test_throws FITSError fits_create("kanweg.fit")
+    @test_throws FITSError fits_create("foo")
+    @test_throws FITSError fits_create("foo.fit")
     @test_throws FITSError fits_create(" .fits")
 
     @test fits_terminology("FITS"; test=true) == "FITS:\nFlexible Image Transport System."

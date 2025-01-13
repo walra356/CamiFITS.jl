@@ -483,11 +483,11 @@ end
     fits_pointer(filnam::String)
     fits_pointer(f::FITS) 
 
-[`FITS_pointer`](@ref) object used by `CamiFITS`
+[`FITS_pointer`](@ref) object of the file `filnam` or its [`FITS`](@ref) object `f`.
 
 #### Examples:
 ```
-julia> filnam = "kanweg.fits";
+julia> filnam = "foo.fits";
 
 julia> f = fits_create(filnam, data; protect=false);
 
@@ -532,7 +532,7 @@ summay of the pointers used by `CamiFITS`
 
 #### Examples:
 ```
-julia> filnam = "kanweg.fits";
+julia> filnam = "foo.fits";
 
 julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
@@ -742,13 +742,98 @@ function fits_collect(fileStart::String, fileStop::String; protect=true, msg=tru
 end
 
 # ------------------------------------------------------------------------------
+#              fits_insert_key!(f, hduindex, nr, key, val, com)
+# ------------------------------------------------------------------------------
+
+@doc raw"""
+    fits_insert_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
+
+Add a header record of given 'key', 'value' and 'comment' to 'HDU[hduindex]' of 
+[`FITS`](@ref) object 'f'.
+
+NB. Know bug : Insertion can lead to fatal error - use  ['fits_add_key!'](@ref).
+#### Example:
+```
+julia> filnam = "minimal.fits";
+
+julia> f = fits_create(filnam; protect=false);
+
+julia> fits_insert_key!(f, 1, 6, "KeYNEw1", true, "This is the new key");
+
+julia> fits_info(f; nr=true)
+
+File: minimal.fits
+hdu: 1
+hdutype: 'PRIMARY '
+DataType: Any
+Datasize: (0,)
+
+  nr | Metainformation:
+---------------------------------------------------------------------------------------
+   1 | SIMPLE  =                    T / file does conform to FITS standard
+   2 | BITPIX  =                   64 / number of bits per data pixel
+   3 | NAXIS   =                    1 / number of data axes
+   4 | NAXIS1  =                    0 / length of data axis 1
+   5 | EXTEND  =                    T / FITS dataset may contain extensions
+   6 | KEYNEW1 =                    T / This is the new key
+   7 | END
+```
+"""
+function fits_insert_key!(f::FITS, hduindex::Int, nr::Int, key::String, val::Any, com::String)
+
+    ne = get(f.hdu[hduindex].header.map, "END", 0)
+    ne > 0 || Base.throw(FITSError(msgErr(13)))      # END keyword not found
+    nr ≤ ne || Base.throw(FITSError(msgErr(48)))     # insert not allowed beyond the END keyword
+
+    k = get(f.hdu[hduindex].header.map, _format_keyword(key), 0)
+    k > 0 && Base.throw(FITSError(msgErr(7)))        # keyword in use
+
+    n = f.hdu[hduindex].header.card[end].cardindex   # cardindex of last card of header
+
+    recnew = _format_record(key, val, com)
+    ni = length(recnew) # number of records to insert
+    nadd = (ni - n + ne + 35) ÷ (36) # number of blocks to add to header to fit insert 
+    
+    card = f.hdu[hduindex].header.card
+
+    if nadd > 0
+        blanks = repeat(' ', 80)
+        block = [cast_FITS_card(n + i, blanks) for i = 1:(36*nadd)]
+        append!(card, block)
+    end
+
+    for i=nr:ne # shift records down to create space for insert
+        rec = card[i].record 
+        f.hdu[hduindex].header.card[i+ni] = cast_FITS_card(i+ni, rec)
+    end
+    
+    for i=nr:nr+ni-1 # insert new records
+        rec = recnew[i-nr+1]
+        f.hdu[hduindex].header.card[i] = cast_FITS_card(i, rec)
+    end
+
+    card = f.hdu[hduindex].header.card
+
+    dataobject = f.hdu[hduindex].dataobject
+    header = cast_FITS_header(card)
+    f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)
+
+    fits_save(f; protect=false)
+
+    return f
+
+end
+
+# ------------------------------------------------------------------------------
 #              fits_add_key!(f, hduindex, key, val, com)
 # ------------------------------------------------------------------------------
 
 @doc raw"""
     fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 
-Add a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
+Add a header record of given 'key', 'value' and 'comment' to 'HDU[hduindex]' 
+of [`FITS`](@ref) object 'f'.
+
 #### Example:
 ```
 julia> filnam = "minimal.fits";
@@ -779,39 +864,41 @@ Any[]
 """
 function fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 
+    ne = get(f.hdu[hduindex].header.map, "END", 0)
+    ne > 0 || Base.throw(FITSError(msgErr(13)))       # END keyword not found
+
+    return fits_insert_key!(f, hduindex, ne, key, val, com)
+
     k = get(f.hdu[hduindex].header.map, _format_keyword(key), 0)
-    k > 0 && Base.throw(FITSError(msgErr(7)))        # " keyword in use
+    k > 0 && Base.throw(FITSError(msgErr(7)))        # keyword in use
 
-    k = get(f.hdu[hduindex].header.map, "END", 0)
-    k > 0 || Base.throw(FITSError(msgErr(13)))       # "END keyword not found
+    n = f.hdu[hduindex].header.card[end].cardindex   # cardindex of last card of header
 
-    n = f.hdu[hduindex].header.card[end].cardindex
-
-#println("cardindex last card: n = $n")
-
-    rec = _format_record(key, val, com)
-    nrec = length(rec)
-    nadd = (nrec - n + k + 35) ÷ (36)
-
-#println("rec k = $k : ", rec)
-#println("nrec = ", nrec)
-#println("nadd = ", nadd)
+    recnew = _format_record(key, val, com)
+    ni = length(recnew) # number of records to insert
+    nadd = (ni - n + ne + 35) ÷ (36) # number of blocks to add to header to fit insert 
+    
+    card = f.hdu[hduindex].header.card
 
     if nadd > 0
         blanks = repeat(' ', 80)
         block = [cast_FITS_card(n + i, blanks) for i = 1:(36*nadd)]
-        append!(f.hdu[hduindex].header.card, block)
+        append!(card, block)
     end
 
-    for i = 0:nrec-1
-        card = cast_FITS_card(k + i, rec[1+i])
-        f.hdu[hduindex].header.card[k+i] = card
+    nr = ne
+    for i=nr:ne # shift records down to create space for insert
+        rec = card[i].record 
+        f.hdu[hduindex].header.card[i+ni] = cast_FITS_card(i+ni, rec)
     end
-    endrec = "END" * repeat(' ', 77)
-    f.hdu[hduindex].header.card[k+nrec] = cast_FITS_card(k + nrec, endrec)
+    
+    for i=nr:nr+ni-1 # insert new records
+        rec = recnew[i-nr+1]
+        f.hdu[hduindex].header.card[i] = cast_FITS_card(i, rec)
+    end
 
     card = f.hdu[hduindex].header.card
-    
+
     dataobject = f.hdu[hduindex].dataobject
     header = cast_FITS_header(card)
     f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)
@@ -821,6 +908,7 @@ function fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::Strin
     return f
 
 end
+
 
 # ------------------------------------------------------------------------------
 #                  fits_delete_key!(f, hduindex, key)
@@ -864,6 +952,9 @@ Stacktrace:
 function fits_delete_key!(f::FITS, hduindex::Int, key::String)
 
     keyword = _format_keyword(key)
+    
+    ne = get(f.hdu[hduindex].header.map, "END", 0)
+    ne > 0 || Base.throw(FITSError(msgErr(13)))       # END keyword not found
 
     nr = get(f.hdu[hduindex].header.map, keyword, 0)   # card nr with given key
     nr > 0 || Base.throw(FITSError(msgErr(18)))        # keyword not found
@@ -875,21 +966,19 @@ function fits_delete_key!(f::FITS, hduindex::Int, key::String)
     card = f.hdu[hduindex].header.card
     nrec = length(card)
 
-    n = nr
-    while (card[n].keyword == keyword) ⊻ (card[n].keyword == "CONTINUE")
-        n += 1
+    nd = nr
+    while (card[nd].keyword == keyword) ⊻ (card[nd].keyword == "CONTINUE")
+        nd += 1
     end
-    n -= nr # n records to be deleted
+    nd -= nr # n records to be deleted
 
-    ne = nr - 1
-    while key ≠ "END" # shift remaining records up
-        ne += 1
-        rec = card[ne+n].record 
-        key = card[ne+n].keyword
-        f.hdu[hduindex].header.card[ne] = cast_FITS_card(ne, rec)
+    ne = ne-nd
+    for i=nr:ne # shift remaining records up
+        rec = card[i+nd].record 
+        f.hdu[hduindex].header.card[i] = cast_FITS_card(i, rec)
     end
 
-    nblanks = (36 - (ne % 36)) % 36
+    nblanks = (36 - (ne % 36)) % 36 # number of blanks required to fill the block
     nrec = ne + nblanks
 
     for i=ne+1:ne+nblanks # fill remainder of block with blanks
@@ -952,8 +1041,6 @@ function fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Any, com::Stri
 
     fits_delete_key!(f, hduindex, key)
     fits_add_key!(f, hduindex, key, val, com)
-
-    fits_save(f, protect=false)
 
     return f
 
@@ -1042,7 +1129,7 @@ FORTRAN data format ("TDISP1" - "TDISPn") prepared for user editing.
 
 #### Example:
 ```
-julia> filnam = "kanweg.fits";
+julia> filnam = "foo.fits";
     
 julia> fits_create(filnam; protect=false);
     

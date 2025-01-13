@@ -79,12 +79,12 @@ Key:
 ```
 julia> f = fits_create("minimal.fits"; protect=false);
 
-julia> fits_save_as(f, "kanweg.fits"; protect=false);
+julia> fits_save_as(f, "foo.fits"; protect=false);
 
-julia> f = fits_read("kanweg.fits");
+julia> f = fits_read("foo.fits");
 
 julia> fits_info(f)
-File: kanweg.fits
+File: foo.fits
 hdu: 1
 hdutype: PRIMARY
 DataType: Any

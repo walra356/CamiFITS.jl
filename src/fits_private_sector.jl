@@ -82,7 +82,11 @@ end
 
 function _isascii_text(text::String)::Bool
 
-    return !convert(Bool, sum(.!(32 .≤ Int.(collect(text)) .≤ 126)))
+    test = 32 .≤ Int.(collect(text)) .≤ 126
+
+    o = sum(test) == length(test)
+
+    return o
 
 end
 
@@ -99,7 +103,7 @@ function _format_keyword(key::String; abr=false)::String
     v = Int.(collect(key))
     o = (48 .≤ v .≤ 57) .| (65 .≤ v .≤ 90) .| (v .== 45) .| (v .== 95)
 
-    ispermitted = !convert(Bool, sum(.!o))
+    ispermitted = sum(o) == length(o)
 
     ispermitted || Base.throw(FITSError(msgErr(24))) # illegal character
 

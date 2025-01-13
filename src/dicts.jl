@@ -119,7 +119,8 @@ dictErr = Dict(0 => nothing,
     44 => "illegal BINTABLE TFORM datatype",
     45 => "missing BINTABLE TFORM datatype",
     46 => "cannot create table (rows not all of the same type)",
-    47 => "deletion not sucessful"
+    47 => "deletion not sucessful",
+    48 => "record insertion not permitted beyond the END record"
 
 )
 

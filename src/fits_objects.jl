@@ -146,7 +146,7 @@ end
 Prefered method to construct a [`FITS_pointer`](@ref) object.
 #### Example:
 ```
-julia> filnam = "kanweg.fits";
+julia> filnam = "foo.fits";
 
 julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 
@@ -296,7 +296,7 @@ end
 Prefered method to construct a [`FITS_ptr`](@ref) object.
 #### Example:
 ```
-julia> filnam = "kanweg.fits";
+julia> filnam = "foo.fits";
 julia> data = [0x0000043e, 0x0000040c, 0x0000041f];
 julia> f = fits_create(filnam, data; protect=false);
 julia> fits_extend(f, data; hdutype="'IMAGE   '");

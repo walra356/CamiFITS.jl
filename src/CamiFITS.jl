@@ -122,6 +122,7 @@ export fits_remove_zero_offset
 export fits_zero_offset
 
 export fits_add_key!
+export fits_insert_key!
 export fits_edit_key!
 export fits_delete_key!
 export fits_records

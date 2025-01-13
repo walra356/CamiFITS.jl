@@ -27,6 +27,7 @@ fits_parse_table(hdu::FITS_HDU; byrow=true)
 ## FITS keyword tools
 
 ```@docs
+fits_insert_key!(f::FITS, hduindex::Int, nr::Int, key::String, val::Any, com::String)
 fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 fits_delete_key!(f::FITS, hduindex::Int, key::String)
 fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Real, com::String)
