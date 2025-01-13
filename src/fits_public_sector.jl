@@ -191,8 +191,8 @@ default: `hduindex` = 0 - all blocks
 * `msg`: print message (::Bool)
 
 NB. The tool `fits_record_dump` is included for developers to facilitate code analysis 
-of the [`..//..//..//CamiFITS.jl`](ref) package (e.g. the correct implementation of 
-`ENDIAN` wraps and zero-offset shifting). 
+of the `CamiFITS` package (e.g. the correct implementation of `ENDIAN` wraps 
+and the zero-offset shifting). 
 
 #### Example:
 ```
@@ -363,10 +363,20 @@ end
     fits_extend(f::FITS, data [; hdutype="IMAGE"])
     fits_extend(filnam::String, data [; hdutype="IMAGE"])
 
-HDU array in which the FITS object `f` or FITS file `filnam` is extended 
-with the `data` in the format of the specified `hdutype`. 
+[`FITS`](@ref) object `f` extended by a [`FITS-hdu`](@ref) object
+constructed from the `data` in the format of the `hdutype` keyword. 
+```
+julia> f = fits_extend(filnam, data; hdutype="foo")
+```
+is equivalent to
+```
+julia> f = fits_read(filnam);
 
-NB. For the details of the save procedure (not shown in the flow diagram) see [`fits_save`](@ref).
+julia> fits_extend(f, data; hdutype="foo")
+```
+
+NB. For the details of the save procedure (not shown in the flow diagram) 
+- see [`fits_save`](@ref).
 
 ![Image](../assets/fits_extend.png)
 
