@@ -191,7 +191,7 @@ default: `hduindex` = 0 - all blocks
 * `msg`: print message (::Bool)
 
 NB. The tool `fits_record_dump` is included for developers to facilitate code analysis 
-of the [`..\..\..\CamiFITS`](ref) package (e.g. the correct implementation of 
+of the [`..//..//..\CamiFITS.jl`](ref) package (e.g. the correct implementation of 
 `ENDIAN` wraps and zero-offset shifting). 
 
 #### Example:
@@ -274,13 +274,14 @@ Key:
 * `data`: data primary hdu (::DataType)
 * `protect`: overwrite protection (::Bool)
 
-NB. For the details of the save procedure (not shown in the flow diagram) see [`fits_save`](@ref).
+NB. For the details of the save procedure (not shown in the flow diagram) - 
+see [`fits_save`](@ref).
  
 ![Image](../assets/fits_create.png)
 
 #### Examples:
 ```
-julia> filnam = "test.fits";
+julia> filnam = "foo.fits";
 
 julia> f = fits_create(filnam, data; protect=false);
 
