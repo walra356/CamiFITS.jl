@@ -268,7 +268,7 @@ end
     fits_create(filnam [, data [; protect=true]])
 
 Create and [`fits_save`](@ref) a `.fits` file of given `filnam` and return the 
-[`FITS`](@ref) object in the form of an Array of [`FITS_hdu`](@ref)s.
+[`FITS`](@ref) object in the form of an Array of [`FITS_HDU`](@ref)s.
 
 Key:
 * `data`: data primary hdu (::DataType)
@@ -363,10 +363,10 @@ end
     fits_extend(f::FITS, data [; hdutype="IMAGE"])
     fits_extend(filnam::String, data [; hdutype="IMAGE"])
 
-[`FITS`](@ref) object `f` extended by a [`FITS_hdu`](@ref) object
+[`FITS`](@ref) object `f` extended by a [`FITS_HDU`](@ref) object
 constructed from the `data` in the format of the `hdutype` keyword. 
 
-For a file on disc under the name `filnam`
+Shorthand function: For a file on disc under the name `filnam`
 ```
 julia> f = fits_extend(filnam, data; hdutype="foo")
 ```
