@@ -472,11 +472,11 @@ function test_fits_edit_key!()
 
     end
 
+    rm(filnam)
+
     o = length(test) == sum(test)
 
     o || println(test)
-
-    rm(filnam)
 
     return o 
 
