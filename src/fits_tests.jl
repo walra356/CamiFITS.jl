@@ -824,33 +824,6 @@ function test_table_datatype()
 
 end
 
-function test_table_datatype1()
-
-    filnam = "foo.fits"
-    f = fits_create(filnam; protect=false)
-
-    data = dataset_table()
-
-    fits_extend(f, data; hdutype="table")
-
-    data = f.hdu[2].dataobject.data
-
-    g = fits_read(filnam)
-
-    rm(filnam)
-
-    data1 = g.hdu[2].dataobject.data
-
-    o = data .== data1
-
-    pass =  (sum(o) ÷ length(data)) == 1
-
-    pass || println(o)
-
-    return pass
-
-end
-
 function test_bintable_datatype()
 
     filnam = "foo.fits"
