@@ -21,10 +21,6 @@ requiring celestal coordinates. Optional *Conforming Extensions* are under
 development. The user can create, read and extend .fits files as well as 
 create, edit and delete user-defined metainformation.
 
-*Disclaimer 2025-01-08:* The author is currently writing the documentation. 
-Many issues have been resolved, both with regard to FITS conformance and 
-code test coverage. The package steadily converges to a stable form.
-
 ## Install
 
 The package is installed using the Julia package manager
