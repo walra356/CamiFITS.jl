@@ -190,9 +190,9 @@ default: `hduindex` = 0 - all blocks
 * `nr`: include record index (row number) (::Bool - default: true)
 * `msg`: print message (::Bool)
 
-NB. The tool `fits_record_dump` is included for developers to facilitate code analysis of the 
-[`CamiFITS`](ref) package (e.g. the correct implementation of `ENDIAN` wraps and zero=offset 
-shifting). 
+NB. The tool `fits_record_dump` is included for developers to facilitate code analysis 
+of the [`..\..\..\CamiFITS`](ref) package (e.g. the correct implementation of 
+`ENDIAN` wraps and zero-offset shifting). 
 
 #### Example:
 ```
@@ -267,7 +267,9 @@ end
 @doc raw"""
     fits_create(filnam [, data [; protect=true]])
 
-Create and [`fits_save`](@ref) a `.fits` file of given filnam and return Array of HDUs.
+Create and [`fits_save`](@ref) a `.fits` file of given `filnam` and return the 
+[`FITS`](@ref) object in the form of an Array of [`FITS_hdu`](@ref)s.
+
 Key:
 * `data`: data primary hdu (::DataType)
 * `protect`: overwrite protection (::Bool)
