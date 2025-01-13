@@ -1,6 +1,6 @@
 # FITS Tools
 
-## FITS metainformation
+## FITS inspection of metainformation
 
 ```@docs
 fits_info(hdu::FITS_HDU; nr=true, hdr=true)

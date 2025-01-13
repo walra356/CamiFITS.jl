@@ -68,8 +68,8 @@ julia> rm(filnam); f = nothing
 ```
     fits_info(filnam::String [, hduindex=1 [; nr=true [, hdr=true]]])
 
-Same as above but creating the fits object by reading `filnam` from disc and
-with *default* record numbering.
+Same as above but creating the fits object by reading `filnam` from disc 
+and with *default* record numbering.
 
 * `hduindex`: HDU index (::Int - default: `1` = `primary hdu`)
 * `nr`: include cardindex (::Bool - default: `true`)
@@ -174,11 +174,12 @@ end
 @doc raw"""
     fits_record_dump(filnam [, hduindex=0 [; hdr=true [, dat=true [, nr=true [, msg=true]]]])
 
-The file `filnam` as a Vector{String} of 80 character records without any further formatting. 
+The file `filnam` as a `Vector{String}` of 80 character strings (records) 
+without any further formatting. 
 
-For `msg=true`` it outputs a listing of `filnam` in blocks (2880 bytes) of 36 (optionally 
-indexed) records. The dump proceeds *without casting of FITS objects*; i.e., *without* 
-FITS-conformance testing.
+For `msg=true`` it outputs a listing of `filnam` in blocks (2880 bytes) of 36 
+(optionally indexed) records. The dump proceeds *without casting of FITS objects*; 
+i.e., *without* FITS-conformance testing.
 
 default: `hduindex` = 0 - all blocks
          `hduindex` > 0 - only blocks of given `hduindex`
@@ -189,9 +190,13 @@ default: `hduindex` = 0 - all blocks
 * `nr`: include record index (row number) (::Bool - default: true)
 * `msg`: print message (::Bool)
 
+NB. The tool `fits_record_dump` is included for developers to facilitate code analysis of the 
+[`CamiFITS`](ref) package (e.g. the correct implementation of `ENDIAN` wraps and zero=offset 
+shifting). 
+
 #### Example:
 ```
-julia> filnam = "test.fits";
+julia> filnam = "foo.fits";
 
 julia> data = [typemin(UInt32),typemax(UInt32)];
 
