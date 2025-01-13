@@ -751,7 +751,7 @@ end
 Add a header record of given 'key', 'value' and 'comment' to 'HDU[hduindex]' of 
 [`FITS`](@ref) object 'f'.
 
-NB. Know bug : Insertion can lead to fatal error - use  ['fits_add_key!'](@ref).
+NB. Know bug : Insertion can lead to fatal error - use  [`fits_add_key!`](@ref).
 #### Example:
 ```
 julia> filnam = "minimal.fits";
