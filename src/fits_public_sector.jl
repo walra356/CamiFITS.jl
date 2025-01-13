@@ -869,44 +869,6 @@ function fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::Strin
 
     return fits_insert_key!(f, hduindex, ne, key, val, com)
 
-    k = get(f.hdu[hduindex].header.map, _format_keyword(key), 0)
-    k > 0 && Base.throw(FITSError(msgErr(7)))        # keyword in use
-
-    n = f.hdu[hduindex].header.card[end].cardindex   # cardindex of last card of header
-
-    recnew = _format_record(key, val, com)
-    ni = length(recnew) # number of records to insert
-    nadd = (ni - n + ne + 35) ÷ (36) # number of blocks to add to header to fit insert 
-    
-    card = f.hdu[hduindex].header.card
-
-    if nadd > 0
-        blanks = repeat(' ', 80)
-        block = [cast_FITS_card(n + i, blanks) for i = 1:(36*nadd)]
-        append!(card, block)
-    end
-
-    nr = ne
-    for i=nr:ne # shift records down to create space for insert
-        rec = card[i].record 
-        f.hdu[hduindex].header.card[i+ni] = cast_FITS_card(i+ni, rec)
-    end
-    
-    for i=nr:nr+ni-1 # insert new records
-        rec = recnew[i-nr+1]
-        f.hdu[hduindex].header.card[i] = cast_FITS_card(i, rec)
-    end
-
-    card = f.hdu[hduindex].header.card
-
-    dataobject = f.hdu[hduindex].dataobject
-    header = cast_FITS_header(card)
-    f.hdu[hduindex] = cast_FITS_HDU(hduindex, header, dataobject)
-
-    fits_save(f; protect=false)
-
-    return f
-
 end
 
 
