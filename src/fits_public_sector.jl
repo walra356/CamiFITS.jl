@@ -313,7 +313,7 @@ END
  21  22  23
  31  23  33
 
-julia> rm("foo.fits"); f = nothing
+julia> rm(filnam); f = nothing
 ```
 """
 function fits_create(filnam::String, data=[]; protect=true, msg=false)
@@ -363,8 +363,10 @@ end
     fits_extend(f::FITS, data [; hdutype="IMAGE"])
     fits_extend(filnam::String, data [; hdutype="IMAGE"])
 
-[`FITS`](@ref) object `f` extended by a [`FITS-hdu`](@ref) object
+[`FITS`](@ref) object `f` extended by a [`FITS_hdu`](@ref) object
 constructed from the `data` in the format of the `hdutype` keyword. 
+
+For a file on disc under the name `filnam`
 ```
 julia> f = fits_extend(filnam, data; hdutype="foo")
 ```
@@ -382,7 +384,7 @@ NB. For the details of the save procedure (not shown in the flow diagram)
 
 #### Examples:
 ```
-julia> filnam = "example.fits";
+julia> filnam = "foo.fits";
 
 julia> fits_create(filnam; protect=false);
 
