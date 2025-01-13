@@ -46,6 +46,7 @@ export errFITS
 export msgError
 export msgErr
 
+export _fits_table_form
 export _fits_standard
 export _index_space
 export _size_word

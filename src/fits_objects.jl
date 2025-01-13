@@ -842,6 +842,7 @@ function _fits_table_form(col::Vector{T}) where {T}
 
     if x == 'I' # NB. hdutype 'table' does not accept the 'L' descriptor
         if T == Bool
+# println("Boolean!")            
             tform = "I1"
         else
             strcol = string.(col)
