@@ -239,6 +239,42 @@ function test_fits_keyword()
 
 end
 
+function test_fits_insert_key!()
+
+    dbg = false
+    filnam = "foo.fits"
+    f = fits_create(filnam; protect=false)
+
+    long = repeat(" long", 71)
+    for i = 1:5
+        dbg && println(repeat('-',25) * "\nadd key$i")
+        fits_add_key!(f, 1, "KEY$i", true, "this is a" * long * " comment")
+    end
+
+    i = get(f.hdu[1].header.map, "KEY3", 0)
+
+    date = Dates.Date("2020-09-18", "yyyy-mm-dd")
+
+    fits_insert_key!(f, 1, i, "DATE", date, "this is a comment")
+
+    i = get(f.hdu[1].header.map, "KEY1", 0)
+    a = f.hdu[1].header.card[i].keyword
+
+    i = get(f.hdu[1].header.map, "DATE", 0)
+    b = f.hdu[1].header.card[i].keyword
+
+    a = a == "KEY1"
+    b = b == "DATE"
+
+    rm(filnam)
+
+    pass = a & b 
+    pass || println([a, b])
+
+    return pass
+
+end
+
 function test_fits_add_key!()
 
     filnam = "foo.fits"

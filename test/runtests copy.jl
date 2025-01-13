@@ -27,7 +27,7 @@ using Dates
 @testset "CamiFITS.jl" begin
 
     @test test_fits_info()
-    @test test_fits_add_key!()
+    @test test_fits_insert_key!()
     @test test_fits_delete_key!()
     @test test_fits_edit_key!()
     @test test_fits_rename_key!()

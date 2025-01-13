@@ -746,21 +746,22 @@ end
 # ------------------------------------------------------------------------------
 
 @doc raw"""
-    fits_insert_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
+    fits_insert_key!(f::FITS, hduindex::Int, cardindex::Int, key::String, val::Any, com::String)
 
-Add a header record of given 'key', 'value' and 'comment' to 'HDU[hduindex]' of 
-[`FITS`](@ref) object 'f'.
+Insert one or more [`FITS_card`]s for given 'key', 'value' and 'comment' at position `cardindex` 
+in `f.hdu[hduindex].header.card`; i.e., into the record stack of the [`FITS_header`](@ref) of the 
+[`FITS_HDU`](@ref)`[hduindex]` of the [`FITS`](@ref) object 'f'.
 
-NB. Know bug : Insertion can lead to fatal error - use  [`fits_add_key!`](@ref).
+NB. For insert without specification of `cardindex `use [`fits_add_key!`](@ref).
 #### Example:
 ```
 julia> filnam = "minimal.fits";
 
 julia> f = fits_create(filnam; protect=false);
 
-julia> fits_insert_key!(f, 1, 6, "KeYNEw1", true, "This is the new key");
+julia> fits_insert_key!(f, 1, 3, "KeYNEw1", true, "This is the new key");
 
-julia> fits_info(f; nr=true)
+julia> fits_info(f;nr=true);
 
 File: minimal.fits
 hdu: 1
@@ -772,18 +773,21 @@ Datasize: (0,)
 ---------------------------------------------------------------------------------------
    1 | SIMPLE  =                    T / file does conform to FITS standard
    2 | BITPIX  =                   64 / number of bits per data pixel
-   3 | NAXIS   =                    1 / number of data axes
-   4 | NAXIS1  =                    0 / length of data axis 1
-   5 | EXTEND  =                    T / FITS dataset may contain extensions
-   6 | KEYNEW1 =                    T / This is the new key
+   3 | KEYNEW8 =                    T / This is the new key
+   4 | NAXIS   =                    1 / number of data axes
+   5 | NAXIS1  =                    0 / length of data axis 1
+   6 | EXTEND  =                    T / FITS dataset may contain extensions
    7 | END
 ```
 """
-function fits_insert_key!(f::FITS, hduindex::Int, nr::Int, key::String, val::Any, com::String)
+function fits_insert_key!(f::FITS, hduindex::Int, cardindex::Int, key::String, val::Any, com::String)
 
+    dbg = false
+    nr = cardindex
     ne = get(f.hdu[hduindex].header.map, "END", 0)
     ne > 0 || Base.throw(FITSError(msgErr(13)))      # END keyword not found
     nr ≤ ne || Base.throw(FITSError(msgErr(48)))     # insert not allowed beyond the END keyword
+    f.hdu[hduindex].header.card[nr].keyword ≠ "CONTINUE" || Base.throw(FITSError(msgErr(49)))
 
     k = get(f.hdu[hduindex].header.map, _format_keyword(key), 0)
     k > 0 && Base.throw(FITSError(msgErr(7)))        # keyword in use
@@ -802,17 +806,19 @@ function fits_insert_key!(f::FITS, hduindex::Int, nr::Int, key::String, val::Any
         append!(card, block)
     end
 
-    for i=nr:ne # shift records down to create space for insert
+    for i=ne:-1:nr # shift records down to create space for insert
         rec = card[i].record 
         f.hdu[hduindex].header.card[i+ni] = cast_FITS_card(i+ni, rec)
     end
     
-    for i=nr:nr+ni-1 # insert new records
-        rec = recnew[i-nr+1]
-        f.hdu[hduindex].header.card[i] = cast_FITS_card(i, rec)
+    for i=1:ni # insert new records
+        rec = recnew[i]
+        f.hdu[hduindex].header.card[nr+i-1] = cast_FITS_card(nr+i-1, rec)
     end
 
     card = f.hdu[hduindex].header.card
+
+                        dbg && for i ∈ eachindex(card) println(i, " | ", card[i].record) end
 
     dataobject = f.hdu[hduindex].dataobject
     header = cast_FITS_header(card)
@@ -831,8 +837,10 @@ end
 @doc raw"""
     fits_add_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 
-Add a header record of given 'key', 'value' and 'comment' to 'HDU[hduindex]' 
-of [`FITS`](@ref) object 'f'.
+Insert one or more [`FITS_card`]s for given 'key', 'value' and 'comment' at 
+*non-specified* position in `f.hdu[hduindex].header.card`; i.e., into the record 
+stack of the [`FITS_header`](@ref) of the [`FITS_HDU`](@ref)`[hduindex]` of the 
+[`FITS`](@ref) object 'f'.      
 
 #### Example:
 ```
@@ -1001,8 +1009,13 @@ Any[]
 """
 function fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
 
+    keyword = _format_keyword(key)
+
+    nr = get(f.hdu[hduindex].header.map, keyword, 0)   # card nr with given key
+    nr > 0 || Base.throw(FITSError(msgErr(18)))        # keyword not found
+
     fits_delete_key!(f, hduindex, key)
-    fits_add_key!(f, hduindex, key, val, com)
+    fits_insert_key!(f, hduindex, nr, key, val, com)
 
     return f
 
@@ -1195,15 +1208,5 @@ function fits_zero_offset(T::Type)
              T == Int8 ? -128 : T == UInt64 ? 9223372036854775808 : 2^(nbits - 1)
 
     return offset
-
-end
-
-# ------------------------------------------------------------------------------
-#                      fits_tzero(col::Vector{T}) where {T}
-# ------------------------------------------------------------------------------
-
-function fits_tzero(col::Vector{T}) where {T}
-
-    return fits_zero_offset(T::Type)
 
 end

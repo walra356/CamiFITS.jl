@@ -116,7 +116,6 @@ export fits_collect
 export fits_pointer
 export fits_pointers
 export fits_tform
-export fits_tzero
 export fits_apply_zero_offset
 export fits_remove_zero_offset
 export fits_zero_offset
@@ -155,6 +154,7 @@ export dataset_bintable
 
 export test_fits_info
 export test_fits_keyword
+export test_fits_insert_key!
 export test_fits_add_key!
 export test_fits_edit_key!
 export test_fits_delete_key!
