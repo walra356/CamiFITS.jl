@@ -318,16 +318,10 @@ julia> rm(filnam); f = nothing
 """
 function fits_create(filnam::String, data=[]; protect=true, msg=false)
 
-msg && println("fits_create:")
-
     hduindex = 1
     dataobject = cast_FITS_dataobject("'PRIMARY '", data)
     header = cast_FITS_header(dataobject)
-msg && println("data = ", data)
-#   data = fits_apply_offset(data, header) #adapt according to header information
-#println("data = ", data)
-#   dataobject = cast_FITS_dataobject("'PRIMARY '", data)
-msg && println("cast hdu[$(hduindex)]")
+    
     hdu = cast_FITS_HDU(hduindex, header, dataobject)
 
     f = cast_FITS(filnam, [hdu])
