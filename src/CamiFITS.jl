@@ -84,9 +84,6 @@ export FITS_HDU
 export FITS_header
 export FITS_card
 export FITS_dataobject
-export FITS_array
-
-export cast_FITS_array
 
 export cast_FITS
 export cast_FITS_pointer

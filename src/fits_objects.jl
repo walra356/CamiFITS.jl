@@ -713,14 +713,6 @@ struct FITSError <: Exception
 end
 
 # ------------------------------------------------------------------------------
-#                 Base.showerror(io::IO, err::FITSError)
-# ------------------------------------------------------------------------------
-
-function Base.showerror(io::IO, err::FITSError)
-    print(io, err.msg)
-end
-
-# ------------------------------------------------------------------------------
 #                             msgErr(err::Int)
 # ------------------------------------------------------------------------------
 
@@ -982,24 +974,6 @@ end
 #                  _header_record_bintable(dataobject)
 # ------------------------------------------------------------------------------
 
-struct FITS_array
-
-    value
-    length
-    byte_offset
-
-end
-# ------------------------------------------------------------------------------
-function cast_FITS_array(arr::Array)
-
-    value = arr
-    length = length(arr)
-    offset = sizeof(arr)
-
-    return variable_length_array(value, length, offset)
-
-end
-# ------------------------------------------------------------------------------
 struct _bintable_field
 
     value::Any
