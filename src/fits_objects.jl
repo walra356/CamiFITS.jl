@@ -201,8 +201,8 @@ function cast_FITS_pointer(o::IO) #; msg=false)
     for i ∈ eachindex(b)         # i: start-of-block pointer (36 records/block)
         Base.seek(o, b[i]) 
         for n = 1:36
-            key = strip(String(Base.read(o, 8)))
-            key ≠ "END" ? Base.skip(o, 72) : Base.push!(hdr_stop, b[i] + 2880)
+            key = String(Base.read(o, 8))
+            key ≠ "END     " ? Base.skip(o, 72) : Base.push!(hdr_stop, b[i] + 2880)
         end
     end
    
