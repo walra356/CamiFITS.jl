@@ -191,7 +191,7 @@ default: `hduindex` = 0 - all blocks
 * `msg`: print message (::Bool)
 
 NB. The tool `fits_record_dump` is included for developers to facilitate code analysis 
-of the `CamiFITS` package (e.g. the correct implementation of `ENDIAN` wraps 
+of the *CamiFITS* package (e.g. the correct implementation of `ENDIAN` wraps 
 and the zero-offset shifting). 
 
 #### Example:
@@ -548,7 +548,7 @@ end
     fits_pointers(filnam::String)
     fits_pointers(f::FITS) 
 
-summay of the pointers used by `CamiFITS`
+summary of the pointers internally used by *CamiFITS*
 
 #### Examples:
 ```
@@ -617,12 +617,14 @@ Key:
 * `msg::Bool`: allow status message
 #### Examples:
 ```
-julia> fits_create("test1.fits"; protect=false);
+julia> filnam = "foo.fits";
 
-julia> fits_copy("test1.fits", "test2.fits"; protect=false);
-'test1.fits' was copied under the name 'test2.fits'
+julia> fits_create("foo1.fits"; protect=false);
 
-julia> rm.(["test1.fits", "test2.fits"]);
+julia> fits_copy("foo1.fits", "foo2.fits"; protect=false);
+'foo1.fits' was copied to 'foo2.fits'
+
+julia> rm.(["foo1.fits", "foo2.fits"]);
 ```
 """
 function fits_copy(filnam1::String, filnam2=" "; protect=true, msg=true)
@@ -907,11 +909,11 @@ end
 @doc raw"""
     fits_delete_key!(f::FITS, hduindex::Int, key::String)
 
-Delete a header record of given `key`, `value` and `comment` from the 
-FITS_HDU `f` of given `hduindex`.
+Delete a [`FITS_card`](@ref) record of given `key`, `value` and `comment` from the 
+[`FITS_HDU`](@ref) `f.hdu[hduindex]`.
 #### Examples:
 ```
-julia> filnam = "minimal.fits";
+julia> filnam = "foo.fits";
 
 julia> f = fits_create(filnam; protect=false);
 
@@ -997,34 +999,32 @@ end
 Edit a header record of given 'key, value and comment' to 'HDU[hduindex]' of file with name 'filnam'
 #### Example:
 ```
-julia> using Dates
+julia> filnam="foo.fits";
 
-julia> data = DateTime("2020-01-01T00:00:00.000");
+julia> f = fits_create(filnam; protect=false);
 
-julia> strExample="minimal.fits";
+julia> fits_add_key!(f, 1, "KEYNEW1", true, "this is the inserted record");
 
-julia> f = fits_create(strExample; protect=false);
+julia> i = get(f.hdu[1].header.map, "KEYNEW1", 0)
+6
 
-julia> fits_add_key!(f, 1, "KEYNEW1", true, "this is record 5");
+julia> fits_edit_key!(f, 1, "KEYNEW1", data, "record $i changed to a DateTime type");
 
-julia> fits_edit_key!(f, 1, "KEYNEW1", data, "record 5 changed to a DateTime type");
-
-julia> fits_info(f.hdu[1])
+julia> fits_info(f.hdu[1]; nr=true);
 hdu: 1
 hdutype: 'PRIMARY '
 DataType: Any
 Datasize: (0,)
 
-Metainformation:
-SIMPLE  =                    T / file does conform to FITS standard
-BITPIX  =                   64 / number of bits per data pixel
-NAXIS   =                    1 / number of data axes
-NAXIS1  =                    0 / length of data axis 1
-EXTEND  =                    T / FITS dataset may contain extensions
-KEYNEW1 = '2020-01-01T00:00:0' / record 5 changed to a DateTime type
-END
-
-Any[]
+  nr | Metainformation:
+---------------------------------------------------------------------------------------
+   1 | SIMPLE  =                    T / file does conform to FITS standard
+   2 | BITPIX  =                   64 / number of bits per data pixel
+   3 | NAXIS   =                    1 / number of data axes
+   4 | NAXIS1  =                    0 / length of data axis 1
+   5 | EXTEND  =                    T / FITS dataset may contain extensions
+   6 | KEYNEW1 = '2020-01-01T00:00:0' / record 6 changed to a DateTime type
+   7 | END
 ```
 """
 function fits_edit_key!(f::FITS, hduindex::Int, key::String, val::Any, com::String)
@@ -1221,7 +1221,7 @@ true
 """
 function fits_zero_offset(T::Type)
 
-    T <: Real || return T == Any ? 0.0 : nothing
+    T <: Real || return T == Any ? 0.0 : T == BitVector ? 0.0 : nothing
 
     nbits = 8 * Base.sizeof(T)
     offset = T ∉ [Int8, UInt16, UInt32, UInt64] ? 0.0 :
