@@ -26,6 +26,8 @@ using Dates
 
 @testset "CamiFITS.jl" begin
 
+    println("CamiFITS.jl | 37 runtests | runtume 40s (estimated) | start")
+
     @test test_fits_info()
     @test test_fits_copy()
     @test test_fits_create()
