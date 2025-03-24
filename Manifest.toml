@@ -2,7 +2,7 @@
 
 julia_version = "1.11.4"
 manifest_format = "2.0"
-project_hash = "de0ac76fb47dac8ddf85de116e55c0eedb20524e"
+project_hash = "63e860ef51d2e5c648bf16efa22f4ee27d9a0ff7"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -34,9 +34,9 @@ version = "1.6.0"
 
 [[deps.CamiMath]]
 deps = ["BenchmarkTools", "Documenter", "DocumenterInterLinks"]
-git-tree-sha1 = "d0e42084108886c529c74e7c6767f1cf4b432c5e"
+git-tree-sha1 = "77dc2c375445376bbd5a4f831fd3557999c2a699"
 uuid = "d302b3f7-c8ae-418d-9fc2-2c0a42bddda0"
-version = "0.1.17"
+version = "0.1.19"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
@@ -78,9 +78,9 @@ version = "0.9.3"
 
 [[deps.Documenter]]
 deps = ["ANSIColoredPrinters", "AbstractTrees", "Base64", "CodecZlib", "Dates", "DocStringExtensions", "Downloads", "Git", "IOCapture", "InteractiveUtils", "JSON", "LibGit2", "Logging", "Markdown", "MarkdownAST", "Pkg", "PrecompileTools", "REPL", "RegistryInstances", "SHA", "TOML", "Test", "Unicode"]
-git-tree-sha1 = "182a9a3fe886587ba230a417f1651a4cbc2b92d4"
+git-tree-sha1 = "30f520c66490393bf4e4ff2bb144db65f569d974"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "1.8.1"
+version = "1.9.0"
 
 [[deps.DocumenterInterLinks]]
 deps = ["CodecZlib", "DocInventories", "Documenter", "DocumenterInventoryWritingBackport", "Markdown", "MarkdownAST", "TOML"]
