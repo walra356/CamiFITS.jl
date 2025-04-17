@@ -14,7 +14,7 @@ jobs:
       matrix:
         version:
           - '1'       # current stable
-          - 'pre'
+          #- 'pre'
         os:
           - ubuntu-latest
           - windows-latest
@@ -46,7 +46,7 @@ jobs:
       matrix:
         version:
           - '1'       # current stable
-          - 'pre'
+          #- 'pre'
         os:
           - macOS-latest
         arch:
