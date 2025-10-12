@@ -146,6 +146,7 @@ function IOWrite(o::IO, filnam::String)
 
     s = Base.open(filnam, "w")
     Base.write(s, o.data)
+    truncate(s, o.size)
     Base.close(s)
 
 end
@@ -226,7 +227,7 @@ msg && println("after hton: hdu[$(hduindex)].dataobject.data = ", data)
 # write data:
     [Base.write(o, data[i]) for i ∈ eachindex(data)] 
     # complete block with blanks:
-    [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat % (2880÷nbyte))]  
+    [Base.write(o, T(0)) for i = 1:((2880÷nbyte)-ndat % (2880÷nbyte))] 
 
     return o
 

@@ -29,7 +29,7 @@ using Dates
     println("CamiFITS.jl | 37 runtests | runtume 40s (estimated) | start")
 
     @test test_fits_info()
-   # @test test_fits_copy() # FITSError("FITSError: 6 - FITS format requires integer number of blocks (of 2880 bytes)")
+    @test test_fits_copy() 
     @test test_fits_create()
     @test test_fits_keyword()
     @test test_fits_read(msg=true)

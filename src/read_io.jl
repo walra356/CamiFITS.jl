@@ -360,7 +360,7 @@ function _read_bintable_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS
                         if n > 1
                             d = join(Char.(data[i][k+1:k+n]))
                         else
-                            d = Char(data[i][k+1])
+                            d = Char.(data[i][k+1]) # dot added to avoid 1-element array
                         end
                     else
                         d = Char.(data[i][k+1:k+n])
@@ -372,7 +372,7 @@ function _read_bintable_data(o::IO, p::FITS_pointer, hduindex::Int, header::FITS
                         d = Bool.(data[i][k+1:k+n])
                         d = isnothing(tdims[j]) ? d : reshape(d, tdims[j])
                     else
-                        d = Bool(data[i][k+1])
+                        d = Bool.(data[i][k+1]) # dot added to avoid 1-element array
                     end
                     k += n
                 elseif tchar[j] == 'X'
