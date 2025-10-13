@@ -30,7 +30,7 @@ version = "1.11.0"
 deps = ["CamiMath", "Dates", "Documenter", "DocumenterInterLinks", "LinearAlgebra", "Printf"]
 path = "."
 uuid = "e3d38e7e-66c0-4598-81c1-d1e9bcf43bf0"
-version = "0.2.35"
+version = "0.2.36"
 
 [[deps.CamiMath]]
 deps = ["Documenter", "DocumenterInterLinks"]
